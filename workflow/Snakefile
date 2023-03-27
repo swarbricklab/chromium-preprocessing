@@ -1,0 +1,14 @@
+configfile: "config/config.yaml"
+pepfile: "config/pep_config.yaml"
+pepschema: "https://schema.databio.org/pep/2.1.0.yaml"
+
+captures=pep.sample_table
+
+include: 'rules/common.smk'
+include: 'rules/cellranger.smk'
+
+rule all:
+    input:
+        pep.config.cr_outs + "/cr_summary.csv"
+
+
