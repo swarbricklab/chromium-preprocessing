@@ -1,0 +1,7 @@
+container: "docker://cumulusprod/cellranger:7.0.0"
+
+cores: 16
+
+
+
+

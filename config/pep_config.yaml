@@ -1,0 +1,21 @@
+name: chromium_preprocessing
+
+pep_version: 2.1.0
+sample_table: ge_captures.csv
+
+
+input_data: "data/raw"
+results:    "data/processed"
+cr_outs:    "data/processed/cr"
+resources:  "ref"
+transcriptome: "ref/transcriptomes/refdata-gex-GRCh38-2020-A"
+
+sample_modifiers:
+  append:
+    ge_fastqs: _ge_fq
+    capture_id: _cid
+  derive:
+    attributes: [capture_id,ge_fastqs]
+    sources:
+      _cid:   "{sample_name}"
+      _ge_fq: data/raw/GE/{capture_id}
