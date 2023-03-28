@@ -17,4 +17,4 @@ sample_modifiers:
   derive:
     attributes: [ge_fastqs]
     sources:
-      _ge_fq: data/raw/GE/{capture_id}
+      _ge_fq: test_data/raw/GE/{capture_id}
