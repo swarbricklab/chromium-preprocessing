@@ -1,5 +1,5 @@
 configfile: "config/config.yaml"
-pepfile: "config/pep_config.yaml"
+pepfile: "config/chromium-preprocessing/pep_config.yaml"
 pepschema: "https://schema.databio.org/pep/2.1.0.yaml"
 
 captures=pep.sample_table
