@@ -3,7 +3,9 @@ rule cellranger_count:
         fastqs=capturesheet("ge_fastqs")
     output:
         out_dir=directory(pep.config.cr_outs + "/{capture}"),
-        summary=pep.config.cr_outs + "/{capture}/outs/metrics_summary.csv"  
+        summary=pep.config.cr_outs + "/{capture}/outs/metrics_summary.csv,
+		barcodes=pep.config.cr_outs + "/{capture}/outs/filtred_feature_bc_matrix/barcodes.tsv",
+		bam=pep.config.cr_outs + "/{capture}/outs/possorted_genome_bam.bam"
     resources:
         cores=config["cores"],
         h_vmem="16G",

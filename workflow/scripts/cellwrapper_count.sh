@@ -45,8 +45,7 @@ cmd="cellranger count \
     --transcriptome=$transcriptome \
     --jobmode=local \
     --localcores=$cores \
-    --localmem=$mem \
-    --no-bam"
+    --localmem=$mem"
 
 touch $log 
 echo $cmd >  $log
