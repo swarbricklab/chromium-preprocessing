@@ -6,8 +6,6 @@ rule cellranger_count:
         summary=pep.config.cr_outs + "/{capture}/outs/metrics_summary.csv"
     resources:
         cores=config["cores"],
-        h_vmem="16G",
-        mem_requested="16G",
         tmp_requested="80G",
         tmpfree="80G"
     params:
@@ -30,12 +28,6 @@ rule cr_summarise:
         group_summary=pep.config.cr_outs + "/cr_summary.csv"
     params:
         groups=','.join(captures["capture_id"])
-    resources:
-        cores=2,
-        h_vmem="16G",
-        mem_requested="16G",
-        tmp_requested="1G",
-        tmpfree="1G"
     container:
         "docker://johnyaku/csvkit:1.1.1"
     shell:
