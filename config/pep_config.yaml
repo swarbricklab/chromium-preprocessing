@@ -7,7 +7,7 @@ sample_table_index: capture_id
 
 input_data: "data/raw"
 results:    "data/processed"
-cr_outs:    "data/processed/cr"
+cr_outs:    "data/processed/cellranger"
 resources:  "ref"
 transcriptome: "ref/transcriptomes/refdata-gex-GRCh38-2020-A"
 
