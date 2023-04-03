@@ -21,6 +21,7 @@ fastqs=$project_top/${snakemake_input[fastqs]}
 transcriptome=$project_top/${snakemake_params[transcriptome]}
 cores=${snakemake_resources[cores]}
 mem=${snakemake_params[mem]}
+flags=${snakemake_params[flags]}
 
 # Debug messages
 
@@ -45,7 +46,8 @@ cmd="cellranger count \
     --transcriptome=$transcriptome \
     --jobmode=local \
     --localcores=$cores \
-    --localmem=$mem"
+    --localmem=$mem \
+    $flags"
 
 touch $log 
 echo $cmd >  $log

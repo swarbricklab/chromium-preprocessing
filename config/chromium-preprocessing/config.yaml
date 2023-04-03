@@ -1,0 +1,11 @@
+container: "docker://cumulusprod/cellranger:7.0.0"
+
+# flags for `cellranger count`
+# See `cellranger count --help` for additional flags
+count_flags: "--nosecondary"
+
+cores: 16
+
+
+
+

@@ -10,6 +10,7 @@ rule cellranger_count:
         tmpfree="80G"
     params:
         transcriptome=pep.config.transcriptome,
+        flags=config['count_flags'],
         mem=round(int(config["cores"]) * 8 * 0.9),
     container:
         config["container"]
