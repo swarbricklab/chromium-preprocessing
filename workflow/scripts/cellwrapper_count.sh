@@ -20,7 +20,7 @@ capture=${snakemake_wildcards[capture]}
 fastqs=$project_top/${snakemake_input[fastqs]}
 transcriptome=$project_top/${snakemake_params[transcriptome]}
 cores=${snakemake_resources[cores]}
-mem=${snakemake_params[mem]}
+mem=${snakemake_resources[mem]}
 flags=${snakemake_params[flags]}
 
 # Debug messages
