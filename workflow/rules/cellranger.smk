@@ -5,13 +5,13 @@ rule cellranger_count:
         out_dir=directory(pep.config.cr_outs + "/{capture}"),
         summary=pep.config.cr_outs + "/{capture}/outs/metrics_summary.csv"
     resources:
-        cores=config["cores"],
+        cores="16",
+        mem=round(int({resources.cores}) * 8 * 0.9)
         tmp_requested="80G",
         tmpfree="80G"
     params:
         transcriptome=pep.config.transcriptome,
-        flags=config['count_flags'],
-        mem=round(int(config["cores"]) * 8 * 0.9),
+        flags=config['count_flags']
     container:
         config["container"]
     log:
