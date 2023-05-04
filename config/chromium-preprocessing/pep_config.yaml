@@ -11,10 +11,15 @@ cr_outs:    "data/processed/cellranger"
 resources:  "resources"
 transcriptome: "resources/transcriptomes/refdata-gex-GRCh38-2020-A"
 
+cite_seq:
+  concat_dir: "data/processed/concat"
+
 sample_modifiers:
   append:
     ge_fastqs: _ge_fq
+    hto_fastqs: _hto_fq
   derive:
-    attributes: [ge_fastqs]
+    attributes: [ge_fastqs, hto_fastqs]
     sources:
-      _ge_fq: test_data/raw/GE/{capture_id}
+      _ge_fq:  test_data/raw/{capture_id}/GE3
+      _hto_fq: test_data/raw/{capture_id}/HTO
