@@ -1,4 +1,5 @@
-container: "docker://cumulusprod/cellranger:7.0.0"
+cr_version: "7.1.0"
+cr_container_publisher: "docker://cumulusprod/cellranger:"
 
 # flags for `cellranger count`
 # See `cellranger count --help` for additional flags

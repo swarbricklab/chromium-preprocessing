@@ -13,7 +13,7 @@ rule cellranger_count:
         transcriptome=pep.config.transcriptome,
         flags=config['count_flags']
     container:
-        config["container"]
+        config["cr_container_publisher"] + config["cr_version"]
     log:
         "logs/cr_count/{capture}.log"
     script:
