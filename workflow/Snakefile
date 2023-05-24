@@ -6,11 +6,11 @@ captures=pep.sample_table
 
 include: 'rules/common.smk'
 include: 'rules/cellranger.smk'
-include: 'rules/cite-seq-count.smk'
+#include: 'rules/cite-seq-count.smk'
 
 rule all:
     input:
-        cr_summary=pep.config.cr_outs + "/cr_summary.csv",
-        hto_concat=pep.config.cite_seq.concat_dir + "/pbmc"
+        cr_summary=pep.config.cr_outs + "/cr_summary.csv"
+        #hto_concat=pep.config.cite_seq.concat_dir + "/pbmc"
 
 

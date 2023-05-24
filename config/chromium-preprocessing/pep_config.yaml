@@ -22,4 +22,4 @@ sample_modifiers:
     attributes: [ge_fastqs, hto_fastqs]
     sources:
       _ge_fq:  test_data/raw/{capture_id}/GE3
-      _hto_fq: test_data/raw/{capture_id}/HTO
+      #_hto_fq: test_data/raw/{capture_id}/HTO
