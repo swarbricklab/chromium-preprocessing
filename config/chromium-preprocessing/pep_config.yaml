@@ -1,15 +1,16 @@
 name: chromium_preprocessing
 
 pep_version: 2.1.0
-sample_table: ge_captures.csv
+sample_table: captures.csv
 sample_table_index: capture_id
 
-
-input_data: "data/raw"
-results:    "data/processed"
-cr_outs:    "data/processed/cellranger"
-resources:  "resources"
-transcriptome: "resources/transcriptomes/refdata-gex-GRCh38-2020-A"
+# interface
+input: 
+  ge_fastqs: "data/fastq"
+output: 
+  cr_outs: "results/cellranger"
+resources:
+  transcriptome: "resources/transcriptomes/refdata-gex-GRCh38-2020-A"
 
 cite_seq:
   concat_dir: "data/processed/concat"
