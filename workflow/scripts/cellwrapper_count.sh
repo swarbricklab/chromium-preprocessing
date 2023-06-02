@@ -37,6 +37,8 @@ echo "Memory: $mem"
 # Switch to local disk for faster disk I/O
 cd ${snakemake_resources[tmpdir]}
 echo "Work directory: $PWD"
+# Copy any leftover intermediate files from a previously interrupted pipestance
+cp $out_parent/* .
 
 # Run spaceranger, saving spaceranger-specific logs
 cmd="cellranger count \
@@ -51,11 +53,12 @@ cmd="cellranger count \
 
 touch $log 
 echo $cmd >  $log
-eval $cmd >> $log 
+eval $cmd >> $log || \
+{
+    # Remove temporary files
+    rm -rf **/SC_RNA_COUNTER_CS
 
-# Remove temporary files
-rm -rf **/SC_RNA_COUNTER_CS
-
-# Return results
-cp -r $capture $out_parent
-cd -
+    # Return results
+    cp -r $capture $out_parent
+    cd -
+}
