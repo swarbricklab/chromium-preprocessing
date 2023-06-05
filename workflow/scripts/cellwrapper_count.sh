@@ -25,7 +25,7 @@ flags=${snakemake_params[flags]}
 
 # Debug messages
 
-echo "Processing sample: $sample" 
+echo "Processing sample: $capture" 
 echo "Output parent: $out_parent" 
 echo "Log: $log" 
 echo "Fastq path: $fastqs"
@@ -37,8 +37,9 @@ echo "Memory: $mem"
 cd ${snakemake_resources[tmpdir]}
 echo "Work directory: $PWD"
 # Copy any leftover intermediate files from a previously interrupted pipestance
-rsync -ah --progress $out_parent/$sample/* .
-
+if [ -e $out_parent/$capture ]; then
+    rsync -ah --progress $out_parent/$capture/* .
+fi
 # Run spaceranger, saving spaceranger-specific logs
 cmd="cellranger count \
     --id=$capture \
