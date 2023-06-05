@@ -7,8 +7,8 @@ rule cellranger_count:
     resources:
         cores="16",
         mem="110GB",
-        tmp_requested="80G",
-        tmpfree="80G"
+        tmp_requested="100G",
+        tmpfree="100G"
     params:
         transcriptome=pep.config.resources.transcriptome,
         flags=config['count_flags']
