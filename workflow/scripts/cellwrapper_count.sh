@@ -53,12 +53,14 @@ cmd="cellranger count \
 
 touch $log 
 echo $cmd >  $log
-eval $cmd >> $log || \
-{
+if eval $cmd >> $log; then
+    echo "Cellranger has completed" >> $log 
     # Remove temporary files
     rm -rf **/SC_RNA_COUNTER_CS
-
     # Return results
-    cp -r $capture $out_parent
-    cd -
-}
+    rsync -ah --progress $capture $out_parent >> $log
+else
+    echo "Cellranger has failed" >> $log 
+    rsync -ah --progress $capture $out_parent >> $log  
+fi
+cd -
