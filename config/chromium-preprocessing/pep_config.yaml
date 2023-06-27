@@ -18,9 +18,8 @@ cite_seq:
 sample_modifiers:
   append:
     ge_fastqs: _ge_fq
-    hto_fastqs: _hto_fq
   derive:
-    attributes: [ge_fastqs, hto_fastqs]
+    attributes: [ge_fastqs]
     sources:
-      _ge_fq:  test_data/raw/{capture_id}/GE3
-      #_hto_fq: test_data/raw/{capture_id}/HTO
+      _ge_fq: test_data/raw/tiny_tnbc/GE/{capture_id}
+
