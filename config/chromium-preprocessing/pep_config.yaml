@@ -1,7 +1,7 @@
 name: chromium_preprocessing
 
 pep_version: 2.1.0
-sample_table: captures.csv
+sample_table: ge_captures.csv
 sample_table_index: capture_id
 
 # interface
