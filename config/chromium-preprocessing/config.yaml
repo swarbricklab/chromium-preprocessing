@@ -4,7 +4,9 @@ cr_container_publisher: "docker://cumulusprod/cellranger:"
 # flags for `cellranger count`
 # See `cellranger count --help` for additional flags
 count_flags: "--nosecondary"
-
+# flags for `cellranger aggr`
+# See `cellranger aggr --help` for additional flags
+aggr_flags: "--nosecondary"
 
 
 
