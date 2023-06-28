@@ -16,20 +16,21 @@ project_top=$PWD
 log=$project_top/${snakemake_log[0]}
 out_dir=$project_top/${snakemake_output[0]}
 out_parent=$(dirname $out_dir)
-capture=${snakemake_wildcards[capture]}
-fastqs=$project_top/${snakemake_input[fastqs]}
-transcriptome=$project_top/${snakemake_params[transcriptome]}
+#capture=${snakemake_wildcards[capture]}
+pool=${snakemake_wildcards[pool]}
+aggr_csv=${snakemake_input[aggr_csv]}
+#fastqs=$project_top/${snakemake_input[fastqs]}
+#transcriptome=$project_top/${snakemake_params[transcriptome]}
 cores=${snakemake_resources[cores]}
 mem=${snakemake_resources[mem]%GB}
 flags=${snakemake_params[flags]}
 
 # Debug messages
 
-echo "Processing sample: $capture" 
+echo "Aggregating pool: $pool" 
 echo "Output parent: $out_parent" 
+echo "File defining capture ids in pool: $aggr_csv" 
 echo "Log: $log" 
-echo "Fastq path: $fastqs"
-echo "Transcriptome: $transcriptome"
 echo "Cores: $cores"
 echo "Memory: $mem"
 
@@ -41,22 +42,31 @@ if [ -e $out_parent/$capture ]; then
     rsync -ah --progress $out_parent/$capture/* .
 fi
 # Run cellranger, saving cellranger-specific logs
-cmd="cellranger count \
-    --id=$capture \
-    --sample=$capture \
-    --fastqs=$fastqs \
-    --transcriptome=$transcriptome \
+#cellranger aggr --id=temp/aggr_out/test123_new --csv=temp/aggr_captures.csv --normalize=mapped --nosecondary
+cmd="cellranger aggr \
+    --id=$pool \
+    --csv=$aggr_csv \
+    --normalize=mapped \
     --jobmode=local \
     --localcores=$cores \
     --localmem=$mem \
     $flags"
+# cmd="cellranger count \
+#     --id=$capture \
+#     --sample=$capture \
+#     --fastqs=$fastqs \
+#     --transcriptome=$transcriptome \
+#     --jobmode=local \
+#     --localcores=$cores \
+#     --localmem=$mem \
+#     $flags"
 
 touch $log 
 echo $cmd >  $log
 if eval $cmd >> $log; then
     echo "Cellranger has completed" >> $log 
     # Remove temporary files
-    rm -rf **/SC_RNA_COUNTER_CS
+    rm -rf **/SC_RNA_AGGREGATOR_CS
     # Return results
     rsync -ah --progress $capture $out_parent >> $log
 else
