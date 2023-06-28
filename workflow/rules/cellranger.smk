@@ -45,12 +45,12 @@ rule cr_summarise:
 
 rule cellranger_aggr:
     input:
-        aggr_csv="temp/{aggr_id}.csv"
+        aggr_csv=pep.config.output.cr_outs + "/aggr/{aggr_id}.csv",
         # TODO: input function to define the h5 files for each aggr job
-        molecule_h5=expand(pep.config.output.cr_outs + "/{aggr_captures}/outs/molecule_info.h5", aggr_captures = ["TNBC_001, TNBC_002"] 
+        molecule_h5=expand(pep.config.output.cr_outs + "/{aggr_captures}/outs/molecule_info.h5", aggr_captures = ["TNBC_001", "TNBC_002"]) 
     output:
         out_dir=directory(pep.config.output.cr_outs + "/aggr/{aggr_id}"),
-        summary=pep.config.output.cr_outs + "/aggr/{aggr_id}/outs/summary.json"
+        summary=pep.config.output.cr_outs + "/aggr/{aggr_id}/outs/count/summary.json"
         #summary=pep.config.output.cr_outs + "/{capture}/outs/metrics_summary.csv"
         #
         # Outputs:
@@ -72,12 +72,20 @@ rule cellranger_aggr:
     container:
         config["cr_container_publisher"] + config["cr_version"]
     log:
-        "logs/cr_count/{capture}.log"
+        pep.config.output.cr_outs + "/aggr/{aggr_id}.cellranger_aggr.log"
     script:
-        "../scripts/cellwrapper_aggr.sh"    
-    # shell:
-    #     """
-    #     cellranger aggr --id=AGG123 --csv=AGG123_libraries.csv
-    #     """
+        "../scripts/cellwrapper_aggr.sh"
+    #shell:
+    # """
+    # cmd="cellranger aggr \
+    #     --id={wildcards.aggr_id} \
+    #     --csv=(input.aggr_csv} \
+    #     --normalize=mapped \
+    #     --jobmode=local \
+    #     --localcores={resources.cores} \
+    #     --localmem={resources.mem} \
+    #     {params.flags}"
+    # echo $cmd 
+    # """
 
 

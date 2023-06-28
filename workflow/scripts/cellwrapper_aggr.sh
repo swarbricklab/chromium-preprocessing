@@ -13,12 +13,13 @@ project_top=$PWD
 
 # Read parameters and calculate paths
 
+#log=$project_top/${snakemake_log[0]}
 log=$project_top/${snakemake_log[0]}
 out_dir=$project_top/${snakemake_output[0]}
 out_parent=$(dirname $out_dir)
 #capture=${snakemake_wildcards[capture]}
 aggr_id=${snakemake_wildcards[aggr_id]}
-aggr_csv=${snakemake_input[aggr_csv]}
+aggr_csv=$project_top/${snakemake_input[aggr_csv]}
 #fastqs=$project_top/${snakemake_input[fastqs]}
 #transcriptome=$project_top/${snakemake_params[transcriptome]}
 cores=${snakemake_resources[cores]}
@@ -26,7 +27,6 @@ mem=${snakemake_resources[mem]%GB}
 flags=${snakemake_params[flags]}
 
 # Debug messages
-
 echo "Aggregating aggr_id: $aggr_id" 
 echo "Output parent: $out_parent" 
 echo "File defining capture ids in aggr_id: $aggr_csv" 
@@ -37,10 +37,12 @@ echo "Memory: $mem"
 # Switch to local disk for faster disk I/O
 cd ${snakemake_resources[tmpdir]}
 echo "Work directory: $PWD"
+
 # Copy any leftover intermediate files from a previously interrupted pipestance
 if [ -e $out_parent/$aggr_id ]; then
     rsync -ah --progress $out_parent/$aggr_id/* .
 fi
+
 # Run cellranger, saving cellranger-specific logs
 cmd="cellranger aggr \
     --id=$aggr_id \
@@ -52,10 +54,12 @@ cmd="cellranger aggr \
     $flags"
 
 touch $log 
-echo $cmd >  $log
+echo $cmd > $log
+
 if eval $cmd >> $log; then
     echo "Cellranger has completed" >> $log 
     # Remove temporary files
+    # TODO: set as temp output dir in rule?
     rm -rf **/SC_RNA_AGGREGATOR_CS
     # Return results
     rsync -ah --progress $aggr_id $out_parent >> $log
