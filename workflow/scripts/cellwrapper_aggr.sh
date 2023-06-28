@@ -17,7 +17,7 @@ log=$project_top/${snakemake_log[0]}
 out_dir=$project_top/${snakemake_output[0]}
 out_parent=$(dirname $out_dir)
 #capture=${snakemake_wildcards[capture]}
-pool=${snakemake_wildcards[pool]}
+aggr_id=${snakemake_wildcards[aggr_id]}
 aggr_csv=${snakemake_input[aggr_csv]}
 #fastqs=$project_top/${snakemake_input[fastqs]}
 #transcriptome=$project_top/${snakemake_params[transcriptome]}
@@ -27,9 +27,9 @@ flags=${snakemake_params[flags]}
 
 # Debug messages
 
-echo "Aggregating pool: $pool" 
+echo "Aggregating aggr_id: $aggr_id" 
 echo "Output parent: $out_parent" 
-echo "File defining capture ids in pool: $aggr_csv" 
+echo "File defining capture ids in aggr_id: $aggr_csv" 
 echo "Log: $log" 
 echo "Cores: $cores"
 echo "Memory: $mem"
@@ -38,28 +38,18 @@ echo "Memory: $mem"
 cd ${snakemake_resources[tmpdir]}
 echo "Work directory: $PWD"
 # Copy any leftover intermediate files from a previously interrupted pipestance
-if [ -e $out_parent/$capture ]; then
-    rsync -ah --progress $out_parent/$capture/* .
+if [ -e $out_parent/$aggr_id ]; then
+    rsync -ah --progress $out_parent/$aggr_id/* .
 fi
 # Run cellranger, saving cellranger-specific logs
-#cellranger aggr --id=temp/aggr_out/test123_new --csv=temp/aggr_captures.csv --normalize=mapped --nosecondary
 cmd="cellranger aggr \
-    --id=$pool \
+    --id=$aggr_id \
     --csv=$aggr_csv \
     --normalize=mapped \
     --jobmode=local \
     --localcores=$cores \
     --localmem=$mem \
     $flags"
-# cmd="cellranger count \
-#     --id=$capture \
-#     --sample=$capture \
-#     --fastqs=$fastqs \
-#     --transcriptome=$transcriptome \
-#     --jobmode=local \
-#     --localcores=$cores \
-#     --localmem=$mem \
-#     $flags"
 
 touch $log 
 echo $cmd >  $log
@@ -68,9 +58,9 @@ if eval $cmd >> $log; then
     # Remove temporary files
     rm -rf **/SC_RNA_AGGREGATOR_CS
     # Return results
-    rsync -ah --progress $capture $out_parent >> $log
+    rsync -ah --progress $aggr_id $out_parent >> $log
 else
     echo "Cellranger has failed" >> $log 
-    rsync -ah --progress $capture $out_parent >> $log  
+    rsync -ah --progress $aggr_id $out_parent >> $log  
 fi
 cd -
