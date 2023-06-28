@@ -40,7 +40,7 @@ echo "Work directory: $PWD"
 if [ -e $out_parent/$capture ]; then
     rsync -ah --progress $out_parent/$capture/* .
 fi
-# Run spaceranger, saving spaceranger-specific logs
+# Run cellranger, saving cellranger-specific logs
 cmd="cellranger count \
     --id=$capture \
     --sample=$capture \
