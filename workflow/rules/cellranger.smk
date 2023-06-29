@@ -51,7 +51,7 @@ rule generate_aggr_csv:
         cores="1",
         mem="16GB"
     conda:
-        "../envs/pandas.yaml"
+        "../envs/generate_aggr_csv.yaml"
     log:
         pep.config.output.cr_outs + "/aggr/csvs/{aggr_id}.generate_aggr_csv.log"
     script:
