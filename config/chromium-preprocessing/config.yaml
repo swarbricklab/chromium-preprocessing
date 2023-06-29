@@ -8,5 +8,7 @@ count_flags: "--nosecondary"
 # See `cellranger aggr --help` for additional flags
 aggr_flags: "--nosecondary"
 
-
-
+# aggregate specific
+aggr:
+  activate: True
+  samples: "config/chromium-preprocessing/ge_aggr.tsv"

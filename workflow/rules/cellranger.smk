@@ -40,52 +40,43 @@ rule cr_summarise:
         """
 
 
-# TODO: rule to generate input csv config files for aggr
-#       use an aggr_id column in config sample-sheet
+# rule to generate input csv config files for aggr
+# use an aggr_id column in config sample-sheet
+rule generate_aggr_csv:
+    input:
+        sample_sheet=config["aggr"]["samples"]
+    output:
+        aggr_csv=pep.config.output.cr_outs + "/aggr/csvs/{aggr_id}.csv"
+    resources:
+        cores="1",
+        mem="16GB"
+    conda:
+        "../envs/pandas.yaml"
+    log:
+        pep.config.output.cr_outs + "/aggr/csvs/{aggr_id}.generate_aggr_csv.log"
+    script:
+        "../scripts/generate_aggr_csv.py"
+
 
 rule cellranger_aggr:
     input:
-        aggr_csv=pep.config.output.cr_outs + "/aggr/{aggr_id}.csv",
+        aggr_csv=pep.config.output.cr_outs + "/aggr/csvs/{aggr_id}.csv",
         # TODO: input function to define the h5 files for each aggr job
         molecule_h5=expand(pep.config.output.cr_outs + "/{aggr_captures}/outs/molecule_info.h5", aggr_captures = ["TNBC_001", "TNBC_002"]) 
     output:
-        out_dir=directory(pep.config.output.cr_outs + "/aggr/{aggr_id}"),
-        summary=pep.config.output.cr_outs + "/aggr/{aggr_id}/outs/count/summary.json"
-        #summary=pep.config.output.cr_outs + "/{capture}/outs/metrics_summary.csv"
-        #
-        # Outputs:
-        # - Aggregation metrics summary HTML:         /home/jdoe/runs/AGG123/outs/web_summary.html
-        # - Copy of the input aggregation CSV:        /home/jdoe/runs/AGG123/outs/aggregation.csv
-        # - Aggregation metrics summary JSON:         /home/jdoe/runs/AGG123/outs/summary.json
-        # - Secondary analysis output CSV:            /home/jdoe/runs/AGG123/outs/analysis
-        # - Filtered feature-barcode matrices MEX:    /home/jdoe/runs/AGG123/outs/filtered_feature_bc_matrix
-        # - Filtered feature-barcode matrices HDF5:   /home/jdoe/runs/AGG123/outs/filtered_feature_bc_matrix.h5
-        # - Loupe Browser file:                       /home/jdoe/runs/AGG123/outs/cloupe.cloupe        
+        out_dir=directory(pep.config.output.cr_outs + "/aggr/output/{aggr_id}"),
+        summary=pep.config.output.cr_outs + "/aggr/output/{aggr_id}/outs/count/summary.json"
     resources:
         cores="16",
         mem="110GB",
         tmp_requested="100G",
         tmpfree="100G"
     params:
-        #transcriptome=pep.config.resources.transcriptome,
         flags=config['aggr_flags']
     container:
         config["cr_container_publisher"] + config["cr_version"]
     log:
-        pep.config.output.cr_outs + "/aggr/{aggr_id}.cellranger_aggr.log"
+        pep.config.output.cr_outs + "/aggr/output/{aggr_id}.cellranger_aggr.log"
     script:
         "../scripts/cellwrapper_aggr.sh"
-    #shell:
-    # """
-    # cmd="cellranger aggr \
-    #     --id={wildcards.aggr_id} \
-    #     --csv=(input.aggr_csv} \
-    #     --normalize=mapped \
-    #     --jobmode=local \
-    #     --localcores={resources.cores} \
-    #     --localmem={resources.mem} \
-    #     {params.flags}"
-    # echo $cmd 
-    # """
-
 
