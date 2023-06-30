@@ -7,6 +7,25 @@ def capturesheet(field):
         return captures.loc[wildcards.capture, field]
     return handle_wildcards
 
+# Get the capture_ids associated with a specific aggr_id group 
+def get_cellranger_aggr_aggr_captures_input(wildcards):
+
+    wanted_input = []
+
+    df_samples = pd.read_csv(config["aggr"]["samples"], sep = "\t", dtype = {'capture_id': str, 'aggr_id': str})
+
+    capture_ids = df_samples.loc[df_samples["aggr_id"] == wildcards.aggr_id, ["capture_id"]]
+    capture_ids = list(set(capture_ids["capture_id"].tolist()))
+
+    wanted_input.extend(
+        expand([
+            pep.config.output.cr_outs + "/{capture_id}/outs/molecule_info.h5"
+        ],
+            capture_id=capture_ids
+        )
+    )
+
+    return wanted_input
 
 # get rule all input files for cellranger aggr
 def aggr_all(wildcards):
@@ -18,8 +37,9 @@ def aggr_all(wildcards):
         df_sample_sheet = pd.read_csv(config["aggr"]["samples"], sep = "\t", dtype = {'capture_id': str, 'aggr_id': str})
 
         aggr_ids = list(set(df_sample_sheet["aggr_id"].tolist()))
-        # remove dummy aggr_id that signifies NOT to aggregate these captures
-        aggr_ids.remove("NA")
+
+        if "NONE" in aggr_ids:
+            aggr_ids.remove("NONE")
         
         aggr_input.extend(
             expand([

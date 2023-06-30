@@ -57,12 +57,11 @@ rule generate_aggr_csv:
     script:
         "../scripts/generate_aggr_csv.py"
 
-
+# rule to run cellranger aggr on defined aggr_id groups
 rule cellranger_aggr:
     input:
         aggr_csv=pep.config.output.cr_outs + "/aggr/csvs/{aggr_id}.csv",
-        # TODO: input function to define the h5 files for each aggr job
-        molecule_h5=expand(pep.config.output.cr_outs + "/{aggr_captures}/outs/molecule_info.h5", aggr_captures = ["TNBC_001", "TNBC_002"]) 
+        molecule_h5=get_cellranger_aggr_aggr_captures_input
     output:
         out_dir=directory(pep.config.output.cr_outs + "/aggr/output/{aggr_id}"),
         summary=pep.config.output.cr_outs + "/aggr/output/{aggr_id}/outs/count/summary.json"
