@@ -19,7 +19,7 @@ def aggr_all(wildcards):
 
         aggr_ids = list(set(df_sample_sheet["aggr_id"].tolist()))
         # remove dummy aggr_id that signifies NOT to aggregate these captures
-        aggr_ids.remove("NONE")
+        aggr_ids.remove("NA")
         
         aggr_input.extend(
             expand([
