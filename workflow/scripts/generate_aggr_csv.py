@@ -55,7 +55,7 @@ log.info("----------------------------------")
 # parse sample-sheet
 df_sample_sheet = pd.read_csv(file_sample_sheet, sep = "\t", dtype = {'capture_id': str, 'aggr_id': str})
 
-# select captures asscoaited with current aggr_id
+# select captures associated with current aggr_id
 df_sample_sheet = df_sample_sheet.loc[df_sample_sheet["aggr_id"] == aggr_id, ["capture_id"]]
 capture_ids = df_sample_sheet["capture_id"].tolist()
 
