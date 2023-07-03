@@ -1,0 +1,4 @@
+[core]
+    remote = gadi-chromium-processing
+['remote "gadi-chromium-processing"']
+    url = ssh://gadi-dm.nci.org.au/g/data/a56/dvc/remotes/chromium-preprocessing
