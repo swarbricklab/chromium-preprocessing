@@ -57,10 +57,21 @@ if eval $cmd >> $log; then
     echo "Cellranger has completed" >> $log 
     # Remove temporary files
     rm -rf **/SC_RNA_COUNTER_CS
+    # Make compression consistent
+    compressed_files="features.tsv barcodes.tsv matrix.mtx"
+    fc_barcode_dirs="filtered_feature_bc_matrix raw_feature_bc_matrix"
+    for mat_dir in $fc_barcode_dirs; do
+        for file in $compressed_files; do
+            dir=$capture/outs/$mat_dir 
+            gunzip $dir/$file.gz
+            gzip --no-name $dir/$file
+        done
+    done
     # Return results
     rsync -ah --progress $capture $out_parent >> $log
 else
     echo "Cellranger has failed" >> $log 
     rsync -ah --progress $capture $out_parent >> $log  
+    exit 1
 fi
 cd -
