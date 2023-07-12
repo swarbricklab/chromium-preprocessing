@@ -37,8 +37,11 @@ echo "Memory: $mem"
 cd ${snakemake_resources[tmpdir]}
 echo "Work directory: $PWD"
 # Copy any leftover intermediate files from a previously interrupted pipestance
-if [ -e $out_parent/$capture ]; then
-    rsync -ah --progress $out_parent/$capture/* .
+if [ -d $out_parent/$capture ]; then
+    echo "Copying leftover intermediate files"
+    cmd="rsync -ah --progress $out_parent/$capture/* ."
+    echo $cmd; eval $cmd
+    echo "Finished copying"
 fi
 # Run spaceranger, saving spaceranger-specific logs
 cmd="cellranger count \
@@ -50,6 +53,8 @@ cmd="cellranger count \
     --localcores=$cores \
     --localmem=$mem \
     $flags"
+echo "cellranger will be run with the following options"
+echo $cmd
 
 touch $log 
 echo $cmd >  $log
