@@ -17,21 +17,28 @@ log=$project_top/${snakemake_log[0]}
 out_dir=$project_top/${snakemake_output[0]}
 out_parent=$(dirname $out_dir)
 capture=${snakemake_wildcards[capture]}
-fastqs=$project_top/${snakemake_input[fastqs]}
+# Construct comma-separated list of fastq directories
+fastqs=""
+for dir in ${snakemake_input[fastqs]}; do 
+    fastqs=$project_top/$dir,$fastqs
+done
+fastqs=${fastqs%,} # strip trailing comma if present
 transcriptome=$project_top/${snakemake_params[transcriptome]}
 cores=${snakemake_resources[cores]}
 mem=${snakemake_resources[mem]%GB}
 flags=${snakemake_params[flags]}
 
 # Debug messages
-
-echo "Processing sample: $capture" 
-echo "Output parent: $out_parent" 
-echo "Log: $log" 
-echo "Fastq path: $fastqs"
-echo "Transcriptome: $transcriptome"
-echo "Cores: $cores"
-echo "Memory: $mem"
+cat >> $log <<EOF
+Processing sample: $sample 
+Output parent: $out_parent 
+Log: $log 
+Resources ${snakemake_resources}
+Fastq path: $fastqs
+Transcriptome: $transcriptome
+Cores: $cores
+Memory: $mem
+EOF
 
 # Switch to local disk for faster disk I/O
 cd ${snakemake_resources[tmpdir]}
