@@ -2,7 +2,7 @@
 
 set -e
 
-snakemake --profile config/chromium-preprocessing/profiles/drmaa \
+snakemake --profile modules/chromium-preprocessing/workflow/profiles/drmaa \
     --snakefile modules/chromium-preprocessing/workflow/Snakefile \
     --configfile config/chromium-preprocessing/config.yaml \
     $@

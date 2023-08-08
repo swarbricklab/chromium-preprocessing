@@ -50,7 +50,7 @@ if [ -d $out_parent/$capture ]; then
     echo $cmd; eval $cmd
     echo "Finished copying"
 fi
-# Run spaceranger, saving spaceranger-specific logs
+# Run cellranger, saving cellranger-specific logs
 cmd="cellranger count \
     --id=$capture \
     --sample=$capture \
