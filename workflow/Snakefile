@@ -5,8 +5,9 @@ pepfile: "config/chromium-preprocessing/pep_config.yaml"
 captures=pep.sample_table
 
 include: 'rules/common.smk'
-include: 'rules/cellranger.smk'
-#include: 'rules/cite-seq-count.smk'
+include: 'rules/cellranger_count.smk'
+if config["aggr"]["activate"]:
+    include: 'rules/cellranger_aggr.smk'
 
 rule all:
     input:
@@ -14,7 +15,8 @@ rule all:
         expand(pep.config.output.cr_outs + "/{capture}/outs/molecule_info.h5", capture = captures["capture_id"]),
         pep.config.output.cr_outs + "/cr_summary.csv",
         # cellranger aggr
-        aggr_all
-        #hto_concat=pep.config.cite_seq.concat_dir + "/pbmc"
+        if config["aggr"]["activate"]:
+            aggr_all
+
 
 
