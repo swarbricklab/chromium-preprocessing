@@ -1,6 +1,10 @@
 cr_version: "7.1.0"
 cr_container_publisher: "docker://cumulusprod/cellranger:"
 
+
+count:
+  flags: "--nosecondary"
+
 # flags for `cellranger count`
 # See `cellranger count --help` for additional flags
 count_flags: "--nosecondary"

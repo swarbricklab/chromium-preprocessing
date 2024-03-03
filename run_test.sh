@@ -1,6 +1,8 @@
 #! /bin/bash
 
-snakemake --profile config/profiles/drmaa \
+set -e
+
+snakemake --profile workflow/profiles/drmaa \
     --snakefile workflow/Snakefile \
     --configfile config/chromium-preprocessing/config.yaml \
     $@
