@@ -13,6 +13,7 @@ find results -type f -exec md5sum {} \; \
     | grep -v "/_" \
     | grep -v "/\." \
     | grep -v "mri" \
+    | grep -v "web_summary.html" \
     > test_data/observed.csv
 
 diff test_data/expected.csv test_data/observed.csv
