@@ -1,20 +1,16 @@
-configfile: "config/config.yaml"
+configfile: "config/chromium-preprocessing/config.yaml"
 pepfile: "config/chromium-preprocessing/pep_config.yaml"
 #pepschema: "https://schema.databio.org/pep/2.1.0.yaml"
 
 captures=pep.sample_table
 
 include: 'rules/common.smk'
-include: 'rules/cellranger.smk'
-#include: 'rules/cite-seq-count.smk'
+include: 'rules/cellranger_count.smk'
+if 'aggr' in config:
+    include: 'rules/cellranger_aggr.smk'
 
 rule all:
     input:
-        # cellranger count
-        expand(pep.config.output.cr_outs + "/{capture}/outs/molecule_info.h5", capture = captures["capture_id"]),
-        pep.config.output.cr_outs + "/cr_summary.csv",
-        # cellranger aggr
-        aggr_all
-        #hto_concat=pep.config.cite_seq.concat_dir + "/pbmc"
+        final_targets
 
 
