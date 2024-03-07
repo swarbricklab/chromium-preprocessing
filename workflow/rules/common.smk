@@ -15,7 +15,7 @@ def final_targets(wildcards):
         aggr_targets = aggr_all(wildcards)
         print("Aggr targets: ", aggr_targets)
         targets.extend(aggr_targets)
-    print("Final targets: ", final_targets)
+    print("Final targets: ", targets)
     return targets
 
 # Look up field in sample_sheet
