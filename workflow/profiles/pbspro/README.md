@@ -38,6 +38,9 @@ The keys used here are mapping to PBS Pro resource specifications by way of `key
 The `__default__` options apply to all rules, unless over-ridden.
 These options include account (NCI project) information and storage volume requirements.
 
+:warning: The log directory specified here must exist or else PBS Pro will not be able to write job logs upon completion, which will result in a slew of emails from the job scheduler.
+TODO: check for the existence of this directory and create if missing.
+
 When porting to other workflows, it may be necessary to edit the rule-specific resource requirements.
 
 #### `key_mapping.yaml`
