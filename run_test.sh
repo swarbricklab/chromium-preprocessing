@@ -2,6 +2,9 @@
 
 set -e
 
+eval  "$(conda shell.bash hook)"
+conda activate snakemake_7.32.4
+
 if [[ "$(hostname)" == *"nci"* ]]; then
     echo "Running on NCI"
     profile=pbspro
@@ -28,4 +31,11 @@ find results -type f -exec md5sum {} \; \
     | grep -v "web_summary.html" \
     > test_data/observed.csv
 
-diff test_data/expected.csv test_data/observed.csv
+if diff test_data/expected.csv test_data/observed.csv; then
+    echo "Observed results match expected results. Test passed"
+    exit 0
+else
+    echo "Observed results do not match expected results. Has the workflow changed?"
+    echo "Compare expected (<) to observed (>)"
+    exit 1
+fi
