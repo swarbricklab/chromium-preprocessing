@@ -1,0 +1,18 @@
+restart-times: 0
+jobname: "{name}.{jobid}"
+cluster: "gadi_submit.py"
+cluster-status: "status_check.sh"
+cluster-cancel: "qdel"
+cluster-config: "cluster.yaml"
+jobs: 1000 
+max-jobs-per-second: 10
+max-status-checks-per-second: 10
+latency-wait: 60
+cores: 99
+local-cores: 1
+rerun-incomplete: true
+keep-going: false
+use-conda: true
+use-singularity: true
+singularity-prefix: "/g/data/a56/software/singularity/images"
+singularity-args:   "--bind /g/data/a56"
