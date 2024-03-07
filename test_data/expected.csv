@@ -36,8 +36,6 @@ ed848324d6a06bccf4b401d50668ec16,results/cellranger/TNBC_003/outs/raw_feature_bc
 a2bda8e060eb0d5215817c9af3040569,results/cellranger/TNBC_003/outs/raw_feature_bc_matrix/features.tsv.gz
 4e330b83f52c9e933e8ba322560321a0,results/cellranger/TNBC_003/outs/raw_feature_bc_matrix/matrix.mtx.gz
 86fd6b144b5d76cf7e83c42940d41ee3,results/cellranger/aggr/csvs/tnbc_12.csv
-e25d02ddc690cd85105ecb9d3687964e,results/cellranger/aggr/csvs/tnbc_12.generate_aggr_csv.log
-96df079bc00a1426eddcf1f852c426bc,results/cellranger/aggr/output/tnbc_12.cellranger_aggr.log
 86fd6b144b5d76cf7e83c42940d41ee3,results/cellranger/aggr/output/tnbc_12/outs/aggregation.csv
 62fd17c4e536e064e7251728e26c7235,results/cellranger/aggr/output/tnbc_12/outs/count/filtered_feature_bc_matrix.h5
 803cc4f833c6838e3eea617d5ad38256,results/cellranger/aggr/output/tnbc_12/outs/count/filtered_feature_bc_matrix/barcodes.tsv.gz

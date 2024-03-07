@@ -11,7 +11,7 @@ rule generate_aggr_csv:
     conda:
         "../envs/generate_aggr_csv.yaml"
     log:
-        pep.config.output.cr_outs + "/aggr/csvs/{aggr_id}.generate_aggr_csv.log"
+        "logs/aggr/csvs/{aggr_id}.generate_aggr_csv.log"
     script:
         "../scripts/generate_aggr_csv.py"
 
@@ -33,6 +33,6 @@ rule cellranger_aggr:
     container:
         config["cr_container_publisher"] + config["cr_version"]
     log:
-        "logs/aggr/{aggr_id}.log"
+        "logs/aggr/{aggr_id}.cellranger_aggr.log"
     script:
         "../scripts/cellwrapper_aggr.sh"
