@@ -67,3 +67,7 @@ Snakemake then makes decisions such as to whether to wait, restart the job or su
 
 This script is specified for the `cluster-status` option in `config.yaml` above. 
 Snakemake reads the config file and runs this script to check on the status of submitted jobs every 10 seconds (not configurable).
+
+As well as reporting back to Snakemake, this script also records its observations in `logs/status_errors.log`, which can be used to debug problems with the interface between Snakemake and PBS Pro.
+
+This script can be ported to other workflows without modification.
