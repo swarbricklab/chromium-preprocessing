@@ -1,5 +1,11 @@
 #! /bin/bash
 
+# This script checks the status of a job that has been submitted to PBS Pro by Snakemake
+# The script parses the results of 'qstat' and returns either 
+#    - "running" (which includes "queued"
+#    - "success" 
+#    - "failed"
+
 jobid=$1
 log=logs/status_errors.log
 
