@@ -61,6 +61,17 @@ if eval $cmd >> $log; then
     # Remove temporary files
     # TODO: set as temp output dir in rule?
     rm -rf **/SC_RNA_AGGREGATOR_CS
+    # Make compression consistent
+    # By default gzip includes timestamp information, 
+    # and so the same data will produce a different hash when run at different times
+    # Unzipping and rezipping with '--no-name' removes timestamp information
+    compressed_files="features.tsv barcodes.tsv matrix.mtx"
+    for file in $compressed_files; do
+        dir=$aggr_id/outs/count/filtered_feature_bc_matrix
+        echo "Recompressing $dir/$file.gz" >> $log 
+        gunzip $dir/$file.gz
+        gzip --no-name $dir/$file
+    done
     # Return results
     rsync -ah --progress $aggr_id $out_parent >> $log
 else
