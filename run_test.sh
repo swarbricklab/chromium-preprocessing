@@ -14,7 +14,7 @@ else
     profile=drmaa
 fi
 
-snakemake --profile workflow/profiles/pbspro \
+snakemake --profile workflow/profiles/$profile \
     --snakefile workflow/Snakefile \
     --configfile config/chromium-preprocessing/config.yaml \
     $@

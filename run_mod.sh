@@ -14,7 +14,7 @@ else
     profile=drmaa
 fi
 
-snakemake --profile modules/chromium-preprocessing/workflow/profiles/drmaa \
+snakemake --profile modules/chromium-preprocessing/workflow/profiles/$profile \
     --snakefile modules/chromium-preprocessing/workflow/Snakefile \
     --configfile config/chromium-preprocessing/config.yaml \
     $@
