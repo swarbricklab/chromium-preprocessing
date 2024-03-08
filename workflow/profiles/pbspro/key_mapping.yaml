@@ -1,0 +1,22 @@
+# Map betwen PBS Pro resource specifications and human-readable keys
+system: "pbspro"
+
+pbspro:
+  command: "qsub"
+  key_mapping:
+    project: "-P {}"
+    name: "-N {}"
+    account: "-A {}"
+    storage: "-l storage={}"
+    queue: "-q {}"
+    threads: "-l ncpus={}"
+    mem_mb: "-l mem={}mb"
+    mem_gb: "-l mem={}gb"
+    disk_gb: "-l jobfs={}gb"
+    walltime: "-l walltime={}"
+    join: "-j {}"
+    cwd: "-l {}"
+    V: "-V"
+    output: "-o {}"
+    error: "-e {}" 
+    operand: "{}"
