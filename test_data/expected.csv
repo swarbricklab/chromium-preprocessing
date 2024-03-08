@@ -36,12 +36,10 @@ ed848324d6a06bccf4b401d50668ec16,results/cellranger/TNBC_003/outs/raw_feature_bc
 a2bda8e060eb0d5215817c9af3040569,results/cellranger/TNBC_003/outs/raw_feature_bc_matrix/features.tsv.gz
 4e330b83f52c9e933e8ba322560321a0,results/cellranger/TNBC_003/outs/raw_feature_bc_matrix/matrix.mtx.gz
 86fd6b144b5d76cf7e83c42940d41ee3,results/cellranger/aggr/csvs/tnbc_12.csv
-fe8bc932ace9f5f949a60d8256f70865,results/cellranger/aggr/csvs/tnbc_12.generate_aggr_csv.log
-461e1675f1623287adc71c95920618a2,results/cellranger/aggr/output/tnbc_12.cellranger_aggr.log
 86fd6b144b5d76cf7e83c42940d41ee3,results/cellranger/aggr/output/tnbc_12/outs/aggregation.csv
-3f93c7ebdd976ceea0d5498992ede6d0,results/cellranger/aggr/output/tnbc_12/outs/count/filtered_feature_bc_matrix.h5
-5f06b988dd4bce26845c37e4450fe605,results/cellranger/aggr/output/tnbc_12/outs/count/filtered_feature_bc_matrix/barcodes.tsv.gz
-81739513f4e4aa63eba12c8df0feab7a,results/cellranger/aggr/output/tnbc_12/outs/count/filtered_feature_bc_matrix/features.tsv.gz
-bf15ba93e7ee786c8e81ec2f72d48c33,results/cellranger/aggr/output/tnbc_12/outs/count/filtered_feature_bc_matrix/matrix.mtx.gz
+62fd17c4e536e064e7251728e26c7235,results/cellranger/aggr/output/tnbc_12/outs/count/filtered_feature_bc_matrix.h5
+803cc4f833c6838e3eea617d5ad38256,results/cellranger/aggr/output/tnbc_12/outs/count/filtered_feature_bc_matrix/barcodes.tsv.gz
+a2bda8e060eb0d5215817c9af3040569,results/cellranger/aggr/output/tnbc_12/outs/count/filtered_feature_bc_matrix/features.tsv.gz
+35c0200d6af9853d322690ee6fbc4baa,results/cellranger/aggr/output/tnbc_12/outs/count/filtered_feature_bc_matrix/matrix.mtx.gz
 0318067a2b3b3fe6e6e7e6b8355eab76,results/cellranger/aggr/output/tnbc_12/outs/count/summary.json
 b639454dcdb604645b2f196f636edd84,results/cellranger/cr_summary.csv

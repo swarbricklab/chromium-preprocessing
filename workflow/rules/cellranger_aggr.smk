@@ -33,6 +33,6 @@ rule cellranger_aggr:
     container:
         config["cr_container_publisher"] + config["cr_version"]
     log:
-        pep.config.output.cr_outs + "/aggr/output/{aggr_id}.cellranger_aggr.log"
+        pep.config.output.cr_outs + "/aggr/{aggr_id}.cellranger_aggr.log"
     script:
         "../scripts/cellwrapper_aggr.sh"

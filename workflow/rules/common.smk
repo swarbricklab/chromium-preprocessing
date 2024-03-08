@@ -7,15 +7,15 @@ def final_targets(wildcards):
     # cellranger count
     if 'count' in config:
         count_targets = expand(pep.config.output.cr_outs + "/{capture}/outs/molecule_info.h5", capture = captures["capture_id"])
-        print("Count targets: ", count_targets)
         targets.extend(count_targets)
         targets.append(pep.config.output.cr_outs + "/cr_summary.csv")
     # cellranger aggr
     if 'aggr' in config:
         aggr_targets = aggr_all(wildcards)
-        print("Aggr targets: ", aggr_targets)
         targets.extend(aggr_targets)
-    print("Final targets: ", final_targets)
+    print("Final targets: ")
+    for target in targets:
+        print("  -", target)
     return targets
 
 # Look up field in sample_sheet
