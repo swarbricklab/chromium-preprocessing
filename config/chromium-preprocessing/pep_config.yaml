@@ -1,5 +1,5 @@
+# headers
 name: chromium_preprocessing
-
 pep_version: 2.1.0
 sample_table: ge_captures.csv
 sample_table_index: capture_id
@@ -12,8 +12,7 @@ output:
 resources:
   transcriptome: "resources/transcriptomes/refdata-gex-GRCh38-2020-A"
 
-cite_seq:
-  concat_dir: "data/processed/concat"
+# synthetic columns
 
 sample_modifiers:
   append:
