@@ -31,6 +31,7 @@ if debug:
     print("DEBUG")
     # TODO
 # ----------
+    
 
 file_sample_sheet = snakemake.input["sample_sheet"]
 log.info("file_sample_sheet: " + file_sample_sheet)
@@ -48,6 +49,8 @@ log.info("aggr_id: " + aggr_id)
 log.info("")
 
 log.info("PARAMS")
+cr_outs = snakemake.params["cr_outs"]
+log.info("cr_outs: " + cr_outs)
 log.info("")
 
 log.info("----------------------------------") 
@@ -65,7 +68,7 @@ log.info(" ".join(capture_ids))
 # build df with capture_id and associated h5 file path (relative to csv file)
 h5_paths = []
 for capture_id in capture_ids:
-    h5_paths.append("../../../../results/cellranger/" + str(capture_id) + "/outs/molecule_info.h5")
+    h5_paths.append("../../../../" + cr_outs + '/' + str(capture_id) + "/outs/molecule_info.h5")
 
 data = {'sample_id': capture_ids,
         'molecule_h5': h5_paths}

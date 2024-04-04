@@ -5,6 +5,8 @@ rule generate_aggr_csv:
         sample_sheet=config["aggr"]["samples"]
     output:
         aggr_csv=pep.config.output.cr_outs + "/aggr/csvs/{aggr_id}.csv"
+    params:
+        cr_outs=pep.config.output.cr_outs
     resources:
         cores="1",
         mem="16GB"
