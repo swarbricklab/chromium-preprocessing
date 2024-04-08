@@ -7,10 +7,10 @@ Pre-processing for raw Chromium data, including GE (gene expression), FB (CITE) 
 ## Config
 
 To run this workflow, you will need to edit the following files:
-- [config.yaml](config/config.yaml)
-- [ge_captures](config/ge_captures.csv)
-- [pep_config.yaml](config/pep_config.yaml)
-- [ge_aggr.tsv](config/ge_aggr.tsv) (if running `aggr``)
+- [config.yaml](config/chromium-preprocessing/config.yaml)
+- [ge_captures](config/chromium-preprocessing/ge_captures.csv)
+- [pep_config.yaml](config/chromium-preprocessing/pep_config.yaml)
+- [ge_aggr.tsv](config/chromium-preprocessing/ge_aggr.tsv) (if running `aggr``)
 
 When using this workflow as a module, copy these files across to the super project.
 ```
@@ -21,7 +21,7 @@ cp modules/chromium-preprocessing/config/* config/chromium-preprocessing
 
 ### config.yaml
 
-[config.yaml](config/config.yaml) contains the following three elements:
+[config.yaml](config/chromium-preprocessing/config.yaml) contains the following three elements:
 - `cellranger` version information (container reference)
 - `count` options
 - `aggr` options
@@ -53,7 +53,7 @@ See that section for further details and examples, including external references
 ### ge_captures.csv
 
 This sample sheet (or more strictly speaking, "capture sheet") is used for `cellranger count`. 
-[This file](config/ge_captures.csv) lists the captures to be processed and the locations of the gene expression fastq files for each capture.
+[This file](config/chromium-preprocessing/ge_captures.csv) lists the captures to be processed and the locations of the gene expression fastq files for each capture.
 
 This CSV file expects two columns:
 - `capture_id`
@@ -61,7 +61,7 @@ This CSV file expects two columns:
 
 If there are multiple fastq paths for a given capture (such as when a capture is sequenced over multiple flow cells) then list each path on the same row, separated by semicolons.
 
-Note: if the locations of the fastq files follow a consistent pattern based on the name of the capture, then it may be convenient to define that pattern in [pep_config.yaml](config/pep_config.yaml) rather than enter each path manually.
+Note: if the locations of the fastq files follow a consistent pattern based on the name of the capture, then it may be convenient to define that pattern in [pep_config.yaml](config/chromium-preprocessing/pep_config.yaml) rather than enter each path manually.
 See the section below for an example of how this works.
 However, if the fastq paths are inconsistent and difficult to capture with a simple pattern then it may be easier to simply enter the paths manually under the `ge_fastqs` column.
 
@@ -100,7 +100,7 @@ No editing is required, unless you want to redirect inputs or outputs.
 
 This section makes it possible to define "synthetic columns" in the sample sheet.
 Specifically, if the path for `ge_fastqs` follows a consistent pattern for all samples, then this pattern can be defined by `sample_modifiers`.
-See the [sample pep_config.yaml](config/pep_config.yaml) in this repo for an example of how this is done with the test data.
+See the [sample pep_config.yaml](config/chromium-preprocessing/pep_config.yaml) in this repo for an example of how this is done with the test data.
 
 This section is optional.
 If there is no consistent pattern, or if the pattern is difficult to capture, then it is often easier to just specify the paths manually in the capture sheet.
