@@ -43,7 +43,7 @@ rule cellranger_aggr:
 # '-1' suffixes are replaced by '-2', '-3' etc to match the order in the count magrix produced by cellranger aggr
 rule merge_bams:
     input:
-        source_bams=expand("results/cellranger/{capture}/outs/possorted_genome_bam.bam", capture = ['TNBC_001', 'TNBC_002']),
+        source_bams=get_source_bams,
         aggr_summary=pep.config.output.cr_outs + "/aggr/output/{aggr_id}/outs/count/summary.json"
     output:
         out_bam=pep.config.output.cr_outs + "/aggr/bams/{aggr_id}/merged.bam"
