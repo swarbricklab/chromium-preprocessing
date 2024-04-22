@@ -4,6 +4,7 @@ rule cellranger_count:
     output:
         out_dir=directory(pep.config.output.cr_outs + "/{capture}"),
         molecule_h5=pep.config.output.cr_outs + "/{capture}/outs/molecule_info.h5",
+        bam=pep.config.output.cr_outs + "/{capture}/outs/possorted_genome_bam.bam",
         summary=pep.config.output.cr_outs + "/{capture}/outs/metrics_summary.csv"
     resources:
         cores="16",
