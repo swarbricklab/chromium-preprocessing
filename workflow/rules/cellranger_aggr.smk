@@ -38,3 +38,20 @@ rule cellranger_aggr:
         pep.config.output.cr_outs + "/aggr/{aggr_id}.cellranger_aggr.log"
     script:
         "../scripts/cellwrapper_aggr.sh"
+
+# Rule to merge bam files for captures defined by 'aggr_id'
+# '-1' suffixes are replaced by '-2', '-3' etc to match the order in the count magrix produced by cellranger aggr
+rule merge_bams:
+    input:
+        source_bams=get_source_bams,
+        aggr_summary=pep.config.output.cr_outs + "/aggr/output/{aggr_id}/outs/count/summary.json"
+    output:
+        out_bam=pep.config.output.cr_outs + "/aggr/bams/{aggr_id}/merged.bam"
+    params:
+        sample_sheet=config["aggr"]["samples"]
+    container:
+        "docker://quay.io/biocontainers/samtools:0.1.19--h270b39a_9"
+    log:
+        "logs/aggr/merge_bams/{aggr_id}.log"
+    script:
+        "../scripts/merge_bams.sh"
