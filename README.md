@@ -3,6 +3,8 @@
 ## Overview
 
 Pre-processing for raw Chromium data, including GE (gene expression), FB (CITE) and VDJ, as well as basic QC.
+- [Config](#config)
+- [Tests](#tests)
 
 ## Config
 
@@ -103,4 +105,46 @@ Specifically, if the path for `ge_fastqs` follows a consistent pattern for all s
 See the [sample pep_config.yaml](config/chromium-preprocessing/pep_config.yaml) in this repo for an example of how this is done with the test data.
 
 This section is optional.
-If there is no consistent pattern, or if the pattern is difficult to capture, then it is often easier to just specify the paths manually in the capture sheet.
+
+> If there is no consistent pattern, or if the pattern is difficult to capture, then it is often easier to just specify the paths manually in the capture sheet.
+
+## Tests
+
+This module includes test data and a test script that veriies that the module can process this test data into the expected results.
+
+### Test data
+
+The [test_data](test_data) folder contains both the raw test data (under `test_data/raw/`) and the expected results (under `test_data/results`).
+The input data (`test_data/raw/`) is real 10X Chromium scRNA-seq data that has been downsampled to make the fastq files much smaller, so that `cellranger` runs much faster.
+This data is tracked via DVC and can be obtained via `dvc pull -R test_data/`.
+
+## Test config
+
+The example [config files](config/chromium-preprocessing) in this repo are set up in order to process the [test data](#test-data) above.
+When running this workflow on other datasets (either in "module mode" or "standalone mode") then these config files will need to be edited.
+But when running the [test script](#test-script) below these config files can be left unchanged.
+
+### Test script
+
+The [run_test.sh](run_test.sh) script runs the module on the [test data](#test-data) above.
+This script assumes that 
+1. the test data is available (pulled via DVC)
+2. a conda environment called `snakemake_7.32.4` is available
+
+The script runs the workflow by calling `snakemake` with the appropriate [config](#test-config) and profile, and then compares the results with the expected results in `test_data/results/` by doing a selective `diff`.
+Any differences will be reported.
+
+### Test results
+
+There are (at least) two scenarios when it can be helpful to run the [test script(#test-script):
+1. practicing how to run the workflow
+2. testing whether improvements to the workflow have broken existing functionality
+
+In the latter case, it is possible that the improvements result in additional or different test results.
+If this happens, then update `test_data/results/` to capture the results that should be expected with the latest version of the workflow.
+```
+rm -rf test_data/results          # don't worry, we can always 'dvc pull' it again
+cp -r  results test_data/results
+dvc commit test_data/results
+```
+Make any such changes via git issues and pull requests.
