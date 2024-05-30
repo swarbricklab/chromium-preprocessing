@@ -79,8 +79,10 @@ if eval $cmd >> $log; then
             gzip --no-name $dir/$file
         done
     done
+    # Log bam checksum
+    md5sum $capture/outs/possorted_genome_bam.bam >> $log
     # Return results
-    rsync -ah --progress $capture $out_parent >> $log
+    rsync -ah $capture $out_parent >> $log
 else
     echo "Cellranger has failed" >> $log 
     rsync -ah --progress $capture $out_parent >> $log  
