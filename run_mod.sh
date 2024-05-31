@@ -7,7 +7,7 @@ conda activate snakemake_7.32.4
 if [[ "$(hostname)" == *"nci"* ]]; then
     echo "Running on NCI"
     profile=pbspro
-elif [[ "$(hostname)" == *"nci"* ]]; then
+elif [[ "$(hostname)" == *"dice"* || "$(hostname)" == *"brenner"* ]]; then
     echo "Running on Garvan HPC"
     profile=drmaa
 else
