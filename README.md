@@ -117,6 +117,7 @@ This module includes test data and a test script that veriies that the module ca
 The [test_data](test_data) folder contains both the raw test data (under `test_data/raw/`) and the expected results (under `test_data/results`).
 The input data (`test_data/raw/`) is real 10X Chromium scRNA-seq data that has been downsampled to make the fastq files much smaller, so that `cellranger` runs much faster.
 This data is tracked via DVC and can be obtained via `dvc pull -R test_data/`.
+Same goes to the reference data, obtained via `dvc pull resources/transcriptomes/refdata-gex-GRCh38-2020-A`.
 
 ## Test config
 
