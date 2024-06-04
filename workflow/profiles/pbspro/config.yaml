@@ -17,7 +17,7 @@ keep-going: false
 # Conda settings
 use-conda: True
 conda-frontend: mamba
-conda-prefix: /directflow/TumourProgressionGroupTemp/projects/snakecache/
+conda-prefix: /g/data/a56/conda/snakecache/
 # Singularity settings
 use-singularity: true
 singularity-prefix: "/g/data/a56/software/singularity/images"
