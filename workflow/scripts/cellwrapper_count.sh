@@ -24,7 +24,7 @@ for dir in ${snakemake_input[fastqs]}; do
 done
 fastqs=${fastqs%,} # strip trailing comma if present
 transcriptome=$project_top/${snakemake_params[transcriptome]}
-cores=${snakemake_resources[cores]}
+cores=${snakemake_resources[threads]}
 mem=${snakemake_resources[mem]%GB}
 flags=${snakemake_params[flags]}
 
