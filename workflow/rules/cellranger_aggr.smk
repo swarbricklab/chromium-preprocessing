@@ -8,7 +8,7 @@ rule generate_aggr_csv:
     params:
         cr_outs=pep.config.output.cr_outs
     resources:
-        cores="1",
+        threads="1",
         mem="16GB"
     conda:
         "../envs/generate_aggr_csv.yaml"
@@ -26,10 +26,9 @@ rule cellranger_aggr:
         out_dir=directory(pep.config.output.cr_outs + "/aggr/output/{aggr_id}"),
         summary=pep.config.output.cr_outs + "/aggr/output/{aggr_id}/outs/count/summary.json"
     resources:
-        cores="16",
+        threads="16",
         mem="110GB",
-        tmp_requested="100G",
-        tmpfree="100G"
+        disk="100GB"
     params:
         flags=config['aggr_flags']
     container:

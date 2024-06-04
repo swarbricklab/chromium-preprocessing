@@ -7,10 +7,9 @@ rule cellranger_count:
         bam=pep.config.output.cr_outs + "/{capture}/outs/possorted_genome_bam.bam",
         summary=pep.config.output.cr_outs + "/{capture}/outs/metrics_summary.csv"
     resources:
-        cores="16",
+        threads="16",
         mem="110GB",
-        tmp_requested="100G",
-        tmpfree="100G"
+        disk="100GB"
     params:
         transcriptome=pep.config.resources.transcriptome,
         flags=config['count_flags']
