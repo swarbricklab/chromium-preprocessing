@@ -14,7 +14,11 @@ cores: 99
 local-cores: 1
 rerun-incomplete: true
 keep-going: false
-use-conda: true
+# Conda settings
+use-conda: True
+conda-frontend: mamba
+conda-prefix: /directflow/TumourProgressionGroupTemp/projects/snakecache/
+# Singularity settings
 use-singularity: true
 singularity-prefix: "/g/data/a56/software/singularity/images"
 singularity-args:   "--bind /g/data/a56"
