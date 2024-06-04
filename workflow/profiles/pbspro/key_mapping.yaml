@@ -1,4 +1,5 @@
 # Map betwen PBS Pro resource specifications and human-readable keys
+# Note: Snakemake automatically converts mem and disk to mem_mb and disk_mb
 system: "pbspro"
 
 pbspro:
@@ -11,9 +12,8 @@ pbspro:
     queue: "-q {}"
     threads: "-l ncpus={}"
     mem_mb: "-l mem={}mb"
-    mem_gb: "-l mem={}gb"
-    disk_gb: "-l jobfs={}gb"
-    walltime: "-l walltime={}"
+    disk_mb: "-l jobfs={}mb"
+    runtime: "-l walltime={}"
     join: "-j {}"
     cwd: "-l {}"
     V: "-V"
