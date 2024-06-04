@@ -6,6 +6,7 @@ conda activate snakemake_7.32.4
 
 if [[ "$(hostname)" == *"nci"* ]]; then
     echo "Running on NCI"
+    module load singularity
     profile=pbspro
 elif [[ "$(hostname)" == *"dice"* || "$(hostname)" == *"brenner"* ]]; then
     echo "Running on Garvan HPC"
@@ -15,6 +16,8 @@ else
     echo "Review workflow/profiles/drmaa for appropriateness to your platform"
     profile=drmaa
 fi
+
+mkdir -p logs/chromium-preprocessing
 
 snakemake --profile modules/chromium-preprocessing/workflow/profiles/$profile \
     --snakefile modules/chromium-preprocessing/workflow/Snakefile \
