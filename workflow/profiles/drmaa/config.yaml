@@ -17,8 +17,9 @@ jobname: "{name}.{jobid}.sh"
 # Default resource settings
 default-resources:
   - threads="2"
-  - mem_gb="16"
-  - disk_gb="10"
+  - mem="16GB"
+  - disk="10"
+  - mem_per_core_mb="int({resources.mem_mb}/{resources.threads})"
 # DRMAA settings
 drmaa: "-P TumourProgression -cwd -S /bin/bash -V -b y -j y -pe smp {resources.threads} -l h_vmem={resources.mem_gb}G,mem_requested={resources.mem_gb}G,tmp_requested={resources.disk_gb}G,tmpfree={resources.disk_gb}G"
 drmaa-log-dir: logs/drmaa
