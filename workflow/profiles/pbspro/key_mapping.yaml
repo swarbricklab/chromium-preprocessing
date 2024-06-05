@@ -3,7 +3,7 @@
 system: "pbspro"
 
 pbspro:
-  command: "qsub"
+  command: "qsub -V -l wd -j oe "
   key_mapping:
     project: "-P {}"
     name: "-N {}"
@@ -14,9 +14,5 @@ pbspro:
     mem_mb: "-l mem={}mb"
     disk_mb: "-l jobfs={}mb"
     runtime: "-l walltime={}"
-    join: "-j {}"
-    cwd: "-l {}"
-    V: "-V"
-    output: "-o {}"
-    error: "-e {}" 
+    log: "-o {}"
     operand: "{}"
