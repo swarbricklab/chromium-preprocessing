@@ -19,7 +19,8 @@ default-resources:
   - threads="2"
   - mem="16GB"
   - disk="10"
-  - mem_per_core_mb="int({resources.mem_mb}/{resources.threads})"
+  - mem_per_core_mb=lambda wildcards, resources: int({resources.mem_mb}/{resources.threads})
+  - disk_per_core_mb=lambda wildcards, resoures: int({resources.mem_mb}/{resources.threads})
 # DRMAA settings
-drmaa: "-P TumourProgression -cwd -S /bin/bash -V -b y -j y -pe smp {resources.threads} -l h_vmem={resources.mem_gb}G,mem_requested={resources.mem_gb}G,tmp_requested={resources.disk_gb}G,tmpfree={resources.disk_gb}G"
+drmaa: "-P TumourProgression -cwd -S /bin/bash -V -b y -j y -pe smp {resources.threads} -l h_vmem={resources.mem_per_core_mb}M,mem_requested={resources.mem_per_core_mb}M,tmp_requested={resources.disk_per_core_mb}M,tmpfree={resources.disk_per_core_mb}M"
 drmaa-log-dir: logs/drmaa
