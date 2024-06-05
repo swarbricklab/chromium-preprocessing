@@ -9,7 +9,7 @@ if [[ "$(hostname)" == *"nci"* ]]; then
     echo "Running on NCI"
     profile=pbspro
     module load singularity
-elif [[ "$(hostname)" == *"nci"* ]]; then
+elif [[ "$(hostname)" == *"dice"* || "$(hostname)" == *"brenner"* ]]; then
     echo "Running on Garvan HPC"
     profile=drmaa
 else
