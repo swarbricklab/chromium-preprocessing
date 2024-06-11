@@ -1,0 +1,7 @@
+# Snakemake options (can be over-ridden from the command line)
+restart-times: 0
+rerun-incomplete: true
+keep-going: false
+# Conda settings (required for rules that use conda environments)
+use-conda: True
+conda-frontend: mamba
