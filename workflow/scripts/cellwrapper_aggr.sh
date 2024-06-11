@@ -23,7 +23,7 @@ aggr_csv=$project_top/${snakemake_input[aggr_csv]}
 #fastqs=$project_top/${snakemake_input[fastqs]}
 #transcriptome=$project_top/${snakemake_params[transcriptome]}
 cores=${snakemake_resources[threads]}
-mem=${snakemake_resources[mem_gb]}
+mem=${snakemake_resources[mem]%%GB}
 flags=${snakemake_params[flags]}
 
 # Debug messages
