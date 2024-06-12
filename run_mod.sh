@@ -8,6 +8,7 @@ if [[ "$(hostname)" == *"nci"* ]]; then
     echo "Running on NCI"
     global_profile="--profile profiles/global/nci_a56"
     module load singularity
+    mkdir -p logs/joblogs
 else
     echo "WARNING: Unknown host: $(hostname)"
     echo "WARNING: No known global profile for this host"
