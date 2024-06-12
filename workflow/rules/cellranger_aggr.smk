@@ -10,7 +10,7 @@ rule generate_aggr_csv:
     conda:
         "../envs/generate_aggr_csv.yaml"
     log:
-        pep.config.output.cr_outs + "/aggr/csvs/{aggr_id}.generate_aggr_csv.log"
+        "logs/chromium-preprocessing/aggr/csvs/{aggr_id}.generate_aggr_csv.log"
     script:
         "../scripts/generate_aggr_csv.py"
 
@@ -27,7 +27,7 @@ rule cellranger_aggr:
     container:
         config["cr_container_publisher"] + config["cr_version"]
     log:
-        pep.config.output.cr_outs + "/aggr/{aggr_id}.cellranger_aggr.log"
+        "logs/chromium-preprocessing/aggr/{aggr_id}.cellranger_aggr.log"
     script:
         "../scripts/cellwrapper_aggr.sh"
 
@@ -44,6 +44,6 @@ rule merge_bams:
     container:
         "docker://quay.io/biocontainers/samtools:0.1.19--h270b39a_9"
     log:
-        "logs/aggr/merge_bams/{aggr_id}.log"
+        "logs/chromium-preprocessing/aggr/merge_bams/{aggr_id}.log"
     script:
         "../scripts/merge_bams.sh"
