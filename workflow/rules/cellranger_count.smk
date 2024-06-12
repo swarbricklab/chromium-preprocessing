@@ -8,7 +8,7 @@ rule cellranger_count:
         summary=pep.config.output.cr_outs + "/{capture}/outs/metrics_summary.csv"
     params:
         transcriptome=pep.config.resources.transcriptome,
-        flags=config['count_flags']
+        flags=config["count"]["flags"]
     container:
         config["cr_container_publisher"] + config["cr_version"]
     log:
