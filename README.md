@@ -149,3 +149,16 @@ cp -r  results test_data/results
 dvc commit test_data/results
 ```
 Make any such changes via git issues and pull requests.
+
+## Logs
+
+All log files are output to one of the the following locations:
+1. `logs/joblogs/`
+2. `logs/chromium-preprocessing/{rule}`
+
+Job logs are produced by the PBS Pro job scheduler when rules are submitted as jobs via the global profile under `profiles/global`.
+
+Rule logs capture key outputs for each rule, redirected to a log file. 
+Thes logs are stored under `logs/chromium-preprocessing` in a subdirectory based on the rule name.
+
+Both log directories above should be added to the "outs" for the `chromium-preprocessing` stage in `dvc.yaml` when this workflow is used as a module within a larger DVC pipeline.
