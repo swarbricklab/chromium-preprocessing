@@ -6,10 +6,6 @@ rule cellranger_count:
         molecule_h5=pep.config.output.cr_outs + "/{capture}/outs/molecule_info.h5",
         bam=pep.config.output.cr_outs + "/{capture}/outs/possorted_genome_bam.bam",
         summary=pep.config.output.cr_outs + "/{capture}/outs/metrics_summary.csv"
-    resources:
-        threads="16",
-        mem="110GB",
-        disk="100GB"
     params:
         transcriptome=pep.config.resources.transcriptome,
         flags=config['count_flags']
