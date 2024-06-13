@@ -7,17 +7,19 @@ conda activate snakemake_7.32.4
 
 if [[ "$(hostname)" == *"nci"* ]]; then
     echo "Running on NCI"
-    profile=pbspro
-elif [[ "$(hostname)" == *"nci"* ]]; then
-    echo "Running on Garvan HPC"
-    profile=drmaa
+    global_profile="--profile profiles/global/nci_a56"
+    module load singularity
+    mkdir -p logs/joblogs
 else
-    echo "Unknown host: defaulting to drmaa profile"
-    echo "Review workflow/profiles/drmaa for appropriateness to your platform"
-    profile=drmaa
+    echo "WARNING: Unknown host: $(hostname)"
+    echo "WARNING: No known global profile for this host"
+    echo "WARNING: Running without global profile"
+    echo "See https://github.com/swarbricklab/snakemake_config/blob/main/README.md"
+    global_profile=""
 fi
 
-snakemake --profile workflow/profiles/$profile \
+snakemake $global_profile \
+    --workflow-profile profiles/workflow/ \
     --snakefile workflow/Snakefile \
     --configfile config/chromium-preprocessing/config.yaml \
     $@

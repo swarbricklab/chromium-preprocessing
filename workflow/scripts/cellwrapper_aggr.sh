@@ -22,8 +22,8 @@ aggr_id=${snakemake_wildcards[aggr_id]}
 aggr_csv=$project_top/${snakemake_input[aggr_csv]}
 #fastqs=$project_top/${snakemake_input[fastqs]}
 #transcriptome=$project_top/${snakemake_params[transcriptome]}
-cores=${snakemake_resources[cores]}
-mem=${snakemake_resources[mem]%GB}
+cores=${snakemake_resources[threads]}
+mem=${snakemake_resources[mem]%%GB}
 flags=${snakemake_params[flags]}
 
 # Debug messages
