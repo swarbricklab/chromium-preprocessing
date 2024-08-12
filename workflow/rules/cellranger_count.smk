@@ -1,3 +1,22 @@
+import os, subprocess
+
+def get_total_size(path):
+    # Run the 'du' command to get the size in megabytes
+    result = subprocess.run(['du', '-L', '-m', '-d', '0', path], stdout=subprocess.PIPE, text=True)
+    # Parse the output to get the size
+    size = int(result.stdout.split()[0])
+    return size
+
+def calc_disk(paths):
+    """ Calculates the total size of multiple paths. """
+    total=0
+    for path in paths:
+        path_total=get_total_size(path)
+        print(path + ": " + str(path_total))
+        total+=path_total
+    print("Input disk size: " + str(total))
+    return total * 10
+
 rule cellranger_count:
     input:
         fastqs=capturesheet("ge_fastqs")
@@ -9,6 +28,8 @@ rule cellranger_count:
     params:
         transcriptome=pep.config.resources.transcriptome,
         flags=config['count_flags']
+    resources:
+        disk_mb=lambda wildcards, input: calc_disk(input.fastqs)
     container:
         config["cr_container_publisher"] + config["cr_version"]
     log:
