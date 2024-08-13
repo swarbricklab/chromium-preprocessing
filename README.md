@@ -3,8 +3,98 @@
 ## Overview
 
 Pre-processing for raw Chromium data, including GE (gene expression), FB (CITE) and VDJ, as well as basic QC.
+- [Modes](#modes)
+- [Data preparation](#data-preparation)
 - [Config](#config)
 - [Tests](#tests)
+
+## Modes
+
+This workflow can be run in either [standalone mode](#standalone-mode) or [module mode](#module-mode).
+
+### Standalone mode
+
+In "standalone" mode, the data to be processed by the workflow is included in the same repo as the workflow itself.
+This mode is used mainly for [testing](#tests).
+This repo includes test data, tracked via DVC under [`test_data/raw`](https://github.com/swarbricklab/chromium-preprocessing/tree/main/test_data/raw).
+The [config files](https://github.com/swarbricklab/chromium-preprocessing/tree/main/config/chromium-preprocessing) tracked in this repo have been configured to run the workflow on this test data.
+
+### Module mode
+
+This workflow can also be embedded into a dataset as a [git submodule](https://www.atlassian.com/git/tutorials/git-submodule).
+This is how the workflow is applied to real-world data.
+
+To use this workflow in "module mode", first [create a dataset repo](https://github.com/swarbricklab/data_management/blob/main/SOP/dataset_creation.md) to host all of the data relevant to the project, as well as all of the code used to process that data (which may include other modules and/or scripts in addition to this workflow).
+
+TODO: Add notes for how to install any workflow as a submodule; link to those notes here
+
+Be sure to [prepare the data](#data-preparation) and [configure the workflow](#config) to process that data. 
+
+## Data preparation
+
+When used in module mode, all of the data to be processed by the workflow should be added to the dataset.
+This includes:
+- [raw data](#raw-data) (fastqs from 10X captures)
+- [resources](#resources) (reference transcriptomes, etc)
+
+This data should be dvc-tracked as part of a dataset that includes all of the data associated with that project.
+
+### Raw data
+
+The raw data should already be [registered](https://github.com/swarbricklab/data_management) in the appropriate registry.
+If not, make a ticket in the [registries project board](https://github.com/orgs/swarbricklab/projects/5).
+For this workflow, the relevant registry is [chromium](https://github.com/swarbricklab/chromium).
+
+[Import](https://dvc.org/doc/command-reference/import) the data from the registry into the dataset as follows:
+```
+dvc import {registry} {path in registry} -o {path in dataset}
+```
+Here `{registry}` is the SSH git URL for the registry.
+For example, URL for the `chromium` registry is `git@github.com:swarbricklab/chromium.git`
+
+`{path in registry}` is the path to the data within the registry.
+You can either look up the path in the [index](https://github.com/swarbricklab/chromium/blob/main/index.csv) or browse the official instance of the registry on NCI at the following path:
+```
+/g/data/dvc/instances/chromium
+```
+(This example is for the `chromium` registry.)
+> Note: paths in the registry should be specified relative to the top of the registry.
+> That is, paths should not start with `/g/data/` etc.
+
+`{path in dataset}` is the location where you want to import the data into the dataset.
+Typically, raw data will be imported to `data/fastqs` or similar.
+In a multi-modal project (with single cell data and other modalities), you might want to add extra layers to organise data by modality.
+For example: `data/sc/fastqs`
+
+Importing data in this way will create `.dvc` files to track the import.
+These `.dvc` files should be tracked via git in the dataset repository.
+
+### Resources
+
+In the context of this workflow, resoures include reference transcriptomes and probe sets.
+These resources should also be dvc-tracked as part of the dataset repo.
+
+There are three ways of adding these resources:
+1. [import](https://dvc.org/doc/command-reference/import) the resource from the [references](https://github.com/swarbricklab/references) registry (see the `10X/` folder in particular)
+2. copy the resources from the workfow repo (this repo) to the dataset repo
+3. add the resources directly to the dataset
+
+Here 1) is the preferred option.
+If you cannot locate the resources that you need in the [references](https://github.com/swarbricklab/references) registry then [create an issue](https://github.com/swarbricklab/references/issues/new) to have it added as it is very likely that others will need it too.
+
+Option 2) may be convenient if you are working with human cells and poly-A captures. 
+In this case, copy the entire content of the `resources/` directory in order to include `.gitignore` files correctly.
+Use `rsync` rather than `cp` to avoid clobbering any existing files in the `resources/` directory of the dataset repo.
+Finally, be sure to `dvc pull` the actual data prior to running the workflow.
+```
+rsync -av --ignore-existing modules/chromium-preprocessing/resources resources/
+dvc pull -R resources
+```
+Run this command from the top of the dataset repo, assuming that this workflow repo has been installed as a git submodule at `modules/chromium-preprocessing/`.
+Adjust the path if necessary.
+
+Option 3 should only be a last resort. 
+Beter to add the resources to the [references](https://github.com/swarbricklab/references) registry to make life easier for others.
 
 ## Config
 
