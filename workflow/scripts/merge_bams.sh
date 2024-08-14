@@ -7,18 +7,21 @@ source_bams=${snakemake_input[source_bams]}
 aggr_id=${snakemake_wildcards[aggr_id]}
 sample_sheet=${snakemake_params[sample_sheet]}
 out_bam=${snakemake_output[0]}
+out_dir=$(dirname $out_bam)
 log=${snakemake_log[0]}
 
 exec > $log 2>&1
+set -x
 
-export PATH=$PWD/workflow/scripts/:$PATH
+echo "Work directory: $PWD"
+export PATH=../scripts/:$PATH
 
 sample_number=1 # loop counter
 temp_files=() # Array to hold names of temporary files
 
 # Loop over the samples with the specifed aggr_id, building the merge command \
 for bam in $source_bams; do
-    temp_bam="temp_${sample_number}.bam"
+    temp_bam="$out_dir/temp_${sample_number}.bam"
     if [ "$sample_number" -eq "1" ]; then
         # no need to resuffix
         cp $bam $temp_bam
