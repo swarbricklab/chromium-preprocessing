@@ -14,7 +14,7 @@ exec > $log 2>&1
 set -x
 
 echo "Work directory: $PWD"
-export PATH=../scripts/:$PATH
+export PATH=./workflow/scripts/:./modules/chromium-preprocessing/workflow/scripts/:$PATH
 
 sample_number=1 # loop counter
 temp_files=() # Array to hold names of temporary files
