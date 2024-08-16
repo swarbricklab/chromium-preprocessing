@@ -27,4 +27,4 @@ set-resources:
         threads: "1"
         mem: "16GB"
         disk: "100MB"
-  
+        runtime: "24h"  
