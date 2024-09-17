@@ -33,7 +33,7 @@ rule cellranger_count:
     container:
         config["cr_container_publisher"] + config["cr_version"]
     log:
-        "logs/cr_count/{capture}.log"
+        "logs/chromium-preprocessing/cellranger_count/{capture}.log"
     script:
         "../scripts/cellwrapper_count.sh"
 
