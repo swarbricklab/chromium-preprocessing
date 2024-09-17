@@ -27,7 +27,7 @@ rule cellranger_count:
         summary=pep.config.output.cr_outs + "/{capture}/outs/metrics_summary.csv"
     params:
         transcriptome=pep.config.resources.transcriptome,
-        flags=config['count_flags']
+        flags=config["count"]["flags"]
     resources:
         disk_mb=lambda wildcards, input: calc_disk(input.fastqs)
     container:

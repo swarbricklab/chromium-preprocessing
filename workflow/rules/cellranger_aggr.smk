@@ -23,7 +23,7 @@ rule cellranger_aggr:
         out_dir=directory(pep.config.output.cr_outs + "/aggr/output/{aggr_id}"),
         summary=pep.config.output.cr_outs + "/aggr/output/{aggr_id}/outs/count/summary.json"
     params:
-        flags=config['aggr_flags']
+        flags=config["aggr"]["flags"]
     container:
         config["cr_container_publisher"] + config["cr_version"]
     log:

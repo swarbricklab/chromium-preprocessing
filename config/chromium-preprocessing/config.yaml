@@ -1,18 +1,15 @@
 cr_version: "7.1.0"
 cr_container_publisher: "docker://cumulusprod/cellranger:"
 
-
+# Options for 'cellranger count'
+# See `cellranger count --help` and online documentation 
 count:
-  flags: "--nosecondary"
+  activate: True
+  flags: "--nosecondary" 
 
-# flags for `cellranger count`
-# See `cellranger count --help` for additional flags
-count_flags: "--nosecondary"
-# flags for `cellranger aggr`
-# See `cellranger aggr --help` for additional flags
-aggr_flags: "--nosecondary"
-
-# aggregate specific
+# Options for 'cellranger aggr'
+# See `cellranger aggr --help` and online documentation 
 aggr:
   activate: True
+  flags: "--nosecondary"
   samples: "config/chromium-preprocessing/ge_aggr.tsv"
