@@ -38,24 +38,19 @@ Fastq path: $fastqs
 Transcriptome: $transcriptome
 Cores: $cores
 Memory: $mem
+Flags: $flags
 EOF
 
 # Switch to local disk for faster disk I/O
 cd ${snakemake_resources[tmpdir]}
 echo "Work directory: $PWD"
-# Copy any leftover intermediate files from a previously interrupted pipestance
-if [ -d $out_parent/$capture ]; then
-    echo "Copying leftover intermediate files"
-    cmd="rsync -ah --progress $out_parent/$capture/* ."
-    echo $cmd; eval $cmd
-    echo "Finished copying"
-fi
 # Run cellranger, saving cellranger-specific logs
 cmd="cellranger count \
     --id=$capture \
     --sample=$capture \
     --fastqs=$fastqs \
     --transcriptome=$transcriptome \
+    --create-bam=true \
     --jobmode=local \
     --localcores=$cores \
     --localmem=$mem \
