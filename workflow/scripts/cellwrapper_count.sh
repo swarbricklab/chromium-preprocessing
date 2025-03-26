@@ -50,7 +50,6 @@ cmd="cellranger count \
     --sample=$capture \
     --fastqs=$fastqs \
     --transcriptome=$transcriptome \
-    --create-bam=true \
     --jobmode=local \
     --localcores=$cores \
     --localmem=$mem \
