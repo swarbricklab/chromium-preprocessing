@@ -1,4 +1,5 @@
 .snakemake
+*.code-workspace
 logs/
 temp/
 results/
