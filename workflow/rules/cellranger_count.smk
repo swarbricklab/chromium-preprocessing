@@ -29,7 +29,9 @@ rule cellranger_count:
             --maxjobs {resources.maxjobs} \
             --jobinterval {resources.jobinterval} \
             --mempercore {resources.mempercore} \
-            {params.flags}
+            {params.flags} \
+            > {log} 2>&1
+        rm -rf {output.out_dir}/SC_RNA_COUNTER_CS
         """
 
 

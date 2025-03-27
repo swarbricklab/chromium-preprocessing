@@ -44,6 +44,7 @@ rule cellranger_aggr:
             --mempercore {resources.mempercore} \
             {params.flags} \
             > {log} 2>&1
+        rm -rf {output.out_dir}/SC_RNA_AGGREGATOR_CS
         """
 
 # Rule to merge bam files for captures defined by 'aggr_id'
