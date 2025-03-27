@@ -15,12 +15,11 @@ rule cellranger_count:
         "logs/chromium-preprocessing/cellranger_count/{capture}.log"
     shell:
         """
-        echo {params.flags}
-        chromium_dir={output.out_dir}
-        rm -rf $chromium_dir
+        # Snakemake creates output directory but cellranger complains if directory alrady exists!
+        rm -rf {output.out_dir}
         PATH=$PWD/profiles/global/nci_a56/resources/:$PATH \
         cellranger count \
-            --output-dir $chromium_dir \
+            --output-dir {output.out_dir} \
             --id={wildcards.capture} \
             --sample={wildcards.capture} \
             --fastqs={input.fastqs} \

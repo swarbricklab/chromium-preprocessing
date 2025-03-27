@@ -13,7 +13,7 @@ set-resources:
   cellranger_count: 
         threads: "1"
         mem: "4GB"
-        # Resources used by spaceranger to dispace jobs in cluster mode
+        # Resources used by cellranger to dispatch jobs in cluster mode
         mempercore: 8 #GB
         maxjobs: 100
         jobinterval: 2000
@@ -26,9 +26,12 @@ set-resources:
         mem: "16GB"
         disk: "100MB"
   cellranger_aggr:
-        threads: "16"
-        mem: "110GB"
-        disk: "100GB"
+        threads: "1"
+        mem: "4GB"
+        # Resources used by cellranger to dispatch jobs in cluster mode
+        mempercore: 8 #GB
+        maxjobs: 100
+        jobinterval: 2000
   merge_bams:
         threads: "1"
         mem: "16GB"
