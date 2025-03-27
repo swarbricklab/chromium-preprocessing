@@ -21,6 +21,6 @@ fi
 
 snakemake $global_profile $workflow_profile \
     --snakefile workflow/Snakefile \
-    --configfile config/chromium-preprocessing/config.yaml \
+    --configfile config/test_config.yaml \
     $@
 

@@ -1,0 +1,4 @@
+capture_id,ge_fastqs
+TNBC_001,test_data/raw/tiny_tnbc/GE/TNBC_001
+TNBC_002,test_data/raw/tiny_tnbc/GE/TNBC_002
+TNBC_003,test_data/raw/tiny_tnbc/GE/TNBC_003

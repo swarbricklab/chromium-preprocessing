@@ -1,0 +1,23 @@
+# This config file is used for running the workflow on test data
+
+deps:
+  captures: "config/test_captures.csv"
+  transcriptome: "resources/transcriptomes/refdata-gex-GRCh38-2020-A"
+
+outs:
+  count: "test/results/cellranger/count"
+  aggr: "test/results/cellranger/aggr"
+  logs: "logs/chromium-preprocessing"
+
+# Options for 'cellranger count'
+# See `cellranger count --help` and online documentation 
+count:
+  activate: True
+  flags: "--nosecondary" 
+
+# Options for 'cellranger aggr'
+# See `cellranger aggr --help` and online documentation 
+aggr:
+  activate: True
+  flags: "--nosecondary"
+  samples: "config/chromium-preprocessing/ge_aggr.tsv"
