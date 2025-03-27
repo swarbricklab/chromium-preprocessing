@@ -30,6 +30,7 @@ rule cellranger_aggr:
         "logs/chromium-preprocessing/cellranger_aggr/{aggr_id}.cellranger_aggr.log"
     shell:
         """
+        # Snakemake creates output directory but cellranger complains if directory alrady exists!
         rm -rf {output.out_dir}
         PATH=$PWD/profiles/global/nci_a56/resources/:$PATH \
         cellranger aggr \
