@@ -2,7 +2,7 @@
 # use an aggr_id column in config sample-sheet
 rule generate_aggr_csv:
     input:
-        sample_sheet=config["aggr"]["samples"]
+        sample_sheet=config["params"]["aggr"]["samples"]
     output:
         aggr_csv=temp(aggr_dir/"csvs/{aggr_id}.csv")
     params:
@@ -23,7 +23,7 @@ rule cellranger_aggr:
         out_dir=directory(aggr_dir/"output/{aggr_id}"),
         summary=aggr_dir/"output/{aggr_id}/outs/count/summary.json"
     params:
-        flags=config["aggr"]["flags"]
+        flags=config["params"]["aggr"]["flags"]
     envmodules:
         "cellranger/9.0.1"
     log:
@@ -55,7 +55,7 @@ rule merge_bams:
     output:
         out_bam=aggr_dir/"bams/{aggr_id}/merged.bam"
     params:
-        sample_sheet=config["aggr"]["samples"]
+        sample_sheet=config["params"]["aggr"]["samples"]
     container:
         "docker://quay.io/biocontainers/samtools:0.1.19--h270b39a_9"
     log:

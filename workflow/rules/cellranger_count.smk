@@ -8,7 +8,7 @@ rule cellranger_count:
         bam=count_dir/"{capture}/outs/possorted_genome_bam.bam",
         summary=count_dir/"{capture}/outs/metrics_summary.csv"
     params:
-        flags=config["count"]["flags"]
+        flags=config["params"]["count"]["flags"]
     envmodules:
         "cellranger/9.0.1"
     log:
