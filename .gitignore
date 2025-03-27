@@ -1,4 +1,7 @@
 .snakemake
+*.code-workspace
+.project_history
 logs/
 temp/
 results/
+/results
