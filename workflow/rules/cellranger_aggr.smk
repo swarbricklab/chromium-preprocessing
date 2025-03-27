@@ -4,9 +4,9 @@ rule generate_aggr_csv:
     input:
         sample_sheet=config["aggr"]["samples"]
     output:
-        aggr_csv=pep.config.output.cr_outs + "/aggr/csvs/{aggr_id}.csv"
+        aggr_csv=temp(aggr_dir/"csvs/{aggr_id}.csv")
     params:
-        cr_outs=pep.config.output.cr_outs
+        cr_outs=count_dir
     conda:
         "../envs/generate_aggr_csv.yaml"
     log:
@@ -20,8 +20,8 @@ rule cellranger_aggr:
         aggr_csv=rules.generate_aggr_csv.output.aggr_csv,
         molecule_h5=get_cellranger_aggr_aggr_captures_input
     output:
-        out_dir=directory(pep.config.output.cr_outs + "/aggr/output/{aggr_id}"),
-        summary=pep.config.output.cr_outs + "/aggr/output/{aggr_id}/outs/count/summary.json"
+        out_dir=directory(aggr_dir/"output/{aggr_id}"),
+        summary=aggr_dir/"output/{aggr_id}/outs/count/summary.json"
     params:
         flags=config["aggr"]["flags"]
     envmodules:
@@ -53,7 +53,7 @@ rule merge_bams:
         source_bams=get_source_bams,
         aggr_summary=rules.cellranger_aggr.output.summary
     output:
-        out_bam=pep.config.output.cr_outs + "/aggr/bams/{aggr_id}/merged.bam"
+        out_bam=aggr_dir/"bams/{aggr_id}/merged.bam"
     params:
         sample_sheet=config["aggr"]["samples"]
     container:

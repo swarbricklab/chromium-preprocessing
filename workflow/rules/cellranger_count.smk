@@ -1,12 +1,12 @@
 rule cellranger_count:
     input:
         fastqs=capturesheet("ge_fastqs"),
-        transcriptome=pep.config.resources.transcriptome,
+        transcriptome=config['deps']['transcriptome']
     output:
-        out_dir=directory(pep.config.output.cr_outs + "/{capture}"),
-        molecule_h5=pep.config.output.cr_outs + "/{capture}/outs/molecule_info.h5",
-        bam=pep.config.output.cr_outs + "/{capture}/outs/possorted_genome_bam.bam",
-        summary=pep.config.output.cr_outs + "/{capture}/outs/metrics_summary.csv",
+        out_dir=directory(count_dir/"{capture}"),
+        molecule_h5=count_dir/"{capture}/outs/molecule_info.h5",
+        bam=count_dir/"{capture}/outs/possorted_genome_bam.bam",
+        summary=count_dir/"{capture}/outs/metrics_summary.csv"
     params:
         flags=config["count"]["flags"]
     envmodules:
@@ -36,13 +36,13 @@ rule cellranger_count:
 rule cr_summarise:
     input:
         individual_summaries=expand(
-            pep.config.output.cr_outs + "/{capture}/outs/metrics_summary.csv", 
-            capture=captures["capture_id"]
+            count_dir/"{capture}/outs/metrics_summary.csv", 
+            capture=captures.index
         )
     output:
-        group_summary=pep.config.output.cr_outs + "/cr_summary.csv"
+        group_summary=count_dir/"cr_summary.csv"
     params:
-        groups=','.join(captures["capture_id"])
+        groups=','.join(captures.index)
     container:
         "docker://johnyaku/csvkit:1.1.1"
     shell:

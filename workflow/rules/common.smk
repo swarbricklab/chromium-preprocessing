@@ -6,9 +6,9 @@ def final_targets(wildcards):
     targets = []
     # cellranger count
     if 'count' in config:
-        count_targets = expand(pep.config.output.cr_outs + "/{capture}/outs/molecule_info.h5", capture = captures["capture_id"])
+        count_targets = expand(count_dir/"{capture}/outs/molecule_info.h5", capture = captures.index)
         targets.extend(count_targets)
-        targets.append(pep.config.output.cr_outs + "/cr_summary.csv")
+        targets.append(count_dir/"cr_summary.csv")
     # cellranger aggr
     if 'aggr' in config:
         aggr_targets = aggr_all(wildcards)
@@ -37,7 +37,7 @@ def get_cellranger_aggr_aggr_captures_input(wildcards):
 
     wanted_input.extend(
         expand([
-            pep.config.output.cr_outs + "/{capture_id}/outs/molecule_info.h5"
+           count_dir/"{capture_id}/outs/molecule_info.h5"
         ],
             capture_id=capture_ids
         )
@@ -61,9 +61,9 @@ def aggr_all(wildcards):
         
         aggr_input.extend(
             expand([
-                pep.config.output.cr_outs + "/aggr/csvs/{aggr_id}.csv",
-                pep.config.output.cr_outs + "/aggr/output/{aggr_id}/outs/count/summary.json",
-                pep.config.output.cr_outs + "/aggr/bams/{aggr_id}/merged.bam"
+                aggr_dir/"csvs/{aggr_id}.csv",
+                aggr_dir/"output/{aggr_id}/outs/count/summary.json",
+                aggr_dir/"bams/{aggr_id}/merged.bam"
             ],
                 aggr_id=aggr_ids
             )
@@ -77,7 +77,7 @@ def get_source_bams(wildcards):
     capture_ids = df_samples.loc[df_samples["aggr_id"] == wildcards.aggr_id, ["capture_id"]]
     capture_ids = list(set(capture_ids["capture_id"].tolist()))
     source_bams = expand(
-        [pep.config.output.cr_outs + "/{capture}/outs/possorted_genome_bam.bam"],
+        [count_dir/"{capture}/outs/possorted_genome_bam.bam"],
         capture=capture_ids
     )
     return source_bams
