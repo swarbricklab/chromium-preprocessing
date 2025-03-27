@@ -9,7 +9,7 @@ aggr_dir=Path(config['outs']['aggr'])
 
 include: 'rules/common.smk'
 include: 'rules/cellranger_count.smk'
-if 'aggr' in config:
+if 'aggr' in config["params"]:
     include: 'rules/cellranger_aggr.smk'
 
 rule all:

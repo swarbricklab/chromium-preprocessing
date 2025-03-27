@@ -5,12 +5,12 @@ import pandas as pd
 def final_targets(wildcards):
     targets = []
     # cellranger count
-    if 'count' in config:
+    if 'count' in config["params"]:
         count_targets = expand(count_dir/"{capture}/outs/molecule_info.h5", capture = captures.index)
         targets.extend(count_targets)
         targets.append(count_dir/"cr_summary.csv")
     # cellranger aggr
-    if 'aggr' in config:
+    if 'aggr' in config["params"]:
         aggr_targets = aggr_all(wildcards)
         targets.extend(aggr_targets)
     print("Final targets: ")
