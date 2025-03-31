@@ -25,4 +25,4 @@ params:
     activate: True
     normalization: "none"
     flags: "--nosecondary"
-    samples: "config/chromium-preprocessing/ge_aggr.tsv"
+    samples: "config/ge_aggr.tsv"
