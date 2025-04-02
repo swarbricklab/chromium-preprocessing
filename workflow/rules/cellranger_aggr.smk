@@ -52,7 +52,8 @@ rule merge_bams:
         source_bams=get_source_bams,
         aggr_summary=rules.cellranger_aggr.output.summary
     output:
-        out_bam=pep.config.output.cr_outs + "/aggr/bams/{aggr_id}/merged.bam"
+        out_bam=pep.config.output.cr_outs + "/aggr/bams/{aggr_id}/merged.bam",
+        out_bai=pep.config.output.cr_outs + "/aggr/bams/{aggr_id}/merged.bam.bai"
     params:
         sample_sheet=config["aggr"]["samples"]
     container:
