@@ -7,6 +7,7 @@ source_bams=${snakemake_input[source_bams]}
 aggr_id=${snakemake_wildcards[aggr_id]}
 sample_sheet=${snakemake_params[sample_sheet]}
 out_bam=${snakemake_output[0]}
+out_bai=${snakemake_output[1]}
 out_dir=$(dirname $out_bam)
 log=${snakemake_log[0]}
 
@@ -33,8 +34,9 @@ for bam in $source_bams; do
 done 
 
 merge_command="samtools merge $out_bam ${temp_files[*]}"
-echo $merge_command >&2
-eval $merge_command
+index_command="samtools index $out_bam -o $out_bai"
+echo $merge_command $index_command >&2
+eval "$merge_command; $index_command"
 
 # Clean up temporary files
 rm -f "${temp_files[@]}"
