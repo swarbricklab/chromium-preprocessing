@@ -19,8 +19,11 @@ else
     global_profile=""
 fi
 
-snakemake $global_profile $workflow_profile \
-    --snakefile workflow/Snakefile \
-    --configfile config/test_config.yaml \
-    $@
+tests="count multi"
 
+for test in $tests; do
+    snakemake $global_profile $workflow_profile \
+        --snakefile workflow/Snakefile \
+        --configfile config/tests/$test/config.yaml \
+        $@
+done
