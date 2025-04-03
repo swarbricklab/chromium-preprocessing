@@ -1,0 +1,40 @@
+# This config file is used for running the workflow on test data
+
+# All paths are relative to the top of the dataset repo
+
+# -- Dependencies -- #
+# Files and directories required for the workflow, including raw data, config data and reference data
+deps:
+  captures: "config/tests/multi/captures.csv"
+  libraries: "config/tests/multi/libraries.csv"
+
+# Reference dependencies
+ref:
+  # Reference transcriptome for gene expression
+  gene-expression: "resources/transcriptomes/refdata-gex-GRCh38-2020-A"
+  # Reference for feature barcode antibodies
+  feature: "config/feature_barcode_reference.csv"
+  # Reference for VDJ-T
+  vdj: "resources/vdj/refdata-cellranger-vdj-GRCh38-alts-ensembl-7.1.0"
+
+# -- Outputs -- #
+# Files and directories produced by the workflow
+outs:
+  results: "test/results/cellranger/multi"
+  aggr: "test/results/cellranger/multi_aggr"
+  logs: "logs/chromium-preprocessing"
+
+# -- Parameters --#
+# Non-path parameters for tuning the behaviour of the workflow
+params:
+  extras:
+    aggr: false
+    annotate: false
+    hto: false
+  gene-expression:
+    create-bam: "true"
+    no-secondary: "false"
+  aggr:
+    normalization: "none"
+    flags: "--nosecondary"
+    samples: "config/chromium-preprocessing/ge_aggr.tsv"
