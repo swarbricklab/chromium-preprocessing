@@ -1,4 +1,5 @@
 # This smk file contains rules for running 'cellranger multi' on multiple captures
+
 # 'cellranger multi' requires a 'multi config CSV' file
 # Rather than hand-craft a CSV file for each individual capture, this workflow creates a
 # CSV file for each capture dynamically, based on the global configuration
@@ -11,7 +12,7 @@ rule select_libraries:
     input:
         csv=config['deps']['libraries']
     output:
-        csv=temp(multi_dir/"csv/{capture}/libraries.csv")
+        csv=temp(out_dir/"csv/{capture}/libraries.csv")
     run:
         import pandas as pd
         import os
@@ -26,26 +27,21 @@ rule select_libraries:
 # Create INI section of multi config
 rule create_ini:
     output:
-        ini=temp(multi_dir/"csv/config.ini")
+        ini=temp(out_dir/"csv/config.ini")
     run:
         import os
         with open(output.ini, "w") as f:
             for assay, ref_path in config["ref"].items():
-                if assay in config["params"]["assays"]:
+                # Compare to list of assays found in libraries.csv
+                if assay in assays:
                     # Convert to absolute path because cellranger multi can't handle relative paths
                     abs_path = os.path.abspath(ref_path)
                     f.write("[{}]\n".format(assay))
                     f.write("reference,{}\n".format(abs_path))
-                    if assay in config["params"]["options"]["multi"].keys():
-                        for key, value in config["params"]["options"]["multi"][assay].items():
+                    if assay in config["params"].keys():
+                        for key, value in config["params"][assay].items():
                             f.write("{},{}\n".format(key,value))
                     f.write("\n")
-        for assay in config["params"]["assays"]:
-            if not assay in config["ref"]:
-                print("Missing reference for {} in config file".format(assay))
-                exit()
-            if not os.path.exists(config["ref"][assay]):
-                print("Reference not found: {}".format(config["ref"][assay]))
 
 # Combine INI section with libraries section
 rule combine_dynamic_config:
@@ -53,7 +49,7 @@ rule combine_dynamic_config:
         csv=rules.select_libraries.output.csv,
         ini=rules.create_ini.output.ini
     output:
-        conf=multi_dir/"csv/{capture}/multi_config.csv"
+        conf=out_dir/"csv/{capture}/multi_config.csv"
     shell:
         """
         cat {input.ini} > {output.conf}
@@ -65,7 +61,7 @@ rule cellranger_multi:
     input:
         conf=rules.combine_dynamic_config.output.conf
     output:
-        out_dir=directory(multi_dir/"tmp/{capture}")
+        cr_dir=temp(directory(out_dir/"tmp/{capture}"))
     envmodules:
         "cellranger/9.0.1"
     log:
@@ -73,10 +69,10 @@ rule cellranger_multi:
     shell:
         """
         # Snakemake creates output directory but cellranger complains if directory alrady exists!
-        rm -rf {output.out_dir}
+        rm -rf {output.cr_dir}
         PATH=$PWD/profiles/global/nci_a56/resources/:$PATH \
         cellranger multi \
-            --output-dir {output.out_dir} \
+            --output-dir {output.cr_dir} \
             --id {wildcards.capture} \
             --csv {input.conf} \
             --jobmode={resources.jobmode} \
@@ -84,54 +80,78 @@ rule cellranger_multi:
             --jobinterval {resources.jobinterval} \
             --mempercore {resources.mempercore} \
             > {log} 2>&1
-        rm -rf {output.out_dir}/SC_MULTI_CS.
+        rm -rf {output.cr_dir}/SC_MULTI_CS
         """
 
-# Restructure outputs
+# Restructure non-VDJ outputs
 rule restructure_outs:
     input:
-        tmp=rules.cellranger_multi.output.out_dir
+        tmp=rules.cellranger_multi.output.cr_dir
     output:
-        filtered=directory(multi_dir/"count/filtered_feature_bc_matrix/{capture}"),
-        raw=directory(multi_dir/"count/raw_feature_bc_matrix/{capture}"),
-        bams=directory(multi_dir/"bam/{capture}"),
-        h5=directory(multi_dir/"h5/{capture}"),
-        vdj_t=directory(multi_dir/"vdj_t/{capture}"),
-        loupe=directory(multi_dir/"loupe/{capture}"),
-        metrics=multi_dir/"summary/metrics/{capture}.csv",
-        web=multi_dir/"summary/web/{capture}.html"
+        filtered=directory(out_dir/"count/filtered_feature_bc_matrix/{capture}"),
+        raw=directory(out_dir/"count/raw_feature_bc_matrix/{capture}"),
+        bams=directory(out_dir/"bam/count/{capture}"),
+        h5=directory(out_dir/"h5/{capture}"),
+        loupe=directory(out_dir/"loupe/count/{capture}"),
+        metrics=out_dir/"summary/metrics/{capture}.csv",
+        web=out_dir/"summary/web/{capture}.html"
     shell:
         """
         # Source directories
-        multi_dir={input.tmp}/outs/multi
+        out_dir={input.tmp}/outs/multi
         sample_dir={input.tmp}/outs/per_sample_outs/{wildcards.capture}
         # Summary files
         cp -v $sample_dir/metrics_summary.csv {output.metrics}
         cp -v $sample_dir/web_summary.html {output.web}
         # Bams
         mkdir -p {output.bams}
-        cp -v $multi_dir/count/unassigned_alignments.bam* {output.bams}/
+        cp -v $out_dir/count/unassigned_alignments.bam* {output.bams}/
         cp -v $sample_dir/count/sample_alignments.bam* {output.bams}/
-        cp -v $multi_dir/vdj_t/all_contig.bam* {output.bams}/
-        cp -v $sample_dir/vdj_t/consensus.bam* {output.bams}/
         # Count matrices
         mkdir -p {output.filtered} {output.raw}
-        cp -v -r $sample_dir/count/sample_filtered_feature_bc_matrix/* {output.filtered}/
-        cp -v -r $multi_dir/count/raw_feature_bc_matrix/* {output.raw}/
+        for file in $sample_dir/count/sample_filtered_feature_bc_matrix/*.gz; do
+            echo "Recompressing $file"
+            filename=$(basename $file)
+            zcat $file | gzip -n > {output.filtered}/$filename
+        done
+        for file in $out_dir/count/raw_feature_bc_matrix/*.gz; do
+            echo "Recompressing $file"
+            filename=$(basename $file)
+            zcat $file | gzip -n > {output.raw}/$filename
+        done
         # h5
         mkdir -p {output.h5}
         cp -v $sample_dir/count/*.h5 {output.h5}/
-        cp -v $multi_dir/count/*.h5 {output.h5}/
+        cp -v $out_dir/count/*.h5 {output.h5}/
         # Loupe
         mkdir -p {output.loupe}
-        cp -v $multi_dir/count/raw_cloupe.cloupe {output.loupe}/
+        cp -v $out_dir/count/raw_cloupe.cloupe {output.loupe}/
         cp -v $sample_dir/count/sample_cloupe.cloupe {output.loupe}/
-        cp -v $sample_dir/vdj_t/vloupe.vloupe {output.loupe}/
-        # VDJ
-        mkdir -p {output.vdj_t}/raw {output.vdj_t}/filtered
-        cp -v -r $multi_dir/vdj_t {output.vdj_t}/raw 
-        cp -v -r $sample_dir/vdj_t {output.vdj_t}/filtered
         """
 
-
+if "vdj" in assays:
+    rule restructure_vdj_outs:
+        input:
+            tmp=rules.cellranger_multi.output.cr_dir
+        output:
+            vdj_t=directory(out_dir/"vdj_t/{capture}"),
+            bams=directory(out_dir/"bam/vdj/{capture}"),
+            loupe=directory(out_dir/"loupe/vdj/{capture}")
+        shell:
+            """
+            # Source directories
+            out_dir={input.tmp}/outs/multi
+            sample_dir={input.tmp}/outs/per_sample_outs/{wildcards.capture}
+            # Bams
+            mkdir -p {output.bams}
+            cp -v $out_dir/vdj_t/all_contig.bam* {output.bams}/
+            cp -v $sample_dir/vdj_t/consensus.bam* {output.bams}/
+            # Loupe
+            mkdir -p {output.loupe}
+            cp -v $sample_dir/vdj_t/vloupe.vloupe {output.loupe}/
+            # VDJ
+            mkdir -p {output.vdj_t}/raw {output.vdj_t}/filtered
+            cp -v -r $out_dir/vdj_t {output.vdj_t}/raw 
+            cp -v -r $sample_dir/vdj_t {output.vdj_t}/filtered
+            """
 

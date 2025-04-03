@@ -3,17 +3,29 @@ from pathlib import Path
 
 captures=pd.read_csv(config['deps']['captures'], index_col='capture_id')
 
-count_dir=Path(config['outs']['count'])
-aggr_dir=Path(config['outs']['aggr'])
+out_dir=Path(config['outs']['results'])
 
 
 include: 'rules/common.smk'
-include: 'rules/cellranger_count.smk'
-if 'aggr' in config["params"]:
+include: 'rules/summarise.smk'
+
+# targets = []
+assays = find_assays(config['deps']['libraries'])
+
+if assays == ['gene-expression']:
+    print("Running cellranger count")
+    include: 'rules/cellranger_count.smk'
+elif assays == ['vdj']:
+    print("No support for 'cellranger vdj' yet")
+else:
+    print("Running cellranger multi")
+    include: 'rules/cellranger_multi.smk'
+if 'agggr' in config['params']['extras']:
     include: 'rules/cellranger_aggr.smk'
 
 rule all:
     input:
-        final_targets
+        #final_targets
+        out_dir/"summary/metrics/cr_summary.csv"
 
 

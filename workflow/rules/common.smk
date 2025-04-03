@@ -1,29 +1,60 @@
 from snakemake.io import expand
 import pandas as pd
 
-# Get list of final targets
-def final_targets(wildcards):
-    targets = []
-    # cellranger count
-    if 'count' in config["params"]:
-        count_targets = expand(count_dir/"{capture}/outs/molecule_info.h5", capture = captures.index)
-        targets.extend(count_targets)
-        targets.append(count_dir/"cr_summary.csv")
-    # cellranger aggr
-    if 'aggr' in config["params"]:
-        aggr_targets = aggr_all(wildcards)
-        targets.extend(aggr_targets)
-    print("Final targets: ")
-    for target in targets:
-        print("  -", target)
-    return targets
+# Determine which assays are present in libraries.csv
+def find_assays(library_path):
+    libraries=pd.read_csv(library_path)
+    assays=libraries['feature_types'].unique()
+    mapping = {
+        "Gene Expression": "gene-expression",
+        "VDJ-T": "vdj",
+        "Antibody Capture": "feature"
+    }
+    for assay in assays:
+        if assay not in mapping.keys():
+            print("Unexpected assay (feature_type) in libraries.csv: {}".format(assay))
+            exit()
+    return [mapping.get(assay, assay) for assay in assays]
 
-# Look up field in sample_sheet
-def capturesheet(field):
-    def handle_wildcards(wildcards):
-        result=captures.loc[wildcards.capture, field]
-        return result.split(";")
-    return handle_wildcards
+# # Get list of final targets
+# def final_targets(wildcards):
+#     targets = []
+#     # cellranger count
+#     if 'count' in config["params"]:
+#         count_targets = expand(count_dir/"{capture}/outs/molecule_info.h5", capture = captures.index)
+#         targets.extend(count_targets)
+#         targets.append(count_dir/"cr_summary.csv")
+#     # cellranger aggr
+#     if 'aggr' in config["params"]:
+#         aggr_targets = aggr_all(wildcards)
+#         targets.extend(aggr_targets)
+#     print("Final targets: ")
+#     for target in targets:
+#         print("  -", target)
+#     return targets
+
+# Get fastq paths for capture of interest from libraries.csv
+# Used in rule cellranger_count
+def get_fastqs(wildcards):
+    libraries=pd.read_csv(config['deps']['libraries'])
+    capture_subset=libraries[libraries['fastq_id'] == wildcards.capture]
+    return capture_subset['fastqs'].tolist()
+
+# Translate gene-expression options in config to a string that can be passed to 'cellranger count'
+# Used in rule cellranger_count
+def get_count_options(wildcards):
+    options=""
+    # Here 'flags' are parameters that did not take a value
+    flags=["no-secondary"]
+    for parameter,value in config["params"]["gene-expression"].items():
+        if parameter in flags:
+            if value == "true":
+                options=options+" --"+parameter
+            else:
+                pass
+        else:
+            options=options+" --"+parameter+" "+value
+    return options
 
 # Get the capture_ids associated with a specific aggr_id group 
 def get_cellranger_aggr_aggr_captures_input(wildcards):
