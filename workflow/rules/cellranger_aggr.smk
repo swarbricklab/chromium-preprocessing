@@ -52,8 +52,7 @@ rule merge_bams:
         source_bams=get_source_bams,
         aggr_summary=rules.cellranger_aggr.output.summary
     output:
-        out_bam=pep.config.output.cr_outs + "/aggr/bams/{aggr_id}/merged.bam",
-        out_bai=pep.config.output.cr_outs + "/aggr/bams/{aggr_id}/merged.bam.bai"
+        out_bam=pep.config.output.cr_outs + "/aggr/bams/{aggr_id}/merged.bam"
     params:
         sample_sheet=config["aggr"]["samples"]
     container:
@@ -62,3 +61,15 @@ rule merge_bams:
         "logs/chromium-preprocessing/merge_bams/{aggr_id}.log"
     script:
         "../scripts/merge_bams.sh"
+
+rule index_merge_bams:
+    input:
+        out_bam=pep.config.output.cr_outs + "/aggr/bams/{aggr_id}/merged.bam"
+    output:
+        out_bai=pep.config.output.cr_outs + "/aggr/bams/{aggr_id}/merged.bam.bai"
+    container:
+        "docker://quay.io/biocontainers/samtools:0.1.19--h270b39a_9"
+    log:
+        "logs/chromium-preprocessing/index_merge_bams/{aggr_id}.log"
+    shell:
+        "samtools index {input.out_bam} -o {output.out_bai}"

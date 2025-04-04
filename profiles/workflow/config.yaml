@@ -37,3 +37,7 @@ set-resources:
         mem: "16GB"
         disk: "100MB"
         runtime: "24h"  
+  index_merge_bams:
+        threads: "1"
+        mem: "24GB"
+        disk: "100MB"
