@@ -75,7 +75,7 @@ def aggr_all(wildcards):
 def get_source_bams(wildcards):
     df_samples = pd.read_csv(config["aggr"]["samples"], sep = "\t", dtype = {'capture_id': str, 'aggr_id': str})
     capture_ids = df_samples.loc[df_samples["aggr_id"] == wildcards.aggr_id, ["capture_id"]]
-    capture_ids = list(set(capture_ids["capture_id"].tolist()))
+    capture_ids = capture_ids["capture_id"].unique().tolist()
     source_bams = expand(
         [pep.config.output.cr_outs + "/{capture}/outs/possorted_genome_bam.bam"],
         capture=capture_ids
