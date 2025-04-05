@@ -1,7 +1,7 @@
 import pandas as pd
 from pathlib import Path
 
-captures=pd.read_csv(config['deps']['captures'], index_col='capture_id')
+captures=pd.read_csv(config['deps']['captures'], index_col='capture')
 
 out_dir=Path(config['outs']['results'])
 
