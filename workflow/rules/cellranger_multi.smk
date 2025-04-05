@@ -93,50 +93,99 @@ rule cellranger_multi:
         rm -rf {output.cr_dir}/SC_MULTI_CS
         """
 
-# Restructure non-VDJ outputs
-rule restructure_outs:
+# Restructure summary data
+rule restructure_summary:
     input:
         tmp=rules.cellranger_multi.output.cr_dir
     output:
-        filtered=directory(out_dir/"count/filtered_feature_bc_matrix/{capture}"),
-        raw=directory(out_dir/"count/raw_feature_bc_matrix/{capture}"),
-        bams=directory(out_dir/"bam/count/{capture}"),
-        h5=directory(out_dir/"h5/{capture}"),
-        loupe=directory(out_dir/"loupe/count/{capture}"),
         metrics=out_dir/"summary/metrics/{capture}.csv",
         web=out_dir/"summary/web/{capture}.html"
     shell:
         """
-        # Source directories
-        out_dir={input.tmp}/outs/multi
         sample_dir={input.tmp}/outs/per_sample_outs/{wildcards.capture}
-        # Summary files
         cp -v $sample_dir/metrics_summary.csv {output.metrics}
         cp -v $sample_dir/web_summary.html {output.web}
+        """
+
+# Restructure bam files
+rule restructure_bams:
+    input:
+        tmp=rules.cellranger_multi.output.cr_dir
+    output:
+        ass_bam=out_dir/"bam/count/{capture}/assigned_alignments.bam",
+        ass_bai=out_dir/"bam/count/{capture}/assigned_alignments.bam.bai",
+        unass_bam=out_dir/"bam/count/{capture}/unassigned_alignments.bam",
+        unass_bai=out_dir/"bam/count/{capture}/unassigned_alignments.bam.bai"
+    shell:
+        """
+        # Source directories
+        out_dir={input.tmp}/outs/multi/count
+        sample_dir={input.tmp}/outs/per_sample_outs/{wildcards.capture}/count
         # Bams
-        mkdir -p {output.bams}
-        cp -v $out_dir/count/unassigned_alignments.bam* {output.bams}/
-        cp -v $sample_dir/count/sample_alignments.bam* {output.bams}/
+        mkdir -p $(dirname {output.ass_bam})
+        cp -v $out_dir/unassigned_alignments.bam {output.unass_bam}
+        cp -v $out_dir/unassigned_alignments.bam.bai {output.unass_bai}
+        cp -v $sample_dir/sample_alignments.bam {output.ass_bam}
+        cp -v $sample_dir/sample_alignments.bam.bai {output.ass_bai}
+        """
+
+# Restructure count matrices (recompressing to remove timestamps)
+rule restructure_counts:
+    input:
+        tmp=rules.cellranger_multi.output.cr_dir
+    output:
+        filtered=directory(out_dir/"count/filtered_feature_bc_matrix/{capture}"),
+        raw=directory(out_dir/"count/raw_feature_bc_matrix/{capture}")
+    shell:
+        """
+        # Source directories
+        out_dir={input.tmp}/outs/multi/count
+        sample_dir={input.tmp}/outs/per_sample_outs/{wildcards.capture}/count
         # Count matrices
         mkdir -p {output.filtered} {output.raw}
-        for file in $sample_dir/count/sample_filtered_feature_bc_matrix/*.gz; do
+        for file in $sample_dir/sample_filtered_feature_bc_matrix/*.gz; do
             echo "Recompressing $file"
             filename=$(basename $file)
             zcat $file | gzip -n > {output.filtered}/$filename
         done
-        for file in $out_dir/count/raw_feature_bc_matrix/*.gz; do
+        for file in $out_dir/raw_feature_bc_matrix/*.gz; do
             echo "Recompressing $file"
             filename=$(basename $file)
             zcat $file | gzip -n > {output.raw}/$filename
         done
+        """
+# Restructure and rename h5 files
+rule restructure_h5:
+    input:
+        tmp=rules.cellranger_multi.output.cr_dir
+    output:
+        raw_mat=out_dir/"h5/raw/{capture}/feature_bc_matrix.h5",
+        raw_mol=out_dir/"h5/raw/{capture}/molecule_info.h5",
+        filtered_mat=out_dir/"h5/filtered/{capture}/feature_bc_matrix.h5",
+        filtered_mol=out_dir/"h5/filtered/{capture}/molecule_info.h5"
+    shell:
+        """
+        # Source directories
+        out_dir={input.tmp}/outs/multi/count
+        sample_dir={input.tmp}/outs/per_sample_outs/{wildcards.capture}/count
         # h5
-        mkdir -p {output.h5}
-        cp -v $sample_dir/count/*.h5 {output.h5}/
-        cp -v $out_dir/count/*.h5 {output.h5}/
-        # Loupe
-        mkdir -p {output.loupe}
-        cp -v $out_dir/count/raw_cloupe.cloupe {output.loupe}/
-        cp -v $sample_dir/count/sample_cloupe.cloupe {output.loupe}/
+        cp -v $out_dir/sample_filtered_feature_bc_matrix.h5 {output.raw_mat}
+        cp -v $out_dir/sample_molecule_info.h5 {output.raw_mol}
+        cp -v $sample_dir/sample_filtered_feature_bc_matrix.h5 {output.filtered_mat}
+        cp -v $sample_dir/sample_molecule_info.h5 {output.filtered_mol}
+        """
+
+# Restructure non-VDJ loupe files
+rule restructure_loupe:
+    input:
+        tmp=rules.cellranger_multi.output.cr_dir
+    output:
+        raw=out_dir/"loupe/count/raw/{capture}.cloupe",
+        filtered=out_dir/"loupe/count/filtered/{capture}.cloupe/"
+    shell:
+        """
+        cp -v {input.tmp}/outs/multi/count/raw_cloupe.cloupe {output.raw}
+        cp -v {input.tmp}/outs/per_sample_outs/{wildcards.capture}/count/sample_cloupe.cloupe {output.filtered}
         """
 
 if "vdj" in assays:
@@ -145,8 +194,11 @@ if "vdj" in assays:
             tmp=rules.cellranger_multi.output.cr_dir
         output:
             vdj_t=directory(out_dir/"vdj_t/{capture}"),
-            bams=directory(out_dir/"bam/vdj/{capture}"),
-            loupe=directory(out_dir/"loupe/vdj/{capture}")
+            raw_bam=out_dir/"bam/vdj/{capture}/all_contig.bam",
+            raw_bai=out_dir/"bam/vdj/{capture}/all_contig.bam.bai",
+            filtered_bam=out_dir/"bam/vdj/{capture}/consensus.bam",
+            filtered_bai=out_dir/"bam/vdj/{capture}/consensus.bam.bai",
+            loupe=out_dir/"loupe/vdj/{capture}.vloupe"
         shell:
             """
             # Source directories
@@ -154,11 +206,13 @@ if "vdj" in assays:
             sample_dir={input.tmp}/outs/per_sample_outs/{wildcards.capture}
             # Bams
             mkdir -p {output.bams}
-            cp -v $out_dir/vdj_t/all_contig.bam* {output.bams}/
-            cp -v $sample_dir/vdj_t/consensus.bam* {output.bams}/
+            cp -v $out_dir/vdj_t/all_contig.bam {output.raw_bam}
+            cp -v $out_dir/vdj_t/all_contig.bam.bai {output.raw_bai}
+            cp -v $sample_dir/vdj_t/consensus.bam {output.filtered_bam}
+            cp -v $sample_dir/vdj_t/consensus.bam.bai {output.filtered_bai}
             # Loupe
             mkdir -p {output.loupe}
-            cp -v $sample_dir/vdj_t/vloupe.vloupe {output.loupe}/
+            cp -v $sample_dir/vdj_t/vloupe.vloupe {output.loupe}
             # VDJ
             mkdir -p {output.vdj_t}/raw {output.vdj_t}/filtered
             cp -v -r $out_dir/vdj_t {output.vdj_t}/raw 

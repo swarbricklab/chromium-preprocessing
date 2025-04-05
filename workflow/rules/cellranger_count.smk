@@ -37,42 +37,65 @@ rule cellranger_count:
         rm -rf {output.cr_dir}/SC_RNA_COUNTER_CS
         """
 
-# Restructure outputs
-rule restructure_outs:
+# Restructure summary data
+rule restructure_summary:
     input:
         tmp=rules.cellranger_count.output.cr_dir
     output:
-        filtered=directory(out_dir/"count/filtered_feature_bc_matrix/{capture}"),
-        raw=directory(out_dir/"count/raw_feature_bc_matrix/{capture}"),
-        bams=directory(out_dir/"bam/{capture}"),
-        h5=directory(out_dir/"h5/{capture}"),
         metrics=out_dir/"summary/metrics/{capture}.csv",
         web=out_dir/"summary/web/{capture}.html"
     shell:
         """
-        # Source directories
-        out_dir={input.tmp}/outs/
-        # Summary files
-        cp -v $out_dir/metrics_summary.csv {output.metrics}
-        cp -v $out_dir/web_summary.html {output.web}
-        # Bams
-        mkdir -p {output.bams}
-        cp -v $out_dir/possorted_genome_bam.bam* {output.bams}/
-        # Count matrices
-        mkdir -p {output.filtered} {output.raw}
-        # Decompress and recompress to remove timestamps
-        for file in $out_dir/filtered_feature_bc_matrix/*.gz; do
-            echo "Recompressing $file"
-            filename=$(basename $file)
-            zcat $file | gzip -n > {output.filtered}/$filename
-        done
-        for file in $out_dir/raw_feature_bc_matrix/*.gz; do
-            echo "Recompressing $file"
-            filename=$(basename $file)
-            zcat $file | gzip -n > {output.raw}/$filename
-        done
-        # h5
-        mkdir -p {output.h5}
-        cp -v $out_dir/*.h5 {output.h5}/
+        cp -v {input.tmp}/outs//metrics_summary.csv {output.metrics}
+        cp -v {input.tmp}/outs//web_summary.html {output.web}
+        """
+
+# Restructure bam files
+rule restructure_bams:
+    input:
+        tmp=rules.cellranger_count.output.cr_dir
+    output:
+        ass_bam=out_dir/"bam/count/{capture}/assigned_alignments.bam",
+        ass_bai=out_dir/"bam/count/{capture}/assigned_alignments.bam.bai"
+    shell:
+        """
+        cp -v {input.tmp}/outs/possorted_genome_bam.bam {output.ass_bam}
+        cp -v {input.tmp}/outs/possorted_genome_bam.bam.bai {output.ass_bai}
+        """
+
+# Restructure and recompress count matrices
+rule restructure_counts:
+    input:
+        tmp=rules.cellranger_count.output.cr_dir
+    output:
+        filtered_bc=out_dir/"count/filtered_feature_bc_matrix/{capture}/barcodes.tsv.gz",
+        filtered_feat=out_dir/"count/filtered_feature_bc_matrix/{capture}/features.tsv.gz",
+        filtered_mat=out_dir/"count/filtered_feature_bc_matrix/{capture}/matrix.mtx.gz",
+        raw_bc=out_dir/"count/raw_feature_bc_matrix/{capture}/barcodes.tsv.gz",
+        raw_feat=out_dir/"count/raw_feature_bc_matrix/{capture}/features.tsv.gz",
+        raw_mat=out_dir/"count/raw_feature_bc_matrix/{capture}/matrix.mtx.gz",
+    shell:
+        """
+        zcat {input.tmp}/outs/filtered_feature_bc_matrix/barcodes.tsv.gz | gzip -n > {output.filtered_bc}
+        zcat {input.tmp}/outs/filtered_feature_bc_matrix/features.tsv.gz | gzip -n > {output.filtered_feat}
+        zcat {input.tmp}/outs/filtered_feature_bc_matrix/matrix.mtx.gz   | gzip -n > {output.filtered_mat}
+        zcat {input.tmp}/outs/raw_feature_bc_matrix/barcodes.tsv.gz | gzip -n > {output.raw_bc}
+        zcat {input.tmp}/outs/raw_feature_bc_matrix/features.tsv.gz | gzip -n > {output.raw_feat}
+        zcat {input.tmp}/outs/raw_feature_bc_matrix/matrix.mtx.gz   | gzip -n > {output.raw_mat}
+        """
+
+# Restructure h5 data
+rule restructure_h5:
+    input:
+        tmp=rules.cellranger_count.output.cr_dir
+    output:
+        mol=out_dir/"h5/{capture}/molecule_info.h5",
+        raw=out_dir/"h5/{capture}/raw_feature_bc_matrix.h5",
+        filtered=out_dir/"h5/{capture}/filtered_feature_bc_matrix.h5"
+    shell:
+        """
+        cp -v {input.tmp}/outs/molecule_info.h5 {output.mol}
+        cp -v {input.tmp}/outs/raw_feature_bc_matrix.h5 {output.raw}
+        cp -v {input.tmp}/outs/filtered_feature_bc_matrix.h5 {output.filtered}
         """
 
