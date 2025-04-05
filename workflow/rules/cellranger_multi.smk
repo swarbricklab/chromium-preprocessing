@@ -1,5 +1,15 @@
 # This smk file contains rules for running 'cellranger multi' on multiple captures
 
+# Extend targets
+targets.extend([out_dir/"summary/metrics/cr_summary.csv"])
+if 'vdj' in assays:
+    targets.extend(
+        expand(
+            out_dir/"loupe/vdj/{capture}.vloupe,
+            capture=captures.index
+        )
+    )
+
 # 'cellranger multi' requires a 'multi config CSV' file
 # Rather than hand-craft a CSV file for each individual capture, this workflow creates a
 # CSV file for each capture dynamically, based on the global configuration

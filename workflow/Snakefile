@@ -9,7 +9,9 @@ out_dir=Path(config['outs']['results'])
 include: 'rules/common.smk'
 include: 'rules/summarise.smk'
 
-# targets = []
+# Build list of target files depending on which options are active
+targets = []
+
 assays = find_assays(config['deps']['libraries'])
 
 if assays == ['gene-expression']:
@@ -20,12 +22,13 @@ elif assays == ['vdj']:
 else:
     print("Running cellranger multi")
     include: 'rules/cellranger_multi.smk'
-if 'agggr' in config['params']['extras']:
+if config['params']['extras']['aggr']:
+    "Running cellranger aggr"
     include: 'rules/cellranger_aggr.smk'
 
 rule all:
     input:
         #final_targets
-        out_dir/"summary/metrics/cr_summary.csv"
+        targets
 
 

@@ -1,6 +1,9 @@
 # This rule file contains rules for running cellranger count
 # We prefer count over multi when only gene expression libraries are being processed.
 
+# Extend targets
+targets.extend([out_dir/"summary/metrics/cr_summary.csv"])
+
 rule cellranger_count:
     input:
         fastqs=get_fastqs,
