@@ -1,11 +1,9 @@
 #! /bin/bash
 
-# This script merges the bam files that share a common "aggr_id" in the aggr sample sheet
+# This script merges the bam files that share a common "pool" in the aggr sample sheet
 # The input bam files are first "resuffixed" so that the barcodes in the merged bam will be unique
 
 source_bams=${snakemake_input[source_bams]}
-aggr_id=${snakemake_wildcards[aggr_id]}
-sample_sheet=${snakemake_params[sample_sheet]}
 out_bam=${snakemake_output[0]}
 out_dir=$(dirname $out_bam)
 log=${snakemake_log[0]}
@@ -19,7 +17,7 @@ export PATH=./workflow/scripts/:./modules/chromium-preprocessing/workflow/script
 sample_number=1 # loop counter
 temp_files=() # Array to hold names of temporary files
 
-# Loop over the samples with the specifed aggr_id, building the merge command \
+# Loop over the samples with the specifed pool, building the merge command \
 for bam in $source_bams; do
     temp_bam="$out_dir/temp_${sample_number}.bam"
     if [ "$sample_number" -eq "1" ]; then
