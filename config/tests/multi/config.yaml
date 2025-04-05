@@ -28,13 +28,12 @@ outs:
 # Non-path parameters for tuning the behaviour of the workflow
 params:
   extras:
-    aggr: false
+    aggr: true
     annotate: false
     hto: false
   gene-expression:
     create-bam: "true"
     no-secondary: "false"
   aggr:
-    normalization: "none"
-    flags: "--nosecondary"
-    samples: "config/chromium-preprocessing/ge_aggr.tsv"
+    normalize: "none"
+    no-secondary: "false"
