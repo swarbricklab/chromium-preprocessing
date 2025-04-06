@@ -11,7 +11,7 @@ rule cellranger_count:
     output:
         cr_dir=temp(directory(out_dir/"tmp/{capture}"))
     params:
-        count_options=get_count_options
+        count_options=get_options('gene-expression')
     envmodules:
         "cellranger/9.0.1",
         "qsub/ext"

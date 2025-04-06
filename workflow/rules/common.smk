@@ -23,39 +23,29 @@ def get_fastqs(wildcards):
     capture_subset=libraries[libraries['fastq_id'] == wildcards.capture]
     return capture_subset['fastqs'].tolist()
 
-# Translate gene-expression options in config to a string that can be passed to 'cellranger count'
-# Used in rule cellranger_count
-def get_count_options(wildcards):
-    options=""
-    # Here 'flags' are parameters that did not take a value
-    flags=["no-secondary"]
-    for parameter,value in config["params"]["gene-expression"].items():
-        if parameter in flags:
-            if value == "true":
-                options=options+" --"+parameter
+# Translate aggr options in config to a string that can be passed to 'cellranger aggr/count'
+# Used in rules cellrange_count and cellranger_aggr
+def get_options(section):
+    def handle_wildcards(wildcards):
+        options=""
+        # Here 'flags' are parameters that did not take a value
+        flags=["no-secondary"]
+        # The rename map translates parameters that have different names in multi config versus count/aggr CLI
+        rename_map={ 'no-secondary': 'nosecondary'}
+        for parameter,value in config["params"][section].items():
+            if parameter in flags:
+                # Only add to option string if true
+                if value == "true":
+                    # Rename if necessary
+                    if parameter in rename_map.keys():
+                        parameter = rename_map['parameter']
+                    options=options+" --"+parameter
+                else:
+                    pass
             else:
-                pass
-        else:
-            options=options+" --"+parameter+" "+value
-    return options
-
-# Get the capture_ids associated with a specific aggr_id group 
-def get_cellranger_aggr_aggr_captures_input(wildcards):
-
-    wanted_input = []
-
-    df_samples = pd.read_csv(config["params"]["aggr"]["samples"], sep = "\t", dtype = {'capture_id': str, 'aggr_id': str})
-
-    capture_ids = df_samples.loc[df_samples["aggr_id"] == wildcards.aggr_id, ["capture_id"]]
-    capture_ids = list(set(capture_ids["capture_id"].tolist()))
-
-    wanted_input.extend(
-        expand([
-           count_dir/"{capture_id}/outs/molecule_info.h5"
-        ],
-            capture_id=capture_ids
-        )
-    )
+                options=options+" --"+parameter+" "+value
+        return options
+    return handle_wildcards
 
     return wanted_input
 
