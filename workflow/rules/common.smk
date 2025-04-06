@@ -53,38 +53,24 @@ def get_h5_in_pool(wildcards):
     return expand(out_dir/"h5/{capture}/molecule_info.h5",capture=capture_list)
 
 # get rule all input files for cellranger aggr
-def aggr_all(wildcards):
-
-    aggr_input = []
-
-    if config["params"]["aggr"]["activate"]:
-        # parse sample-sheet
-        df_sample_sheet = pd.read_csv(config["params"]["aggr"]["samples"], sep = "\t", dtype = {'capture_id': str, 'aggr_id': str})
-
-        aggr_ids = list(set(df_sample_sheet["aggr_id"].tolist()))
-
-        if "NONE" in aggr_ids:
-            aggr_ids.remove("NONE")
+def aggr_all():
+    pool_list = captures.loc[
+        captures['pool'] != captures.index, 'pool'
+    ].unique().tolist()
         
-        aggr_input.extend(
-            expand([
-                aggr_dir/"csvs/{aggr_id}.csv",
-                aggr_dir/"output/{aggr_id}/outs/count/summary.json",
-                aggr_dir/"bams/{aggr_id}/merged.bam"
-            ],
-                aggr_id=aggr_ids
-            )
-        )
-
-    return aggr_input
+    return expand(
+        [   
+            out_dir/"aggr/{pool}/outs/count/summary.json",
+            out_dir/"bams/{pool}/merged.bam.bai"
+        ],
+        pool=pool_list
+    )
 
 # Returns individual source bam files to be merged as part of aggr
 def get_source_bams(wildcards):
-    df_samples = pd.read_csv(config["params"]["aggr"]["samples"], sep = "\t", dtype = {'capture_id': str, 'aggr_id': str})
-    capture_ids = df_samples.loc[df_samples["aggr_id"] == wildcards.aggr_id, ["capture_id"]]
-    capture_ids = list(set(capture_ids["capture_id"].tolist()))
+    capture_list = captures[captures["pool"] == wildcards.pool].index.tolist()
     source_bams = expand(
-        [count_dir/"{capture}/outs/possorted_genome_bam.bam"],
-        capture=capture_ids
+        out_dir/"bam/count/{capture}/assigned_alignments.bam",
+        capture=capture_list
     )
     return source_bams
