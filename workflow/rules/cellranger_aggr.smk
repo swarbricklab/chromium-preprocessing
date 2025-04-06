@@ -1,8 +1,5 @@
-# Extend targets
-targets.extend(aggr_all())
-
 # rule to generate input csv config files for aggr
-# use an aggr_id column in config sample-sheet
+# use a 'pool' column in config sample-sheet
 rule generate_aggr_csv:
     input:
         captures=config["deps"]["captures"]

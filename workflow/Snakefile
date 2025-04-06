@@ -19,23 +19,36 @@ assays = find_assays(config['deps']['libraries'])
 if not preflight_check():
     exit()
 
+# The following section dynamically loads rule files depending on config choices
+# and validates config schemas according to these selections
+
 if assays == ['gene-expression']:
+    # When only gene-expression libraries are present use 'cellranger count.
     print("Running cellranger count")
     include: 'rules/cellranger_count.smk'
     validate(config,"schemas/multi.json")
+    targets.extend(count_targets())
 elif assays == ['vdj']:
+    # Technically 'cellranger vdj' allows VDJ libraries to be processed alone
+    # But so far we never do this, so there are no rules defined for this case
     print("No support for 'cellranger vdj' yet")
+    print("Use multi by providing gene expression libraries as well")
 else:
+    # Use 'cellranger multi' if more than one assay present
     print("Running cellranger multi")
     include: 'rules/cellranger_multi.smk'
     validate(config,"schemas/multi.json")
+    targets.extend(multi_targets())
+# Optionally use 'cellranger aggr' to aggregate split pools
 if config['params']['extras']['aggr']:
     print("Running cellranger aggr")
     include: 'rules/cellranger_aggr.smk'
+    targets.extend(aggr_targets())
+    validate(config,"schemas/aggr.json")
+    validate(captures, "schemas/aggr_captures.json")
 
 rule all:
     input:
-        #final_targets
         targets
 
 

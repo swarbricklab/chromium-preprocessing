@@ -40,11 +40,11 @@
           "gene-expression": {
             "type": "object",
             "properties": {
-              "create-bam": { "type": "string" },
-              "no-secondary": { "type": "string" },
-              "include-introns": { "type": "string" },
+              "create-bam": { "type": "boolean" },
+              "no-secondary": { "type": "boolean" },
+              "include-introns": { "type": "boolean" },
               "chemistry": { "type": "string" },
-              "check-library-compatibility": { "type": "string" },
+              "check-library-compatibility": { "type": "boolean" },
               "expect-cells": { "type": "number" },
               "force-cells": { "type": "number" },
               "r1-length": { "type": "number" },
@@ -57,7 +57,7 @@
             "type": "object",
             "properties": {
               "normalize": { "type": "string" },
-              "no-secondary": { "type": "string" }
+              "no-secondary": { "type": "boolean" }
             },
             "required": ["normalize", "no-secondary"]
           }

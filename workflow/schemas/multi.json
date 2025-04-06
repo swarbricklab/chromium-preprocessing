@@ -40,9 +40,6 @@
           "results": {
             "type": "string"
           },
-          "aggr": {
-            "type": "string"
-          },
           "logs": {
             "type": "string"
           }
@@ -74,10 +71,10 @@
             "type": "object",
             "properties": {
               "create-bam": {
-                "type": "string"
+                "type": "boolean"
               },
               "no-secondary": {
-                "type": "string"
+                "type": "boolean"
               }
             },
             "required": [
@@ -91,7 +88,7 @@
                 "type": "string"
               },
               "no-secondary": {
-                "type": "string"
+                "type": "boolean"
               }
             },
             "required": [

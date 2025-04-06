@@ -42,7 +42,7 @@ def get_options(section):
                 else:
                     pass
             else:
-                options=options+" --"+parameter+" "+value
+                options=options+" --"+parameter+" "+str(value)
         return options
     return handle_wildcards
 
@@ -51,19 +51,60 @@ def get_h5_in_pool(wildcards):
     capture_list = captures[captures['pool'] == wildcards.pool].index.tolist()
     return expand(out_dir/"h5/{capture}/molecule_info.h5",capture=capture_list)
 
+# Return a list of valid pools
+# Valid pools do not have the same value as the capture in the same row
+# Valid pools cannot be 'NA', 'None' or the empty string
+def get_pool_list():
+    null_pool_indicators = ['', 'NA', 'None']
+    valid_pools = captures.loc[(captures['pool'] != captures.index) | (captures['pool'].isin(null_pool_indicators))]
+    return valid_pools['pool'].unique().tolist()
+
 # get rule all input files for cellranger aggr
-def aggr_all():
-    pool_list = captures.loc[
-        captures['pool'] != captures.index, 'pool'
-    ].unique().tolist()
-        
+def aggr_targets():
     return expand(
         [   
             out_dir/"aggr/{pool}/outs/count/summary.json",
             out_dir/"bams/{pool}/merged.bam.bai"
         ],
-        pool=pool_list
+        pool=get_pool_list()
     )
+
+def count_targets():
+    count_targets = expand(
+        [
+            out_dir/"summary/metrics/cr_summary.csv"
+            # ,
+            # out_dir/"count/filtered_feature_bc_matrix/{capture}/barcodes.tsv.gz",
+            # out_dir/"count/filtered_feature_bc_matrix/{capture}/features.tsv.gz",
+            # out_dir/"count/filtered_feature_bc_matrix/{capture}/matrix.mtx.gz",
+            # out_dir/"count/raw_feature_bc_matrix/{capture}/barcodes.tsv.gz",
+            # out_dir/"count/raw_feature_bc_matrix/{capture}/features.tsv.gz",
+            # out_dir/"count/raw_feature_bc_matrix/{capture}/matrix.mtx.gz",
+        ],
+        capture=captures.index
+    )
+    if config['params']['gene-expression']['create-bam']:
+        count_targets.extend(
+            expand(
+                [
+                    rules.restructure_bams.output.ass_bam,
+                    rules.restructure_bams.output.ass_bai
+                ],
+                capture=captures.index)
+        )
+    if not config['params']['gene-expression']['no-secondary']:
+        count_targets.extend(
+            expand(rules.restructure_analysis.output.dir,capture=captures.index)
+        )
+    return count_targets
+
+def multi_targets():
+    multi_targets=count_targets()
+    if 'vdj' in assays:
+        multi_targets.extend(
+            expand(rules.restructure_vdj.output.vdj_t,capture=captures.index)
+        )
+    return multi_targets
 
 # Returns individual source bam files to be merged as part of aggr
 def get_source_bams(wildcards):

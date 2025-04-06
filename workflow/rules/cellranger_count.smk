@@ -1,9 +1,6 @@
 # This rule file contains rules for running cellranger count
 # We prefer count over multi when only gene expression libraries are being processed.
 
-# Extend targets
-targets.extend([out_dir/"summary/metrics/cr_summary.csv"])
-
 rule cellranger_count:
     input:
         fastqs=get_fastqs,
@@ -73,7 +70,7 @@ rule restructure_counts:
         filtered_mat=out_dir/"count/filtered_feature_bc_matrix/{capture}/matrix.mtx.gz",
         raw_bc=out_dir/"count/raw_feature_bc_matrix/{capture}/barcodes.tsv.gz",
         raw_feat=out_dir/"count/raw_feature_bc_matrix/{capture}/features.tsv.gz",
-        raw_mat=out_dir/"count/raw_feature_bc_matrix/{capture}/matrix.mtx.gz",
+        raw_mat=out_dir/"count/raw_feature_bc_matrix/{capture}/matrix.mtx.gz"
     shell:
         """
         zcat {input.tmp}/outs/filtered_feature_bc_matrix/barcodes.tsv.gz | gzip -n > {output.filtered_bc}
@@ -99,3 +96,13 @@ rule restructure_h5:
         cp -v {input.tmp}/outs/filtered_feature_bc_matrix.h5 {output.filtered}
         """
 
+# Restructure analysis results
+rule restructure_analysis:
+    input:
+        tmp=rules.cellranger_count.output.cr_dir
+    output:
+        dir=directory(out_dir/"cr_analysis/{capture}")
+    shell:
+        """
+        cp -v {input.tmp}/outs/analysis {output.dir}
+        """

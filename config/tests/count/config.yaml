@@ -25,13 +25,12 @@ params:
   extras:
     aggr: true
     annotate: false
-    hto: false
   gene-expression:
-    create-bam: "true"
-    no-secondary: "false"
-    include-introns: "true"
+    create-bam: true
+    no-secondary: false
+    include-introns: true
     chemistry: "auto"
-    check-library-compatibility: "true"
+    check-library-compatibility: true
     # expect-cells:
     # force-cells:
     # r1-length:
@@ -39,4 +38,4 @@ params:
     # min-crispr-umi:
   aggr:
     normalize: "none"
-    no-secondary: "false"
+    no-secondary: false

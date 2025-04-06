@@ -32,8 +32,8 @@ params:
     annotate: false
     hto: false
   gene-expression:
-    create-bam: "true"
-    no-secondary: "false"
+    create-bam: true
+    no-secondary: false
   aggr:
     normalize: "none"
-    no-secondary: "false"
+    no-secondary: false

@@ -134,26 +134,26 @@ rule restructure_counts:
     input:
         tmp=rules.cellranger_multi.output.cr_dir
     output:
-        filtered=directory(out_dir/"count/filtered_feature_bc_matrix/{capture}"),
-        raw=directory(out_dir/"count/raw_feature_bc_matrix/{capture}")
+        filtered_bc=out_dir/"count/filtered_feature_bc_matrix/{capture}/barcodes.tsv.gz",
+        filtered_feat=out_dir/"count/filtered_feature_bc_matrix/{capture}/features.tsv.gz",
+        filtered_mat=out_dir/"count/filtered_feature_bc_matrix/{capture}/matrix.mtx.gz",
+        raw_bc=out_dir/"count/raw_feature_bc_matrix/{capture}/barcodes.tsv.gz",
+        raw_feat=out_dir/"count/raw_feature_bc_matrix/{capture}/features.tsv.gz",
+        raw_mat=out_dir/"count/raw_feature_bc_matrix/{capture}/matrix.mtx.gz"
     shell:
         """
         # Source directories
         out_dir={input.tmp}/outs/multi/count
         sample_dir={input.tmp}/outs/per_sample_outs/{wildcards.capture}/count
-        # Count matrices
-        mkdir -p {output.filtered} {output.raw}
-        for file in $sample_dir/sample_filtered_feature_bc_matrix/*.gz; do
-            echo "Recompressing $file"
-            filename=$(basename $file)
-            zcat $file | gzip -n > {output.filtered}/$filename
-        done
-        for file in $out_dir/raw_feature_bc_matrix/*.gz; do
-            echo "Recompressing $file"
-            filename=$(basename $file)
-            zcat $file | gzip -n > {output.raw}/$filename
-        done
+        # Copy and recompress
+        zcat $sample_dir/barcodes.tsv.gz | gzip -n > {output.filtered_bc}
+        zcat $sample_dir/features.tsv.gz | gzip -n > {output.filtered_feat}
+        zcat $sample_dir/matrix.mtx.gz | gzip -n > {output.filtered_mat}
+        zcat $out_dir/barcodes.tsv.gz | gzip -n > {output.raw_bc}
+        zcat $out_dir/features.tsv.gz | gzip -n > {output.raw_feat}
+        zcat $out_dir/matrix.mtx.gz | gzip -n > {output.raw_mat}
         """
+
 # Restructure and rename h5 files
 rule restructure_h5:
     input:
@@ -188,32 +188,41 @@ rule restructure_loupe:
         cp -v {input.tmp}/outs/per_sample_outs/{wildcards.capture}/count/sample_cloupe.cloupe {output.filtered}
         """
 
-if "vdj" in assays:
-    rule restructure_vdj_outs:
-        input:
-            tmp=rules.cellranger_multi.output.cr_dir
-        output:
-            vdj_t=directory(out_dir/"vdj_t/{capture}"),
-            raw_bam=out_dir/"bam/vdj/{capture}/all_contig.bam",
-            raw_bai=out_dir/"bam/vdj/{capture}/all_contig.bam.bai",
-            filtered_bam=out_dir/"bam/vdj/{capture}/consensus.bam",
-            filtered_bai=out_dir/"bam/vdj/{capture}/consensus.bam.bai",
-            loupe=out_dir/"loupe/vdj/{capture}.vloupe"
-        shell:
-            """
-            # Source directories
-            out_dir={input.tmp}/outs/multi
-            sample_dir={input.tmp}/outs/per_sample_outs/{wildcards.capture}
-            # Bams
-            cp -v $out_dir/vdj_t/all_contig.bam {output.raw_bam}
-            cp -v $out_dir/vdj_t/all_contig.bam.bai {output.raw_bai}
-            cp -v $sample_dir/vdj_t/consensus.bam {output.filtered_bam}
-            cp -v $sample_dir/vdj_t/consensus.bam.bai {output.filtered_bai}
-            # Loupe
-            cp -v $sample_dir/vdj_t/vloupe.vloupe {output.loupe}
-            # VDJ
-            mkdir -p {output.vdj_t}/raw {output.vdj_t}/filtered
-            cp -v -r $out_dir/vdj_t {output.vdj_t}/raw 
-            cp -v -r $sample_dir/vdj_t {output.vdj_t}/filtered
-            """
+rule restructure_vdj:
+    input:
+        tmp=rules.cellranger_multi.output.cr_dir
+    output:
+        vdj_t=directory(out_dir/"vdj_t/{capture}"),
+        raw_bam=out_dir/"bam/vdj/{capture}/all_contig.bam",
+        raw_bai=out_dir/"bam/vdj/{capture}/all_contig.bam.bai",
+        filtered_bam=out_dir/"bam/vdj/{capture}/consensus.bam",
+        filtered_bai=out_dir/"bam/vdj/{capture}/consensus.bam.bai",
+        loupe=out_dir/"loupe/vdj/{capture}.vloupe"
+    shell:
+        """
+        # Source directories
+        out_dir={input.tmp}/outs/multi
+        sample_dir={input.tmp}/outs/per_sample_outs/{wildcards.capture}
+        # Bams
+        cp -v $out_dir/vdj_t/all_contig.bam {output.raw_bam}
+        cp -v $out_dir/vdj_t/all_contig.bam.bai {output.raw_bai}
+        cp -v $sample_dir/vdj_t/consensus.bam {output.filtered_bam}
+        cp -v $sample_dir/vdj_t/consensus.bam.bai {output.filtered_bai}
+        # Loupe
+        cp -v $sample_dir/vdj_t/vloupe.vloupe {output.loupe}
+        # VDJ
+        mkdir -p {output.vdj_t}/raw {output.vdj_t}/filtered
+        cp -v -r $out_dir/vdj_t {output.vdj_t}/raw 
+        cp -v -r $sample_dir/vdj_t {output.vdj_t}/filtered
+        """
 
+# Restructure analysis results
+rule restructure_analysis:
+    input:
+        tmp=rules.cellranger_multi.output.cr_dir
+    output:
+        dir=directory(out_dir/"cr_analysis/{capture}")
+    shell:
+        """
+        cp -v {input.tmp}/outs/per_sample_outs/{wildcards.capture}/count/analysis {output.dir}
+        """
