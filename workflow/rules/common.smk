@@ -3,7 +3,6 @@ import pandas as pd
 
 # Determine which assays are present in libraries.csv
 def find_assays(library_path):
-    libraries=pd.read_csv(library_path)
     assays=libraries['feature_types'].unique()
     mapping = {
         "Gene Expression": "gene-expression",

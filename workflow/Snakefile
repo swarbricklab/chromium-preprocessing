@@ -1,11 +1,12 @@
 import pandas as pd
 from pathlib import Path
 
-captures=pd.read_csv(config['deps']['captures'], index_col='capture')
+captures=pd.read_csv(config['deps']['captures']).set_index('capture', drop=False)
+libraries=pd.read_csv(config['deps']['libraries'])
 
 out_dir=Path(config['outs']['results'])
 
-
+include: 'rules/preflight.smk'
 include: 'rules/common.smk'
 include: 'rules/summarise.smk'
 
@@ -13,6 +14,9 @@ include: 'rules/summarise.smk'
 targets = []
 
 assays = find_assays(config['deps']['libraries'])
+
+if not preflight_check():
+    exit()
 
 if assays == ['gene-expression']:
     print("Running cellranger count")
