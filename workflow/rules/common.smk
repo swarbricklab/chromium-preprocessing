@@ -16,23 +16,6 @@ def find_assays(library_path):
             exit()
     return [mapping.get(assay, assay) for assay in assays]
 
-# # Get list of final targets
-# def final_targets(wildcards):
-#     targets = []
-#     # cellranger count
-#     if 'count' in config["params"]:
-#         count_targets = expand(count_dir/"{capture}/outs/molecule_info.h5", capture = captures.index)
-#         targets.extend(count_targets)
-#         targets.append(count_dir/"cr_summary.csv")
-#     # cellranger aggr
-#     if 'aggr' in config["params"]:
-#         aggr_targets = aggr_all(wildcards)
-#         targets.extend(aggr_targets)
-#     print("Final targets: ")
-#     for target in targets:
-#         print("  -", target)
-#     return targets
-
 # Get fastq paths for capture of interest from libraries.csv
 # Used in rule cellranger_count
 def get_fastqs(wildcards):
