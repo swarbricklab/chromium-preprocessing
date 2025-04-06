@@ -23,7 +23,7 @@ else:
     print("Running cellranger multi")
     include: 'rules/cellranger_multi.smk'
 if config['params']['extras']['aggr']:
-    "Running cellranger aggr"
+    print("Running cellranger aggr")
     include: 'rules/cellranger_aggr.smk'
 
 rule all:
