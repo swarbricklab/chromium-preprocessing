@@ -5,7 +5,7 @@ targets.extend([out_dir/"summary/metrics/cr_summary.csv"])
 if 'vdj' in assays:
     targets.extend(
         expand(
-            out_dir/"loupe/vdj/{capture}.vloupe,
+            out_dir/"loupe/vdj/{capture}.vloupe",
             capture=captures.index
         )
     )
@@ -161,16 +161,16 @@ rule restructure_h5:
     output:
         raw_mat=out_dir/"h5/raw/{capture}/feature_bc_matrix.h5",
         raw_mol=out_dir/"h5/raw/{capture}/molecule_info.h5",
-        filtered_mat=out_dir/"h5/filtered/{capture}/feature_bc_matrix.h5",
-        filtered_mol=out_dir/"h5/filtered/{capture}/molecule_info.h5"
+        filtered_mat=out_dir/"h5/{capture}/feature_bc_matrix.h5",
+        filtered_mol=out_dir/"h5/{capture}/molecule_info.h5"
     shell:
         """
         # Source directories
         out_dir={input.tmp}/outs/multi/count
         sample_dir={input.tmp}/outs/per_sample_outs/{wildcards.capture}/count
         # h5
-        cp -v $out_dir/sample_filtered_feature_bc_matrix.h5 {output.raw_mat}
-        cp -v $out_dir/sample_molecule_info.h5 {output.raw_mol}
+        cp -v $out_dir/raw_feature_bc_matrix.h5 {output.raw_mat}
+        cp -v $out_dir/raw_molecule_info.h5 {output.raw_mol}
         cp -v $sample_dir/sample_filtered_feature_bc_matrix.h5 {output.filtered_mat}
         cp -v $sample_dir/sample_molecule_info.h5 {output.filtered_mol}
         """
@@ -205,13 +205,11 @@ if "vdj" in assays:
             out_dir={input.tmp}/outs/multi
             sample_dir={input.tmp}/outs/per_sample_outs/{wildcards.capture}
             # Bams
-            mkdir -p {output.bams}
             cp -v $out_dir/vdj_t/all_contig.bam {output.raw_bam}
             cp -v $out_dir/vdj_t/all_contig.bam.bai {output.raw_bai}
             cp -v $sample_dir/vdj_t/consensus.bam {output.filtered_bam}
             cp -v $sample_dir/vdj_t/consensus.bam.bai {output.filtered_bai}
             # Loupe
-            mkdir -p {output.loupe}
             cp -v $sample_dir/vdj_t/vloupe.vloupe {output.loupe}
             # VDJ
             mkdir -p {output.vdj_t}/raw {output.vdj_t}/filtered
