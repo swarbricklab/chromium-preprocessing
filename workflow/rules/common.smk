@@ -47,7 +47,10 @@ def get_options(section):
         return options
     return handle_wildcards
 
-    return wanted_input
+# Return h5 files for given pool
+def get_h5_in_pool(wildcards):
+    capture_list = captures[captures['pool'] == wildcards.pool].index.tolist()
+    return expand(out_dir/"h5/{capture}/molecule_info.h5",capture=capture_list)
 
 # get rule all input files for cellranger aggr
 def aggr_all(wildcards):
