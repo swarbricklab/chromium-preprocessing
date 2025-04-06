@@ -7,7 +7,6 @@
 deps:
   captures: "config/tests/count/captures.csv"
   libraries: "config/tests/count/libraries.csv"
-  transcriptome: "resources/transcriptomes/refdata-gex-GRCh38-2020-A"
 
 # Reference dependencies
 ref:
@@ -18,7 +17,6 @@ ref:
 # Files and directories produced by the workflow
 outs:
   results: "test/results/cellranger/count"
-  aggr: "test/results/cellranger/count_aggr"
   logs: "logs/chromium-preprocessing"
 
 # -- Parameters --#

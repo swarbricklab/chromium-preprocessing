@@ -1,0 +1,70 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "deps": {
+        "type": "object",
+        "properties": {
+          "captures": { "type": "string" },
+          "libraries": { "type": "string" },
+        },
+        "required": ["captures", "libraries"]
+      },
+      "ref": {
+        "type": "object",
+        "properties": {
+          "gene-expression": { "type": "string" }
+        },
+        "required": ["gene-expression"]
+      },
+      "outs": {
+        "type": "object",
+        "properties": {
+          "results": { "type": "string" },
+          "logs": { "type": "string" }
+        },
+        "required": ["results", "logs"]
+      },
+      "params": {
+        "type": "object",
+        "properties": {
+          "extras": {
+            "type": "object",
+            "properties": {
+              "aggr": { "type": "boolean" },
+              "annotate": { "type": "boolean" },
+              "hto": { "type": "boolean" }
+            },
+            "required": []
+          },
+          "gene-expression": {
+            "type": "object",
+            "properties": {
+              "create-bam": { "type": "string" },
+              "no-secondary": { "type": "string" },
+              "include-introns": { "type": "string" },
+              "chemistry": { "type": "string" },
+              "check-library-compatibility": { "type": "string" },
+              "expect-cells": { "type": "number" },
+              "force-cells": { "type": "number" },
+              "r1-length": { "type": "number" },
+              "r2-length": { "type": "number" },
+              "min-crispr-umi": { "type": "number" }
+            },
+            "required": ["create-bam"]
+          },
+          "aggr": {
+            "type": "object",
+            "properties": {
+              "normalize": { "type": "string" },
+              "no-secondary": { "type": "string" }
+            },
+            "required": ["normalize", "no-secondary"]
+          }
+        },
+        "required": ["gene-expression"]
+      }
+    },
+    "required": ["deps", "ref", "outs", "params"]
+  }
+  

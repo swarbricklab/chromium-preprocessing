@@ -1,0 +1,115 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "deps": {
+        "type": "object",
+        "properties": {
+          "captures": {
+            "type": "string"
+          },
+          "libraries": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "captures",
+          "libraries"
+        ]
+      },
+      "ref": {
+        "type": "object",
+        "properties": {
+          "gene-expression": {
+            "type": "string"
+          },
+          "feature": {
+            "type": "string"
+          },
+          "vdj": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "gene-expression"
+        ]
+      },
+      "outs": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "string"
+          },
+          "aggr": {
+            "type": "string"
+          },
+          "logs": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "results",
+          "logs"
+        ]
+      },
+      "params": {
+        "type": "object",
+        "properties": {
+          "extras": {
+            "type": "object",
+            "properties": {
+              "aggr": {
+                "type": "boolean"
+              },
+              "annotate": {
+                "type": "boolean"
+              },
+              "hto": {
+                "type": "boolean"
+              }
+            },
+            "required": []
+          },
+          "gene-expression": {
+            "type": "object",
+            "properties": {
+              "create-bam": {
+                "type": "string"
+              },
+              "no-secondary": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "create-bam"
+            ]
+          },
+          "aggr": {
+            "type": "object",
+            "properties": {
+              "normalize": {
+                "type": "string"
+              },
+              "no-secondary": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "normalize",
+              "no-secondary"
+            ]
+          }
+        },
+        "required": [
+          "gene-expression"
+        ]
+      }
+    },
+    "required": [
+      "deps",
+      "ref",
+      "outs",
+      "params"
+    ]
+  }
+  
