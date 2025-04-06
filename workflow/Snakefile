@@ -3,7 +3,9 @@ from pathlib import Path
 from snakemake.utils import validate
 
 captures=pd.read_csv(config['deps']['captures']).set_index('capture', drop=False)
+validate(captures, "schemas/captures.json")
 libraries=pd.read_csv(config['deps']['libraries'])
+validate(libraries,"schemas/libraries.json")
 
 out_dir=Path(config['outs']['results'])
 

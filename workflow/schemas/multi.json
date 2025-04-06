@@ -1,112 +1,115 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "type": "object",
-    "properties": {
-      "deps": {
-        "type": "object",
-        "properties": {
-          "captures": {
-            "type": "string"
-          },
-          "libraries": {
-            "type": "string"
-          }
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Configuration schema for cellranger multi. This schema validates dependencies, references, outputs, and parameters required for running cellranger multi.",
+  "type": "object",
+  "properties": {
+    "deps": {
+      "type": "object",
+      "description": "Dependencies required for the workflow. These include paths to input files such as the captures and libraries CSV files.",
+      "properties": {
+        "captures": {
+          "type": "string",
+          "description": "Path to the captures CSV file."
         },
-        "required": [
-          "captures",
-          "libraries"
-        ]
+        "libraries": {
+          "type": "string",
+          "description": "Path to the libraries CSV file."
+        }
       },
-      "ref": {
-        "type": "object",
-        "properties": {
-          "gene-expression": {
-            "type": "string"
-          },
-          "feature": {
-            "type": "string"
-          },
-          "vdj": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "gene-expression"
-        ]
-      },
-      "outs": {
-        "type": "object",
-        "properties": {
-          "results": {
-            "type": "string"
-          },
-          "logs": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "results",
-          "logs"
-        ]
-      },
-      "params": {
-        "type": "object",
-        "properties": {
-          "extras": {
-            "type": "object",
-            "properties": {
-              "aggr": {
-                "type": "boolean"
-              },
-              "annotate": {
-                "type": "boolean"
-              },
-              "hto": {
-                "type": "boolean"
-              }
-            },
-            "required": []
-          },
-          "gene-expression": {
-            "type": "object",
-            "properties": {
-              "create-bam": {
-                "type": "boolean"
-              },
-              "no-secondary": {
-                "type": "boolean"
-              }
-            },
-            "required": [
-              "create-bam"
-            ]
-          },
-          "aggr": {
-            "type": "object",
-            "properties": {
-              "normalize": {
-                "type": "string"
-              },
-              "no-secondary": {
-                "type": "boolean"
-              }
-            },
-            "required": [
-              "normalize",
-              "no-secondary"
-            ]
-          }
-        },
-        "required": [
-          "gene-expression"
-        ]
-      }
+      "required": [
+        "captures",
+        "libraries"
+      ]
     },
-    "required": [
-      "deps",
-      "ref",
-      "outs",
-      "params"
-    ]
-  }
-  
+    "ref": {
+      "type": "object",
+      "description": "Reference dependencies used in the workflow.",
+      "properties": {
+        "gene-expression": {
+          "type": "string",
+          "description": "Path to the reference transcriptome for gene expression."
+        },
+        "feature": {
+          "type": "string",
+          "description": "Path to the reference for feature barcode antibodies (if applicable)."
+        },
+        "vdj": {
+          "type": "string",
+          "description": "Path to the reference for V(D)J libraries (if applicable)."
+        }
+      },
+      "required": [
+        "gene-expression"
+      ]
+    },
+    "outs": {
+      "type": "object",
+      "description": "Output directories where results and logs will be stored.",
+      "properties": {
+        "results": {
+          "type": "string",
+          "description": "Directory where final results will be stored."
+        },
+        "logs": {
+          "type": "string",
+          "description": "Directory where logs will be stored."
+        }
+      },
+      "required": [
+        "results",
+        "logs"
+      ]
+    },
+    "params": {
+      "type": "object",
+      "description": "Parameters controlling workflow behavior, including advanced options for cellranger multi.",
+      "properties": {
+        "extras": {
+          "type": "object",
+          "description": "Additional boolean options.",
+          "properties": {
+            "aggr": {
+              "type": "boolean",
+              "description": "If true, aggregation will be performed."
+            },
+            "annotate": {
+              "type": "boolean",
+              "description": "If true, cell-type annotation is enabled."
+            },
+            "hto": {
+              "type": "boolean",
+              "description": "If true, HTO demux is enabled."
+            }
+          },
+          "required": []
+        },
+        "gene-expression": {
+          "type": "object",
+          "description": "Options for running cellranger count for gene expression libraries. Boolean options here are used to build CLI option strings.",
+          "properties": {
+            "create-bam": {
+              "type": "boolean",
+              "description": "Whether to create a BAM file as part of the gene expression pipeline."
+            },
+            "no-secondary": {
+              "type": "boolean",
+              "description": "Disable secondary alignments if true."
+            }
+          },
+          "required": [
+            "create-bam"
+          ]
+        }
+      },
+      "required": [
+        "gene-expression"
+      ]
+    }
+  },
+  "required": [
+    "deps",
+    "ref",
+    "outs",
+    "params"
+  ]
+}

@@ -1,70 +1,136 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "type": "object",
-    "properties": {
-      "deps": {
-        "type": "object",
-        "properties": {
-          "captures": { "type": "string" },
-          "libraries": { "type": "string" },
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Configuration schema for running cellranger count on gene expression libraries. This schema defines the required dependencies, references, outputs, and parameters.",
+  "type": "object",
+  "properties": {
+    "deps": {
+      "type": "object",
+      "description": "Input file dependencies required for cellranger count.",
+      "properties": {
+        "captures": {
+          "type": "string",
+          "description": "Path to the captures CSV file."
         },
-        "required": ["captures", "libraries"]
+        "libraries": {
+          "type": "string",
+          "description": "Path to the libraries CSV file."
+        }
       },
-      "ref": {
-        "type": "object",
-        "properties": {
-          "gene-expression": { "type": "string" }
-        },
-        "required": ["gene-expression"]
-      },
-      "outs": {
-        "type": "object",
-        "properties": {
-          "results": { "type": "string" },
-          "logs": { "type": "string" }
-        },
-        "required": ["results", "logs"]
-      },
-      "params": {
-        "type": "object",
-        "properties": {
-          "extras": {
-            "type": "object",
-            "properties": {
-              "aggr": { "type": "boolean" },
-              "annotate": { "type": "boolean" },
-              "hto": { "type": "boolean" }
-            },
-            "required": []
-          },
-          "gene-expression": {
-            "type": "object",
-            "properties": {
-              "create-bam": { "type": "boolean" },
-              "no-secondary": { "type": "boolean" },
-              "include-introns": { "type": "boolean" },
-              "chemistry": { "type": "string" },
-              "check-library-compatibility": { "type": "boolean" },
-              "expect-cells": { "type": "number" },
-              "force-cells": { "type": "number" },
-              "r1-length": { "type": "number" },
-              "r2-length": { "type": "number" },
-              "min-crispr-umi": { "type": "number" }
-            },
-            "required": ["create-bam"]
-          },
-          "aggr": {
-            "type": "object",
-            "properties": {
-              "normalize": { "type": "string" },
-              "no-secondary": { "type": "boolean" }
-            },
-            "required": ["normalize", "no-secondary"]
-          }
-        },
-        "required": ["gene-expression"]
-      }
+      "required": [
+        "captures",
+        "libraries"
+      ]
     },
-    "required": ["deps", "ref", "outs", "params"]
-  }
-  
+    "ref": {
+      "type": "object",
+      "description": "Reference dependencies for cellranger count.",
+      "properties": {
+        "gene-expression": {
+          "type": "string",
+          "description": "Path to the reference transcriptome for gene expression."
+        }
+      },
+      "required": [
+        "gene-expression"
+      ]
+    },
+    "outs": {
+      "type": "object",
+      "description": "Output directories for cellranger count results and logs.",
+      "properties": {
+        "results": {
+          "type": "string",
+          "description": "Directory where cellranger count results will be stored."
+        },
+        "logs": {
+          "type": "string",
+          "description": "Directory where logs will be stored."
+        }
+      },
+      "required": [
+        "results",
+        "logs"
+      ]
+    },
+    "params": {
+      "type": "object",
+      "description": "Parameters controlling the behavior of cellranger count and (optionally) cellranger aggr.",
+      "properties": {
+        "extras": {
+          "type": "object",
+          "description": "Additional boolean options for enabling or disabling extra processing steps.",
+          "properties": {
+            "aggr": {
+              "type": "boolean",
+              "description": "If true, aggregation is enabled."
+            },
+            "annotate": {
+              "type": "boolean",
+              "description": "If true, annotation is performed."
+            },
+          },
+          "required": []
+        },
+        "gene-expression": {
+          "type": "object",
+          "description": "Options specific to cellranger count for gene expression libraries. Boolean values are used to build the CLI option strings.",
+          "properties": {
+            "create-bam": {
+              "type": "boolean",
+              "description": "If true, a BAM file is created as part of the analysis."
+            },
+            "no-secondary": {
+              "type": "boolean",
+              "description": "If true, secondary alignments are disabled."
+            },
+            "include-introns": {
+              "type": "boolean",
+              "description": "If true, intronic reads are included."
+            },
+            "chemistry": {
+              "type": "string",
+              "description": "Specifies the library chemistry. Options are defined by 10X documentation.",
+              "enum": ["auto", "SC3Pv2", "SC3Pv3"]
+            },
+            "check-library-compatibility": {
+              "type": "boolean",
+              "description": "If true, the workflow checks for library compatibility."
+            },
+            "expect-cells": {
+              "type": "number",
+              "description": "Optional. The expected number of cells."
+            },
+            "force-cells": {
+              "type": "number",
+              "description": "Optional. The number of cells to force."
+            },
+            "r1-length": {
+              "type": "number",
+              "description": "Optional. The length of read 1."
+            },
+            "r2-length": {
+              "type": "number",
+              "description": "Optional. The length of read 2."
+            },
+            "min-crispr-umi": {
+              "type": "number",
+              "description": "Optional. The minimum CRISPR UMI count."
+            }
+          },
+          "required": [
+            "create-bam"
+          ]
+        }
+      },
+      "required": [
+        "gene-expression"
+      ]
+    }
+  },
+  "required": [
+    "deps",
+    "ref",
+    "outs",
+    "params"
+  ]
+}
