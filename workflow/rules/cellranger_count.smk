@@ -104,5 +104,5 @@ rule restructure_analysis:
         dir=directory(out_dir/"cr_analysis/{capture}")
     shell:
         """
-        cp -v {input.tmp}/outs/analysis {output.dir}
+        cp -v -r {input.tmp}/outs/analysis {output.dir}
         """
