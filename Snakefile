@@ -31,6 +31,7 @@ if assays == ['gene-expression']:
     # When only gene-expression libraries are present use 'cellranger count.
     print("Running cellranger count")
     include: 'workflow/rules/cellranger_count.smk'
+    include: 'workflow/rules/restructure_count.smk'
     validate(config,"workflow/schemas/multi.json")
     targets.extend(count_targets())
 elif assays == ['vdj']:
@@ -42,6 +43,7 @@ else:
     # Use 'cellranger multi' if more than one assay present
     print("Running cellranger multi")
     include: 'workflow/rules/cellranger_multi.smk'
+    include: 'workflow/rules/restructure_multi.smk'
     validate(config,"workflow/schemas/multi.json")
     targets.extend(multi_targets())
 # Optionally use 'cellranger aggr' to aggregate split pools
