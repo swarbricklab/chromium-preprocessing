@@ -13,7 +13,7 @@
     },
     "feature_types": {
       "type": "string",
-      "description": "The type of library. Valid options (per 10X documentation) include 'Gene Expression', 'Antibody Capture', 'VDJ-T', 'VDJ-B', and 'CRISPR'.",
+      "description": "The type of library. Valid options (per 10X documentation) include 'Gene Expression', 'Antibody Capture', 'VDJ-T', 'VDJ-B'",
       "enum": [
         "Gene Expression",
         "Antibody Capture",
