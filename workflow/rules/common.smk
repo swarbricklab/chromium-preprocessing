@@ -66,6 +66,8 @@ def get_options(section):
                 else:
                     pass
             else:
+                if type(value) is bool:
+                    value=str(value).lower()
                 options=options+" --"+parameter+" "+str(value)
         return options
     return handle_wildcards
