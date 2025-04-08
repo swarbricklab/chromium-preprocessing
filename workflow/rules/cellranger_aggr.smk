@@ -63,7 +63,7 @@ rule merge_bams:
     log:
         "logs/chromium-preprocessing/merge_bams/{pool}.log"
     script:
-        "../scripts/merge_bams.sh"
+        "workflow/scripts/merge_bams.sh"
 
 rule index_merged_bam:
     input:

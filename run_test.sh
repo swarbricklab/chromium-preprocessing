@@ -23,7 +23,7 @@ tests="count multi"
 
 for test in $tests; do
     snakemake $global_profile $workflow_profile \
-        --snakefile workflow/Snakefile \
+        --snakefile Snakefile \
         --configfile config/tests/$test/config.yaml \
         $@
 done
