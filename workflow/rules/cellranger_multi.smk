@@ -1,15 +1,5 @@
 # This smk file contains rules for running 'cellranger multi' on multiple captures
 
-# Extend targets
-targets.extend([out_dir/"summary/metrics/cr_summary.csv"])
-if 'vdj' in assays:
-    targets.extend(
-        expand(
-            out_dir/"loupe/vdj/{capture}.vloupe",
-            capture=captures.index
-        )
-    )
-
 # 'cellranger multi' requires a 'multi config CSV' file
 # Rather than hand-craft a CSV file for each individual capture, this workflow creates a
 # CSV file for each capture dynamically, based on the global configuration
@@ -143,8 +133,8 @@ rule restructure_counts:
     shell:
         """
         # Source directories
-        out_dir={input.tmp}/outs/multi/count
-        sample_dir={input.tmp}/outs/per_sample_outs/{wildcards.capture}/count
+        out_dir={input.tmp}/outs/multi/count/raw_feature_bc_matrix
+        sample_dir={input.tmp}/outs/per_sample_outs/{wildcards.capture}/count/sample_filtered_feature_bc_matrix
         # Copy and recompress
         zcat $sample_dir/barcodes.tsv.gz | gzip -n > {output.filtered_bc}
         zcat $sample_dir/features.tsv.gz | gzip -n > {output.filtered_feat}
@@ -188,32 +178,105 @@ rule restructure_loupe:
         cp -v {input.tmp}/outs/per_sample_outs/{wildcards.capture}/count/sample_cloupe.cloupe {output.filtered}
         """
 
-rule restructure_vdj:
+rule restructure_vdj_fa:
     input:
         tmp=rules.cellranger_multi.output.cr_dir
     output:
-        vdj_t=directory(out_dir/"vdj_t/{capture}"),
-        raw_bam=out_dir/"bam/vdj/{capture}/all_contig.bam",
-        raw_bai=out_dir/"bam/vdj/{capture}/all_contig.bam.bai",
-        filtered_bam=out_dir/"bam/vdj/{capture}/consensus.bam",
-        filtered_bai=out_dir/"bam/vdj/{capture}/consensus.bam.bai",
-        loupe=out_dir/"loupe/vdj/{capture}.vloupe"
+        raw_contig_fa=out_dir/"{vdj_assay}/fa/{capture}/all_contig.fasta",
+        raw_contig_fai=out_dir/"{vdj_assay}/fa/{capture}/all_contig.fasta.fai",
+        raw_contig_fq=out_dir/"{vdj_assay}/{capture}/all_contig.fastq",
+        filtered_contig_fa=out_dir/"{vdj_assay}/fa/{capture}/filtered_contig.fasta",
+        filtered_contig_fq=out_dir/"{vdj_assay}/fa/{capture}/filtered_contig.fastq",
+        ref_fa=out_dir/"{vdj_assay}/fa/{capture}/concat_ref.fasta",
+        ref_fai=out_dir/"{vdj_assay}/fa/{capture}/concat_ref.fasta.fai",
+        consensus_fa=out_dir/"{vdj_assay}/fa/{capture}/consensus.fasta",
+        consensus_fai=out_dir/"{vdj_assay}/fa/{capture}/consensus.fasta.fai",
+        donor=out_dir/"{vdj_assay}/fa/{capture}/donor_regions.fa",
+    shell:
+        """
+        # Base directories
+        multi={input.tmp}/outs/multi/{wildcards.vdj_assay}
+        per_sample={input.tmp}/outs/per_sample_outs/{wildcards.capture}/{wildcards.vdj_assay}
+        # Copy results
+        cp -v $multi/all_contig.fasta {output.raw_contig_fa}
+        cp -v $multi/all_contig.fasta.fai {output.raw_contig_fai}
+        cp -v $multi/all_contig.fastq {output.raw_contig_fq}
+        cp -v $per_sample/filtered_contig.fasta {output.filtered_contig_fa}
+        cp -v $per_sample/filtered_contig.fastq {output.filtered_contig_fq}
+        cp -v $per_sample/concat_ref.fasta {output.ref_fa}
+        cp -v $per_sample/concat_ref.fasta.fai {output.ref_fai}
+        cp -v $per_sample/consensus.fasta {output.consensus_fa}
+        cp -v $per_sample/consensus.fasta.fai {output.consensus_fai}
+        cp -v $per_sample/donor_regions.fa {output.donor}
+        """
+
+rule restructure_vdj_bams:
+    input:
+        tmp=rules.cellranger_multi.output.cr_dir
+    output:
+        raw_bam=out_dir/"bam/vdj/{vdj_assay}/{capture}/all_contig.bam",
+        raw_bai=out_dir/"bam/vdj/{vdj_assay}/{capture}/all_contig.bam.bai",
+        filtered_bam=out_dir/"bam/vdj/{vdj_assay}/{capture}/consensus.bam",
+        filtered_bai=out_dir/"bam/vdj/{vdj_assay}/{capture}/consensus.bam.bai"
     shell:
         """
         # Source directories
-        out_dir={input.tmp}/outs/multi
-        sample_dir={input.tmp}/outs/per_sample_outs/{wildcards.capture}
+        multi={input.tmp}/outs/multi
+        per_sample={input.tmp}/outs/per_sample_outs/{wildcards.capture}
         # Bams
-        cp -v $out_dir/vdj_t/all_contig.bam {output.raw_bam}
-        cp -v $out_dir/vdj_t/all_contig.bam.bai {output.raw_bai}
-        cp -v $sample_dir/vdj_t/consensus.bam {output.filtered_bam}
-        cp -v $sample_dir/vdj_t/consensus.bam.bai {output.filtered_bai}
-        # Loupe
-        cp -v $sample_dir/vdj_t/vloupe.vloupe {output.loupe}
-        # VDJ
-        mkdir -p {output.vdj_t}/raw {output.vdj_t}/filtered
-        cp -v -r $out_dir/vdj_t {output.vdj_t}/raw 
-        cp -v -r $sample_dir/vdj_t {output.vdj_t}/filtered
+        cp -v $multi/{wildcards.vdj_assay}/all_contig.bam {output.raw_bam}
+        cp -v $multi/{wildcards.vdj_assay}/all_contig.bam.bai {output.raw_bai}
+        cp -v $per_sample/{wildcards.vdj_assay}/consensus.bam {output.filtered_bam}
+        cp -v $per_sample/{wildcards.vdj_assay}/consensus.bam.bai {output.filtered_bai}
+        """
+
+rule restructure_vdj_annotations:
+    input:
+        tmp=rules.cellranger_multi.output.cr_dir
+    output:
+        all_bed=out_dir/"vdj/{vdj_assay}/annotations/{capture}/all_contigs.bed",
+        all_csv=out_dir/"vdj/{vdj_assay}/annotations/{capture}/all_contigs.csv",
+        all_json=out_dir/"vdj/{vdj_assay}/annotations/{capture}/all_contigs.json",
+        consensus=out_dir/"vdj/{vdj_assay}/annotations/{capture}/consensus.csv",
+        filtered=out_dir/"vdj/{vdj_assay}/annotations/{capture}/filtered_contigs.csv"
+    shell:
+        """
+        # Source directories
+        multi={input.tmp}/outs/multi/{wildcards.vdj_assay}
+        per_sample={input.tmp}/outs/per_sample_outs/{wildcards.capture}/{wildcards.vdj_assay}
+        # Annotations
+        cp -v $multi/all_contig_annotations.bed {output.all_bed}
+        cp -v $multi/all_contig_annotations.csv {output.all_csv}
+        cp -v $multi/all_contig_annotations.json {output.all_json}
+        cp -v $per_sample/consensus_annotations.csv {output.consensus}
+        cp -v $per_sample/filtered_contig_annotations.csv {output.filtered}
+        """
+
+rule restructure_vdj_results:
+    input:
+        tmp=rules.cellranger_multi.output.cr_dir
+    output:
+        airr=out_dir/"{vdj_assay}/results/{capture}/airr_rearrangement.tsv",
+        bc=out_dir/"{vdj_assay}/results/{capture}/cell_barcodes.json",
+        clono=out_dir/"{vdj_assay}/results/{capture}/clonotypes.csv",
+        pb=out_dir/"{vdj_assay}/results/{capture}/vdj_contig_info.pb"
+    shell:
+        """
+        per_sample={input.tmp}/outs/per_sample_outs/{wildcards.capture}/{wildcards.vdj_assay}
+        cp -v $per_sample/airr_rearrangement.tsv {output.airr}
+        cp -v $per_sample/cell_barcodes.json {output.bc}
+        cp -v $per_sample/clonotypes.csv {output.clono}
+        cp -v $per_sample/vdj_contig_info.pb {output.pb}
+        """
+
+rule restructure_vdj_loupe:
+    input:
+        tmp=rules.cellranger_multi.output.cr_dir
+    output:
+        loupe=out_dir/"loupe/{vdj_assay}/{capture}.vloupe"
+    shell:
+        """
+        cp -v {input.tmp}/outs/per_sample_outs/{wildcards.capture}/{wildcards.vdj_assay}/vloupe.vloupe {output.loupe}
         """
 
 # Restructure analysis results
@@ -224,5 +287,5 @@ rule restructure_analysis:
         dir=directory(out_dir/"cr_analysis/{capture}")
     shell:
         """
-        cp -v {input.tmp}/outs/per_sample_outs/{wildcards.capture}/count/analysis {output.dir}
+        cp -v -r {input.tmp}/outs/per_sample_outs/{wildcards.capture}/count/analysis {output.dir}
         """
