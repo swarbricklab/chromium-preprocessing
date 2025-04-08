@@ -13,16 +13,19 @@ include: 'rules/preflight.smk'
 include: 'rules/common.smk'
 include: 'rules/summarise.smk'
 
-# Build list of target files depending on which options are active
-targets = []
-
-assays = find_assays(config['deps']['libraries'])
+# Find which assays and VDJ sub-assays are present in the libraries
+assays = find_assays(libraries)
+if 'vdj' in assays:
+    vdj_assays = find_vdj_assays(libraries)
 
 if not preflight_check():
     exit()
 
 # The following section dynamically loads rule files depending on config choices
 # and validates config schemas according to these selections
+# A list of final targets is built depending on these choices.
+
+targets = []
 
 if assays == ['gene-expression']:
     # When only gene-expression libraries are present use 'cellranger count.
@@ -48,6 +51,7 @@ if config['params']['extras']['aggr']:
     targets.extend(aggr_targets())
     validate(config,"schemas/aggr.json")
     validate(captures, "schemas/aggr_captures.json")
+
 
 rule all:
     input:

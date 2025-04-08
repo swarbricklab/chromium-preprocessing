@@ -2,7 +2,7 @@ from snakemake.io import expand
 import pandas as pd
 
 # Determine which assays are present in libraries.csv
-def find_assays(library_path):
+def find_assays(libraries):
     assays=libraries['feature_types'].unique()
     mapping = {
         "Gene Expression": "gene-expression",
@@ -14,6 +14,30 @@ def find_assays(library_path):
             print("Unexpected assay (feature_type) in libraries.csv: {}".format(assay))
             exit()
     return [mapping.get(assay, assay) for assay in assays]
+
+# Determine which supported VDJ assays are present (VDJ-T or VDJ-B)
+def find_vdj_assays(libraries):
+    supported_vdj_assays = {
+        'VDJ-T': 'vdj_t',
+        'VDJ-B': 'vdj_b'
+    }
+    assays=libraries['feature_types'].unique()
+    vdj_assays = []
+    for assay in assays:
+        if 'VDJ' in assay:
+            if assay == 'VDJ':
+                print("Auto-detection of VDJ assays not supported.")
+                print("Specify a particular type of VDJ assay for 'feature_types' in 'libraries.csv'. Eg, 'VDJ-B' or 'VDJ-T'")
+                exit()
+            elif assay not in supported_vdj_assays.keys():
+                print("Unsupported assay type: " + assay)
+                exit()
+            else:
+                vdj_assays.extend([assay])
+        else:
+            # Non-VDJ assay
+            pass 
+    return [supported_vdj_assays.get(assay, assay) for assay in vdj_assays]
 
 # Get fastq paths for capture of interest from libraries.csv
 # Used in rule cellranger_count
