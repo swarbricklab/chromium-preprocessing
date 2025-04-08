@@ -1,5 +1,6 @@
 from snakemake.io import expand
 import pandas as pd
+import itertools
 
 # Determine which assays are present in libraries.csv
 def find_assays(libraries):
@@ -96,27 +97,10 @@ def aggr_targets():
     )
 
 def count_targets():
-    count_targets = expand(
-        [
-            out_dir/"summary/metrics/cr_summary.csv"
-            # ,
-            # out_dir/"count/filtered_feature_bc_matrix/{capture}/barcodes.tsv.gz",
-            # out_dir/"count/filtered_feature_bc_matrix/{capture}/features.tsv.gz",
-            # out_dir/"count/filtered_feature_bc_matrix/{capture}/matrix.mtx.gz",
-            # out_dir/"count/raw_feature_bc_matrix/{capture}/barcodes.tsv.gz",
-            # out_dir/"count/raw_feature_bc_matrix/{capture}/features.tsv.gz",
-            # out_dir/"count/raw_feature_bc_matrix/{capture}/matrix.mtx.gz",
-        ],
-        capture=captures.index
-    )
+    count_targets = expand(list(rules.restructure_counts.output),capture=captures.index)
     if config['params']['gene-expression']['create-bam']:
         count_targets.extend(
-            expand(
-                [
-                    rules.restructure_bams.output.ass_bam,
-                    rules.restructure_bams.output.ass_bai
-                ],
-                capture=captures.index)
+            expand(list(rules.restructure_bams.output),capture=captures.index)
         )
     if not config['params']['gene-expression']['no-secondary']:
         count_targets.extend(
@@ -127,9 +111,17 @@ def count_targets():
 def multi_targets():
     multi_targets=count_targets()
     if 'vdj' in assays:
-        multi_targets.extend(
-            expand(rules.restructure_vdj.output.vdj_t,capture=captures.index)
+        vdj_targets=expand(
+            list(itertools.chain(
+                list(rules.restructure_vdj_fa.output),
+                list(rules.restructure_vdj_bams.output),
+                list(rules.restructure_vdj_loupe.output),
+                list(rules.restructure_vdj_annotations.output),
+                list(rules.restructure_vdj_results.output)
+            )),
+            capture=captures.index, vdj_assay=vdj_assays
         )
+    multi_targets.extend(vdj_targets)
     return multi_targets
 
 # Returns individual source bam files to be merged as part of aggr
