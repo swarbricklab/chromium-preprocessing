@@ -1,0 +1,7 @@
+# Template for captures samplesheet
+# Delete these comments
+# Edit to match actual dataset
+# Only include 'pool' column when using aggregation
+capture,pool
+{capture id},{pool id}
+{capture id},{pool id}
