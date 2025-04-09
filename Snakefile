@@ -50,10 +50,14 @@ else:
 if config['params']['extras']['aggr']:
     print("Running cellranger aggr")
     include: 'workflow/rules/cellranger_aggr.smk'
-    targets.extend(aggr_targets())
+    targets.extend(aggr_count_targets())
+    if 'vdj' in assays:
+        targets.extend(aggr_vdj_targets())
     validate(config,"workflow/schemas/aggr.json")
     validate(captures, "workflow/schemas/aggr_captures.json")
 
+wildcard_constraints:
+    capture = "[^/]+"
 
 rule all:
     input:

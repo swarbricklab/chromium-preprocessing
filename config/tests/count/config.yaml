@@ -16,7 +16,7 @@ ref:
 # -- Outputs -- #
 # Files and directories produced by the workflow
 outs:
-  results: "test/results/cellranger/count"
+  results: "test/results/cellranger/count_test"
   logs: "logs/chromium-preprocessing"
 
 # -- Parameters --#

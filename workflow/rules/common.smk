@@ -78,6 +78,15 @@ def get_h5_in_pool(wildcards):
     capture_list = captures[captures['pool'] == wildcards.pool].index.tolist()
     return expand(out_dir/"h5/{capture}/molecule_info.h5",capture=capture_list)
 
+# Return pb files for given pool
+def get_pb_in_pool(wildcards):
+    capture_list = captures[captures['pool'] == wildcards.pool].index.tolist()
+    return expand(
+        out_dir/"{vdj_assay}/results/{capture}/vdj_contig_info.pb",
+        capture=capture_list,
+        vdj_assay=wildcards.vdj_assay
+    )
+
 # Return a list of valid pools
 # Valid pools do not have the same value as the capture in the same row
 # Valid pools cannot be 'NA', 'None' or the empty string
@@ -86,14 +95,19 @@ def get_pool_list():
     valid_pools = captures.loc[(captures['pool'] != captures.index) | (captures['pool'].isin(null_pool_indicators))]
     return valid_pools['pool'].unique().tolist()
 
-# get rule all input files for cellranger aggr
-def aggr_targets():
+# get rule all input files for cellranger aggr count
+def aggr_count_targets():
     return expand(
-        [   
-            out_dir/"aggr/{pool}/outs/count/summary.json",
-            out_dir/"bams/{pool}/merged.bam.bai"
-        ],
+        list(rules.cellranger_aggr_count.output),
         pool=get_pool_list()
+    )
+
+# get rule all input files for cellranger aggr count
+def aggr_vdj_targets():
+    return expand(
+        list(rules.cellranger_aggr_vdj.output),
+        pool=get_pool_list(),
+        vdj_assay=vdj_assays
     )
 
 def count_targets():
