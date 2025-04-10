@@ -45,7 +45,7 @@ def find_vdj_assays(libraries):
 def get_fastqs(wildcards):
     libraries=pd.read_csv(config['deps']['libraries'])
     capture_subset=libraries[libraries['fastq_id'] == wildcards.capture]
-    return ",".join(capture_subset['fastqs'].tolist())
+    return capture_subset['fastqs'].tolist()
 
 # Translate aggr options in config to a string that can be passed to 'cellranger aggr/count'
 # Used in rules cellrange_count and cellranger_aggr

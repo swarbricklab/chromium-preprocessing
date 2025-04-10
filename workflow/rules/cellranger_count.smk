@@ -23,7 +23,7 @@ rule cellranger_count:
             --output-dir {output.cr_dir} \
             --id={wildcards.capture} \
             --sample={wildcards.capture} \
-            --fastqs={input.fastqs} \
+            --fastqs=$(echo {input.fastqs} | tr ' ' ',') \
             --transcriptome={input.transcriptome} \
             --jobmode={resources.jobmode} \
             --maxjobs {resources.maxjobs} \
