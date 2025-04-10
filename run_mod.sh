@@ -19,6 +19,6 @@ else
 fi
 
 snakemake $global_profile $workflow_profile \
-    --snakefile modules/chromium-preprocessing/workflow/Snakefile \
+    --snakefile modules/chromium-preprocessing/Snakefile \
     --configfile config/chromium-preprocessing/config.yaml \
     $@
