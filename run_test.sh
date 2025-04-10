@@ -8,7 +8,7 @@ conda activate snakemake_7.32.4
 if [[ "$(hostname)" == *"nci"* ]]; then
     echo "Running on NCI"
     global_profile="--profile profiles/global/nci_a56"
-    workflow_profile="--workflow-profile profiles/workflow"
+    workflow_profile="--workflow-profile profiles/test"
     module load singularity
     mkdir -p logs/joblogs
 else
@@ -25,5 +25,5 @@ for test in $tests; do
     snakemake $global_profile $workflow_profile \
         --snakefile Snakefile \
         --configfile config/tests/$test/config.yaml \
-        $@
+                $@
 done

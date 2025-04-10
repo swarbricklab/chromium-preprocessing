@@ -21,4 +21,5 @@ fi
 snakemake $global_profile $workflow_profile \
     --snakefile modules/chromium-preprocessing/Snakefile \
     --configfile config/chromium-preprocessing/config.yaml \
+    --resources jobmode="'modules/chromium-preprocessing/profiles/global/nci_a56/resources/pbspro.template'"
     $@

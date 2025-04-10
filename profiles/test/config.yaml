@@ -17,6 +17,7 @@ set-resources:
         mempercore: 8 #GB
         maxjobs: 100
         jobinterval: 2000
+        jobmode: "'profiles/global/nci_a56/resources/pbspro.template'"
     cr_summarise:
         threads: "1"
         mem: "8GB"
@@ -36,6 +37,7 @@ set-resources:
         mempercore: 8 #GB
         maxjobs: 100
         jobinterval: 2000
+        jobmode: "'profiles/global/nci_a56/resources/pbspro.template'"
     cellranger_aggr_vdj:
         threads: "1"
         mem: "4GB"
@@ -43,6 +45,7 @@ set-resources:
         mempercore: 8 #GB
         maxjobs: 100
         jobinterval: 2000
+        jobmode: "'profiles/global/nci_a56/resources/pbspro.template'"
     merge_bams:
         threads: "1"
         mem: "16GB"
@@ -59,6 +62,7 @@ set-resources:
         mempercore: 8 #GB
         maxjobs: 100
         jobinterval: 2000
+        jobmode: "'profiles/global/nci_a56/resources/pbspro.template'"
     select_libraries:
         threads: "1"
         mem: "2GB"
