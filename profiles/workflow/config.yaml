@@ -48,6 +48,10 @@ set-resources:
         mem: "16GB"
         disk: "100MB"
         runtime: "24h"
+    index_merged_bams:
+        threads: "1"
+        mem: "24GB"
+        disk: "100MB"
     cellranger_multi: 
         threads: "1"
         mem: "2GB"
