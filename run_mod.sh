@@ -4,6 +4,8 @@ set -e
 eval  "$(conda shell.bash hook)"
 conda activate snakemake_7.32.4
 
+export JOBMODE="'modules/chromium-preprocessing/profiles/global/nci_a56/resources/pbspro.template'"
+
 if [[ "$(hostname)" == *"nci"* ]]; then
     echo "Running on NCI"
     global_profile="--profile modules/chromium-preprocessing/profiles/global/nci_a56"
