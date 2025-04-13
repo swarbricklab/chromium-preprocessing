@@ -97,10 +97,21 @@ def get_pool_list():
 
 # get rule all input files for cellranger aggr count
 def aggr_count_targets():
-    return expand(
-        list(rules.cellranger_aggr_count.output),
+    aggr_count_targets=expand(
+        list(itertools.chain(
+            list(rules.cellranger_aggr_count.output),
+            list(rules.merge_bams.output),
+            list(rules.index_merged_bam.output),
+            list(rules.restructure_aggr_counts.output)
+        )),
         pool=get_pool_list()
     )
+    if not config['params']['gene-expression']['no-secondary']:
+        aggr_count_targets.extend(
+            expand(rules.restructure_aggr_analysis.output.dir,pool=get_pool_list())
+        )
+    return aggr_count_targets
+
 
 # get rule all input files for cellranger aggr count
 def aggr_vdj_targets():
@@ -111,7 +122,13 @@ def aggr_vdj_targets():
     )
 
 def count_targets():
-    count_targets = expand(list(rules.restructure_counts.output),capture=captures.index)
+    count_targets = expand(
+        list(itertools.chain(
+            list(rules.restructure_counts.output),
+            list(rules.restructure_summary.output)
+        )),
+        capture=captures.index
+    )
     if config['params']['gene-expression']['create-bam']:
         count_targets.extend(
             expand(list(rules.restructure_bams.output),capture=captures.index)

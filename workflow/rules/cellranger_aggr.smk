@@ -25,7 +25,7 @@ rule cellranger_aggr_count:
         csv=rules.generate_aggr_count_csv.output.csv,
         molecule_h5=get_h5_in_pool
     output:
-        aggr_dir=directory(out_dir/"aggr_tmp/count/{pool}")
+        aggr_dir=temp(directory(out_dir/"aggr_tmp/count/{pool}"))
     params:
         aggr_options=get_options("aggr")
     envmodules:
@@ -111,19 +111,19 @@ rule merge_bams:
     input:
         source_bams=get_source_bams
     output:
-        bam=out_dir/"bams/{pool}/merged.bam"
+        bam=out_dir/"bam/{pool}/merged.bam"
     container:
         "docker://quay.io/biocontainers/samtools:0.1.19--h270b39a_9"
     log:
         "logs/chromium-preprocessing/merge_bams/{pool}.log"
     script:
-        "workflow/scripts/merge_bams.sh"
+        "../scripts/merge_bams.sh"
 
 rule index_merged_bam:
     input:
         bam=rules.merge_bams.output.bam
     output:
-        bai=out_dir/"bams/{pool}/merged.bam.bai"
+        bai=out_dir/"bam/{pool}/merged.bam.bai"
     container:
         "docker://quay.io/biocontainers/samtools:0.1.19--h270b39a_9"
     log:
@@ -131,4 +131,45 @@ rule index_merged_bam:
     shell:
         """
         samtools index {input.bam}
+        """
+
+rule restructure_aggr_counts:
+    input:
+        counts=rules.cellranger_aggr_count.output.aggr_dir
+    output:
+        bc=out_dir/"count/aggr/{pool}/barcodes.tsv.gz",
+        feat=out_dir/"count/aggr/{pool}/features.tsv.gz",
+        mat=out_dir/"count/aggr/{pool}/matrix.mtx.gz"
+    shell:
+        """
+        counts={input.counts}/outs/count/filtered_feature_bc_matrix
+        cp -v $counts/barcodes.tsv.gz {output.bc}
+        cp -v $counts/features.tsv.gz {output.feat}
+        cp -v $counts/matrix.mtx.gz {output.mat}
+        """
+
+rule restructure_aggr_summary:
+    input:
+        counts=rules.cellranger_aggr_count.output.aggr_dir
+    output:
+        web=out_dir/"summary/web/pools/{pool}.html",
+        loupe=out_dir/"loupe/count/aggr/{pool}.cloupe",
+        h5=out_dir/"h5/{pool}/filtered_feature_bc_matrix.h5"
+    shell:
+        """
+        out={input.counts}/out
+        cp -v $out/web_summary.html {output.web}
+        cp -v $out/count/cloupe.cloupe {output.loupe}
+        cp -v $out/count/filtered_feature_bc_matrix.h5 {output.h5}
+        """
+
+rule restructure_aggr_analysis:
+    input:
+        counts=rules.cellranger_aggr_count.output.aggr_dir
+    output:
+        dir=directory(out_dir/"cr_analysis/pools/{pool}")
+    shell:
+        """
+        counts={input.counts}/outs/count
+        cp -r -v $counts/analysis {output.dir}
         """

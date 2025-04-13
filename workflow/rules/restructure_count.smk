@@ -9,11 +9,11 @@ rule restructure_summary:
         tmp=rules.cellranger_count.output.cr_dir
     output:
         metrics=out_dir/"summary/metrics/{capture}.csv",
-        web=out_dir/"summary/web/{capture}.html"
+        web=out_dir/"summary/web/captures/{capture}.html"
     shell:
         """
-        cp -v {input.tmp}/outs//metrics_summary.csv {output.metrics}
-        cp -v {input.tmp}/outs//web_summary.html {output.web}
+        cp -v {input.tmp}/outs/metrics_summary.csv {output.metrics}
+        cp -v {input.tmp}/outs/web_summary.html {output.web}
         """
 
 # Restructure bam files
@@ -70,8 +70,10 @@ rule restructure_analysis:
     input:
         tmp=rules.cellranger_count.output.cr_dir
     output:
-        dir=directory(out_dir/"cr_analysis/{capture}")
+        dir=directory(out_dir/"cr_analysis/captures/{capture}")
     shell:
         """
         cp -v -r {input.tmp}/outs/analysis {output.dir}
         """
+
+# Restructure loupe files
