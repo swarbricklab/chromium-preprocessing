@@ -123,7 +123,7 @@ rule index_merged_bam:
     input:
         bam=rules.merge_bams.output.bam
     output:
-        bai=out_dir/"bam/{pool}/merged.bam.bai"
+        bai=out_dir/"bam/count/pools/{pool}/merged.bam.bai"
     container:
         "docker://quay.io/biocontainers/samtools:0.1.19--h270b39a_9"
     log:
