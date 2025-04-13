@@ -84,3 +84,7 @@ set-resources:
     restructure_outs:
         threads: "1"
         mem: "4GB"
+    annotate:
+        threads: "1"
+        mem: "4GB"
+        queue: "copyq"

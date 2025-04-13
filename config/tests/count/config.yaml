@@ -7,6 +7,7 @@
 deps:
   captures: "config/tests/count/captures.csv"
   libraries: "config/tests/count/libraries.csv"
+  fastqs: "test/data/"
 
 # Reference dependencies
 ref:
@@ -25,7 +26,7 @@ outs:
 params:
   extras:
     aggr: true
-    annotate: false
+    annotate: true
   gene-expression:
     create-bam: true
     no-secondary: false
@@ -40,3 +41,5 @@ params:
   aggr:
     normalize: "none"
     no-secondary: false
+  annotate:
+    token: "~/.config/txg/credentials"
