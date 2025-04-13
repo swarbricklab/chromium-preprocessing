@@ -22,10 +22,10 @@ rule restructure_bams:
     input:
         tmp=rules.cellranger_multi.output.cr_dir
     output:
-        ass_bam=out_dir/"bam/count/{capture}/assigned_alignments.bam",
-        ass_bai=out_dir/"bam/count/{capture}/assigned_alignments.bam.bai",
-        unass_bam=out_dir/"bam/count/{capture}/unassigned_alignments.bam",
-        unass_bai=out_dir/"bam/count/{capture}/unassigned_alignments.bam.bai"
+        ass_bam=out_dir/"bam/count/captures/{capture}/assigned_alignments.bam",
+        ass_bai=out_dir/"bam/count/captures/{capture}/assigned_alignments.bam.bai",
+        unass_bam=out_dir/"bam/count/captures/{capture}/unassigned_alignments.bam",
+        unass_bai=out_dir/"bam/count/captures/{capture}/unassigned_alignments.bam.bai"
     shell:
         """
         # Source directories
@@ -69,10 +69,10 @@ rule restructure_h5:
     input:
         tmp=rules.cellranger_multi.output.cr_dir
     output:
-        raw_mat=out_dir/"h5/raw/{capture}/feature_bc_matrix.h5",
-        raw_mol=out_dir/"h5/raw/{capture}/molecule_info.h5",
-        filtered_mat=out_dir/"h5/{capture}/feature_bc_matrix.h5",
-        filtered_mol=out_dir/"h5/{capture}/molecule_info.h5"
+        raw_mat=out_dir/"h5/captures/{capture}/raw_feature_bc_matrix.h5",
+        raw_mol=out_dir/"h5/captures/{capture}/raw_molecule_info.h5",
+        filtered_mat=out_dir/"captures/{capture}/feature_bc_matrix.h5",
+        filtered_mol=out_dir/"captures/{capture}/molecule_info.h5"
     shell:
         """
         # Source directories
@@ -134,10 +134,10 @@ rule restructure_vdj_bams:
     input:
         tmp=rules.cellranger_multi.output.cr_dir
     output:
-        raw_bam=out_dir/"bam/vdj/{vdj_assay}/{capture}/all_contig.bam",
-        raw_bai=out_dir/"bam/vdj/{vdj_assay}/{capture}/all_contig.bam.bai",
-        filtered_bam=out_dir/"bam/vdj/{vdj_assay}/{capture}/consensus.bam",
-        filtered_bai=out_dir/"bam/vdj/{vdj_assay}/{capture}/consensus.bam.bai"
+        raw_bam=out_dir/"bam/vdj/{vdj_assay}/captures/{capture}/all_contig.bam",
+        raw_bai=out_dir/"bam/vdj/{vdj_assay}/captures/{capture}/all_contig.bam.bai",
+        filtered_bam=out_dir/"bam/vdj/{vdj_assay}/captures/{capture}/consensus.bam",
+        filtered_bai=out_dir/"bam/vdj/{vdj_assay}/captures/{capture}/consensus.bam.bai"
     shell:
         """
         # Source directories
@@ -204,7 +204,7 @@ rule restructure_analysis:
     input:
         tmp=rules.cellranger_multi.output.cr_dir
     output:
-        dir=directory(out_dir/"cr_analysis/{capture}")
+        dir=directory(out_dir/"cr_analysis/captures/{capture}")
     shell:
         """
         cp -v -r {input.tmp}/outs/per_sample_outs/{wildcards.capture}/count/analysis {output.dir}

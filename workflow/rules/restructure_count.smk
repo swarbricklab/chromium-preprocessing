@@ -21,8 +21,8 @@ rule restructure_bams:
     input:
         tmp=rules.cellranger_count.output.cr_dir
     output:
-        ass_bam=out_dir/"bam/count/{capture}/assigned_alignments.bam",
-        ass_bai=out_dir/"bam/count/{capture}/assigned_alignments.bam.bai"
+        ass_bam=out_dir/"bam/count/captures/{capture}/assigned_alignments.bam",
+        ass_bai=out_dir/"bam/count/captures/{capture}/assigned_alignments.bam.bai"
     shell:
         """
         cp -v {input.tmp}/outs/possorted_genome_bam.bam {output.ass_bam}
@@ -55,9 +55,9 @@ rule restructure_h5:
     input:
         tmp=rules.cellranger_count.output.cr_dir
     output:
-        mol=out_dir/"h5/{capture}/molecule_info.h5",
-        raw=out_dir/"h5/{capture}/raw_feature_bc_matrix.h5",
-        filtered=out_dir/"h5/{capture}/filtered_feature_bc_matrix.h5"
+        mol=out_dir/"h5/captures/{capture}/molecule_info.h5",
+        raw=out_dir/"h5/captures/{capture}/raw_feature_bc_matrix.h5",
+        filtered=out_dir/"h5/captures/{capture}/filtered_feature_bc_matrix.h5"
     shell:
         """
         cp -v {input.tmp}/outs/molecule_info.h5 {output.mol}

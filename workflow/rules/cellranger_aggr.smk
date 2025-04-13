@@ -111,7 +111,7 @@ rule merge_bams:
     input:
         source_bams=get_source_bams
     output:
-        bam=out_dir/"bam/{pool}/merged.bam"
+        bam=out_dir/"bam/count/pools/{pool}/merged.bam"
     container:
         "docker://quay.io/biocontainers/samtools:0.1.19--h270b39a_9"
     log:
@@ -154,7 +154,7 @@ rule restructure_aggr_summary:
     output:
         web=out_dir/"summary/web/pools/{pool}.html",
         loupe=out_dir/"loupe/count/aggr/{pool}.cloupe",
-        h5=out_dir/"h5/{pool}/filtered_feature_bc_matrix.h5"
+        h5=out_dir/"h5/pools/{pool}/filtered_feature_bc_matrix.h5"
     shell:
         """
         out={input.counts}/out

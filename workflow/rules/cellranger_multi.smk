@@ -49,7 +49,7 @@ rule combine_dynamic_config:
         csv=rules.select_libraries.output.csv,
         ini=rules.create_ini.output.ini
     output:
-        conf=out_dir/"csv/{capture}/multi_config.csv"
+        conf=temp(out_dir/"csv/{capture}/multi_config.csv")
     shell:
         """
         cat {input.ini} > {output.conf}
