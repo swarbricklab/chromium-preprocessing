@@ -44,12 +44,12 @@ rule restructure_counts:
     input:
         tmp=rules.cellranger_multi.output.cr_dir
     output:
-        filtered_bc=out_dir/"count/filtered_feature_bc_matrix/{capture}/barcodes.tsv.gz",
-        filtered_feat=out_dir/"count/filtered_feature_bc_matrix/{capture}/features.tsv.gz",
-        filtered_mat=out_dir/"count/filtered_feature_bc_matrix/{capture}/matrix.mtx.gz",
-        raw_bc=out_dir/"count/raw_feature_bc_matrix/{capture}/barcodes.tsv.gz",
-        raw_feat=out_dir/"count/raw_feature_bc_matrix/{capture}/features.tsv.gz",
-        raw_mat=out_dir/"count/raw_feature_bc_matrix/{capture}/matrix.mtx.gz"
+        filtered_bc=out_dir/"count/filtered/{capture}/barcodes.tsv.gz",
+        filtered_feat=out_dir/"count/filtered/{capture}/features.tsv.gz",
+        filtered_mat=out_dir/"count/filtered/{capture}/matrix.mtx.gz",
+        raw_bc=out_dir/"count/raw/{capture}/barcodes.tsv.gz",
+        raw_feat=out_dir/"count/raw/{capture}/features.tsv.gz",
+        raw_mat=out_dir/"count/raw/{capture}/matrix.mtx.gz"
     shell:
         """
         # Source directories
@@ -91,7 +91,7 @@ rule restructure_loupe:
         tmp=rules.cellranger_multi.output.cr_dir
     output:
         raw=out_dir/"loupe/count/raw/{capture}.cloupe",
-        filtered=out_dir/"loupe/count/filtered/{capture}.cloupe/"
+        filtered=out_dir/"loupe/count/filtered/{capture}.cloupe"
     shell:
         """
         cp -v {input.tmp}/outs/multi/count/raw_cloupe.cloupe {output.raw}

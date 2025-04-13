@@ -36,7 +36,7 @@ rule cellranger_aggr_count:
     shell:
         """
         # Snakemake creates output directory but cellranger complains if directory alrady exists!
-        rm -rf {output.aggr_dir}
+        # rm -rf {output.aggr_dir}
         cellranger aggr \
             --output-dir {output.aggr_dir} \
             --id={wildcards.pool} \
