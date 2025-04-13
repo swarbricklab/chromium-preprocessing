@@ -126,6 +126,7 @@ def count_targets():
         list(itertools.chain(
             list(rules.restructure_counts.output),
             list(rules.restructure_summary.output),
+            list(rules.restructure_h5.output),
             list(rules.restructure_loupe.output)
         )),
         capture=captures.index
