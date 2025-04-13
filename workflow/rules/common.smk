@@ -102,7 +102,8 @@ def aggr_count_targets():
             list(rules.cellranger_aggr_count.output),
             list(rules.merge_bams.output),
             list(rules.index_merged_bam.output),
-            list(rules.restructure_aggr_counts.output)
+            list(rules.restructure_aggr_counts.output),
+            list(rules.restructure_aggr_summary.output),
         )),
         pool=get_pool_list()
     )

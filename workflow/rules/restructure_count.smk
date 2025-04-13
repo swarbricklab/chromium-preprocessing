@@ -81,7 +81,7 @@ rule restructure_loupe:
     input:
         tmp=rules.cellranger_count.output.cr_dir
     output:
-        filtered=out_dir/"loupe/count/filtered/{capture}.cloupe"
+        filtered=out_dir/"loupe/count/captures/filtered/{capture}.cloupe"
     shell:
         """
         cp -v {input.tmp}/outs/cloupe.cloupe {output.filtered}
