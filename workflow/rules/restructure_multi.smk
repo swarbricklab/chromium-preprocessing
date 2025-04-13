@@ -71,8 +71,8 @@ rule restructure_h5:
     output:
         raw_mat=out_dir/"h5/captures/{capture}/raw_feature_bc_matrix.h5",
         raw_mol=out_dir/"h5/captures/{capture}/raw_molecule_info.h5",
-        filtered_mat=out_dir/"captures/{capture}/feature_bc_matrix.h5",
-        filtered_mol=out_dir/"captures/{capture}/molecule_info.h5"
+        filtered_mat=out_dir/"h5/captures/{capture}/feature_bc_matrix.h5",
+        filtered_mol=out_dir/"h5/captures/{capture}/molecule_info.h5"
     shell:
         """
         # Source directories

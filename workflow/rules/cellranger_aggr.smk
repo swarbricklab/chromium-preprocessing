@@ -10,7 +10,7 @@ rule generate_aggr_count_csv:
     run:
         import pandas as pd
         capture_list = captures[captures['pool'] == wildcards.pool].index.tolist()
-        h5_list = expand(out_dir/"h5/{capture}/molecule_info.h5",capture=capture_list)
+        h5_list = expand(out_dir/"h5/captures/{capture}/molecule_info.h5",capture=capture_list)
         df = pd.DataFrame(
             {
                 'sample_id': capture_list,

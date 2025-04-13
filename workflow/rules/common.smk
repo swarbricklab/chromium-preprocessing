@@ -76,7 +76,7 @@ def get_options(section):
 # Return h5 files for given pool
 def get_h5_in_pool(wildcards):
     capture_list = captures[captures['pool'] == wildcards.pool].index.tolist()
-    return expand(out_dir/"h5/{capture}/molecule_info.h5",capture=capture_list)
+    return expand(out_dir/"h5/captures/{capture}/molecule_info.h5",capture=capture_list)
 
 # Return pb files for given pool
 def get_pb_in_pool(wildcards):
@@ -161,7 +161,7 @@ def multi_targets():
 def get_source_bams(wildcards):
     capture_list = captures[captures["pool"] == wildcards.pool].index.tolist()
     source_bams = expand(
-        out_dir/"bam/count/{capture}/assigned_alignments.bam",
+        out_dir/"bam/count/captures/{capture}/assigned_alignments.bam",
         capture=capture_list
     )
     return source_bams
