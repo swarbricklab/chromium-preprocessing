@@ -8,6 +8,7 @@ libraries=pd.read_csv(config['deps']['libraries'])
 validate(libraries,"workflow/schemas/libraries.json")
 
 out_dir=Path(config['outs']['results'])
+report_dir=Path(config['outs']['reports'])
 
 include: 'workflow/rules/preflight.smk'
 include: 'workflow/rules/common.smk'
