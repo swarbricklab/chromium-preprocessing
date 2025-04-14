@@ -157,6 +157,12 @@ def multi_targets():
     multi_targets.extend(vdj_targets)
     return multi_targets
 
+def annotate_targets():
+    return expand(
+        list(rules.restructure_annotations.output),
+        capture = captures.index
+    )
+
 # Returns individual source bam files to be merged as part of aggr
 def get_source_bams(wildcards):
     capture_list = captures[captures["pool"] == wildcards.pool].index.tolist()
