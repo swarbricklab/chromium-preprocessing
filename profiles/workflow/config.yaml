@@ -84,6 +84,10 @@ set-resources:
     restructure_outs:
         threads: "1"
         mem: "4GB"
+    cloud_auth:
+        threads: "1"
+        mem: "4GB"
+        queue: "copyq"
     annotate:
         threads: "1"
         mem: "4GB"
