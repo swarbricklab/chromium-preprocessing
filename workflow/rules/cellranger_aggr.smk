@@ -157,7 +157,7 @@ rule restructure_aggr_summary:
         h5=out_dir/"h5/pools/{pool}/filtered_feature_bc_matrix.h5"
     shell:
         """
-        out={input.counts}/out
+        out={input.counts}/outs
         cp -v $out/web_summary.html {output.web}
         cp -v $out/count/cloupe.cloupe {output.loupe}
         cp -v $out/count/filtered_feature_bc_matrix.h5 {output.h5}
