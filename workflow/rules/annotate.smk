@@ -47,15 +47,15 @@ rule restructure_annotations:
         cr_dir=rules.annotate.output.ann_dir
     output:
         types=out_dir/"annotation/{capture}/cell_types.csv",
-        de=out_dir/"annotation/{capture}/cell_type_differential_expression.csv",
-        json=out_dir/"annotation/{capture}/outs/cell_annotation_resuults.json.gz",
-        web=report_dir/"web/captures/{capture}_cell_types.html"
+        de=out_dir/"annotation/{capture}/cell_annotation_differential_expression.csv",
+        json=out_dir/"annotation/{capture}/cell_annotation_results.json.gz",
+        web=report_dir/"web/captures/cell_types/{capture}.html"
     shell:
         """
         outs={input.cr_dir}/outs
         cp -r $outs/cell_types.csv {output.types}
-        cp -r $outs/cell_type_differential_expression.csv {output.de}
-        cp -r $outs/cell_annotation_resuults.json.gz {output.json}
+        cp -r $outs/cell_annotation_differential_expression.csv {output.de}
+        cp -r $outs/cell_annotation_results.json.gz {output.json}
         cp -r $outs/web_summary_cell_types.html {output.web}
         """
         

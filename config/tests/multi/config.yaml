@@ -6,6 +6,7 @@
 # Files and directories required for the workflow, including raw data, config data and reference data
 deps:
   captures: "config/tests/multi/captures.csv"
+  reports: "test/results/cellranger/count_test/reports"
   libraries: "config/tests/multi/libraries.csv"
 
 # Reference dependencies
