@@ -102,16 +102,16 @@ rule restructure_vdj_fa:
     input:
         tmp=rules.cellranger_multi.output.cr_dir
     output:
-        raw_contig_fa=out_dir/"{vdj_assay}/fa/{capture}/all_contig.fasta",
-        raw_contig_fai=out_dir/"{vdj_assay}/fa/{capture}/all_contig.fasta.fai",
-        raw_contig_fq=out_dir/"{vdj_assay}/{capture}/all_contig.fastq",
-        filtered_contig_fa=out_dir/"{vdj_assay}/fa/{capture}/filtered_contig.fasta",
-        filtered_contig_fq=out_dir/"{vdj_assay}/fa/{capture}/filtered_contig.fastq",
-        ref_fa=out_dir/"{vdj_assay}/fa/{capture}/concat_ref.fasta",
-        ref_fai=out_dir/"{vdj_assay}/fa/{capture}/concat_ref.fasta.fai",
-        consensus_fa=out_dir/"{vdj_assay}/fa/{capture}/consensus.fasta",
-        consensus_fai=out_dir/"{vdj_assay}/fa/{capture}/consensus.fasta.fai",
-        donor=out_dir/"{vdj_assay}/fa/{capture}/donor_regions.fa",
+        raw_contig_fa=out_dir/"vdj/{vdj_assay}/fa/{capture}/all_contig.fasta",
+        raw_contig_fai=out_dir/"vdj/{vdj_assay}/fa/{capture}/all_contig.fasta.fai",
+        raw_contig_fq=out_dir/"vdj/{vdj_assay}/{capture}/all_contig.fastq",
+        filtered_contig_fa=out_dir/"vdj/{vdj_assay}/fa/{capture}/filtered_contig.fasta",
+        filtered_contig_fq=out_dir/"vdj/{vdj_assay}/fa/{capture}/filtered_contig.fastq",
+        ref_fa=out_dir/"vdj/{vdj_assay}/fa/{capture}/concat_ref.fasta",
+        ref_fai=out_dir/"vdj/{vdj_assay}/fa/{capture}/concat_ref.fasta.fai",
+        consensus_fa=out_dir/"vdj/{vdj_assay}/fa/{capture}/consensus.fasta",
+        consensus_fai=out_dir/"vdj/{vdj_assay}/fa/{capture}/consensus.fasta.fai",
+        donor=out_dir/"vdj/{vdj_assay}/fa/{capture}/donor_regions.fa",
     shell:
         """
         # Base directories

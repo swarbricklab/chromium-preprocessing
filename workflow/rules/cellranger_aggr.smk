@@ -80,7 +80,7 @@ rule cellranger_aggr_vdj:
         csv=rules.generate_aggr_vdj_csv.output.csv,
         molecule_h5=get_pb_in_pool
     output:
-        aggr_dir=directory(out_dir/"aggr_tmp/vdj/{vdj_assay}/{pool}")
+        aggr_dir=temp(directory(out_dir/"aggr_tmp/vdj/{vdj_assay}/{pool}"))
     params:
         aggr_options=get_options("aggr")
     envmodules:
