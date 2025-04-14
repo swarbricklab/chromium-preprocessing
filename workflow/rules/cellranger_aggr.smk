@@ -25,7 +25,7 @@ rule cellranger_aggr_count:
         csv=rules.generate_aggr_count_csv.output.csv,
         molecule_h5=get_h5_in_pool
     output:
-        aggr_dir=temp(directory(out_dir/"aggr_tmp/count/{pool}"))
+        aggr_dir=temp(directory(out_dir/"aggr_tmp/count/pools/{pool}"))
     params:
         aggr_options=get_options("aggr")
     envmodules:

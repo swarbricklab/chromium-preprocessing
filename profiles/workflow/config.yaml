@@ -41,6 +41,7 @@ set-resources:
     cellranger_aggr_count:
         threads: "1"
         mem: "4GB"
+        runtime: "1600"
         # Resources used by cellranger to dispatch jobs in cluster mode
         mempercore: 8 #GB
         maxjobs: 100
