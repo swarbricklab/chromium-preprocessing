@@ -1,12 +1,14 @@
-md5: e236f8a73da81145a2f13d1f2ab7225f
+md5: 1c4a853702969eb36559e3f47a58e347
 frozen: true
 deps:
 - path: chromium/tiny_tnbc/TNBC_003
   repo:
     url: git@github.com:Swarbricklab/test-data.git
-    rev_lock: 45d2e5711d0c1fedbcd7fc72d00e228fe5687f43
+    rev_lock: ec497c82b962039c6bf136a0b4b1aa15e569adcb
+    rev: further_downsample
 outs:
-- md5: 9c35f820fb607ded1c03afbbb1c49762.dir
-  size: 675480739
+- md5: 11d5945b9d25a5ef4826fe034e56e4af.dir
+  size: 69995620
   nfiles: 12
   path: TNBC_003
+  hash: md5
