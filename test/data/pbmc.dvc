@@ -1,10 +1,10 @@
-md5: d6fcaafa48ba1fab65f9a4257bad5eac
+md5: b293884c3f6b642120f64ee15f705e92
 frozen: true
 deps:
 - path: chromium/pbmc
   repo:
     url: git@github.com:Swarbricklab-registries/test.git
-    rev_lock: a137a8dbf0534c1d644d1318b7ff3518f9dba705
+    rev_lock: d682936154df32f6e1e74e84fa293cba030e391c
 outs:
 - md5: 040c75c8d08c5f81b6d33afe4b252a8b.dir
   size: 2565939321
