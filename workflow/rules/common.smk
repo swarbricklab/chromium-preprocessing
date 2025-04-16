@@ -82,7 +82,7 @@ def get_h5_in_pool(wildcards):
 def get_pb_in_pool(wildcards):
     capture_list = captures[captures['pool'] == wildcards.pool].index.tolist()
     return expand(
-        out_dir/"{vdj_assay}/results/{capture}/vdj_contig_info.pb",
+        out_dir/"vdj/{vdj_assay}/results/{capture}/vdj_contig_info.pb",
         capture=capture_list,
         vdj_assay=wildcards.vdj_assay
     )
@@ -99,7 +99,6 @@ def get_pool_list():
 def aggr_count_targets():
     aggr_count_targets=expand(
         list(itertools.chain(
-            list(rules.cellranger_aggr_count.output),
             list(rules.merge_bams.output),
             list(rules.index_merged_bam.output),
             list(rules.restructure_aggr_counts.output),

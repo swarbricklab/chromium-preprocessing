@@ -35,8 +35,6 @@ rule cellranger_aggr_count:
         "logs/chromium-preprocessing/cellranger_aggr/count/{pool}.log"
     shell:
         """
-        # Snakemake creates output directory but cellranger complains if directory alrady exists!
-        # rm -rf {output.aggr_dir}
         cellranger aggr \
             --output-dir {output.aggr_dir} \
             --id={wildcards.pool} \
@@ -63,7 +61,7 @@ rule generate_aggr_vdj_csv:
         import pandas as pd
         capture_list = captures[captures['pool'] == wildcards.pool].index.tolist()
         n_captures = len(capture_list)
-        pb_list = expand(out_dir/"{vdj_assay}/results/{capture}/vdj_contig_info.pb",capture=capture_list, vdj_assay=wildcards.vdj_assay)
+        pb_list = expand(out_dir/"vdj/{vdj_assay}/results/{capture}/vdj_contig_info.pb",capture=capture_list, vdj_assay=wildcards.vdj_assay)
         df = pd.DataFrame(
             {
                 'sample_id': capture_list,
@@ -78,7 +76,10 @@ rule generate_aggr_vdj_csv:
 rule cellranger_aggr_vdj:
     input:
         csv=rules.generate_aggr_vdj_csv.output.csv,
-        molecule_h5=get_pb_in_pool
+        molecule_h5=get_pb_in_pool,
+        # aggregating VDJ data is not strictly dependent on the aggregated count data
+        # but running both simultaneously can cause issues, so this next "input" is just a delay
+        counts=rules.cellranger_aggr_count.output.aggr_dir 
     output:
         aggr_dir=temp(directory(out_dir/"aggr_tmp/vdj/{vdj_assay}/{pool}"))
     params:
@@ -90,8 +91,6 @@ rule cellranger_aggr_vdj:
         "logs/chromium-preprocessing/cellranger_aggr/{vdj_assay}/{pool}.log"
     shell:
         """
-        # Snakemake creates output directory but cellranger complains if directory alrady exists!
-        rm -rf {output.aggr_dir}
         cellranger aggr \
             --output-dir {output.aggr_dir} \
             --id={wildcards.pool} \

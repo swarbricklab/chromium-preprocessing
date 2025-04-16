@@ -176,10 +176,10 @@ rule restructure_vdj_results:
     input:
         tmp=rules.cellranger_multi.output.cr_dir
     output:
-        airr=out_dir/"{vdj_assay}/results/{capture}/airr_rearrangement.tsv",
-        bc=out_dir/"{vdj_assay}/results/{capture}/cell_barcodes.json",
-        clono=out_dir/"{vdj_assay}/results/{capture}/clonotypes.csv",
-        pb=out_dir/"{vdj_assay}/results/{capture}/vdj_contig_info.pb"
+        airr=out_dir/"vdj/{vdj_assay}/results/{capture}/airr_rearrangement.tsv",
+        bc=out_dir/"vdj/{vdj_assay}/results/{capture}/cell_barcodes.json",
+        clono=out_dir/"vdj/{vdj_assay}/results/{capture}/clonotypes.csv",
+        pb=out_dir/"vdj/{vdj_assay}/results/{capture}/vdj_contig_info.pb"
     shell:
         """
         per_sample={input.tmp}/outs/per_sample_outs/{wildcards.capture}/{wildcards.vdj_assay}
