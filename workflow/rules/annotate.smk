@@ -1,35 +1,17 @@
 # This rule file defines rules for annotating celltypes based on 10X Cloud
 # This assumes that the user has already authenticated
 
-rule get_token:
-    """
-    Copy private token from home directory to temp file
-    """
-    output:
-        token=temp("resources/tenx/token.txt")
-    params:
-        token_path=config['params']['annotate']['token']
-    shell:
-        """
-        cp {params.token_path} {output.token}
-        chmod 600 {output.token}
-        chmod 700 $(dirname {output.token})
-        """
-
 rule cloud_auth:
     """
     Verify that the execution user is authenticated to 10X Cloud
     """
-    input:
-        token=rules.get_token.output.token
     output:
         check=out_dir/"checks/auth.check"
     envmodules:
         "cellranger/9.0.1"
     shell:
         """
-        cellranger cloud auth verify --access-token $(cat {input.token})
-            > {output.check} 2>&1
+        cellranger cloud auth verify > {output.check} 2>&1
         """
 
 rule annotate:
@@ -38,7 +20,6 @@ rule annotate:
     """
     input:
         check=rules.cloud_auth.output.check,
-        token=rules.get_token.output.token,
         h5=rules.restructure_h5.output.filtered_mat,
         loupe=rules.restructure_loupe.output.filtered
     output:
@@ -54,7 +35,6 @@ rule annotate:
             --id {wildcards.capture} \
             --matrix {input.h5} \
             --cloupe {input.loupe} \
-            --tenx-cloud-token-path $PWD/{input.token} \
             > {log} 2>&1
         """
 
