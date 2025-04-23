@@ -1,52 +1,36 @@
+# This rule file contains rules for running cellranger count
+# We prefer count over multi when only gene expression libraries are being processed.
+
 rule cellranger_count:
     input:
-        fastqs=capturesheet("ge_fastqs"),
-        transcriptome=pep.config.resources.transcriptome,
+        fastqs=get_fastqs,
+        transcriptome=config['ref']['gene-expression']
     output:
-        out_dir=directory(pep.config.output.cr_outs + "/{capture}"),
-        molecule_h5=pep.config.output.cr_outs + "/{capture}/outs/molecule_info.h5",
-        bam=pep.config.output.cr_outs + "/{capture}/outs/possorted_genome_bam.bam",
-        summary=pep.config.output.cr_outs + "/{capture}/outs/metrics_summary.csv",
+        cr_dir=temp(directory(out_dir/"tmp/{capture}"))
     params:
-        flags=config["count"]["flags"]
+        count_options=get_options('gene-expression')
     envmodules:
-        "cellranger/9.0.1"
+        "cellranger/9.0.1",
+        "qsub/ext"
     log:
         "logs/chromium-preprocessing/cellranger_count/{capture}.log"
     shell:
         """
         # Snakemake creates output directory but cellranger complains if directory alrady exists!
-        rm -rf {output.out_dir}
-        PATH=$PWD/profiles/global/nci_a56/resources/:$PATH \
+        rm -rf {output.cr_dir}
+
         cellranger count \
-            --output-dir {output.out_dir} \
+            --output-dir {output.cr_dir} \
             --id={wildcards.capture} \
             --sample={wildcards.capture} \
-            --fastqs={input.fastqs} \
+            --fastqs=$(echo {input.fastqs} | tr ' ' ',') \
             --transcriptome={input.transcriptome} \
-            --create-bam=true \
             --jobmode={resources.jobmode} \
             --maxjobs {resources.maxjobs} \
             --jobinterval {resources.jobinterval} \
             --mempercore {resources.mempercore} \
-            {params.flags}
+            {params.count_options} \
+            > {log} 2>&1
+        rm -rf {output.cr_dir}/SC_RNA_COUNTER_CS
         """
-
-
-rule cr_summarise:
-    input:
-        individual_summaries=expand(
-            pep.config.output.cr_outs + "/{capture}/outs/metrics_summary.csv", 
-            capture=captures["capture_id"]
-        )
-    output:
-        group_summary=pep.config.output.cr_outs + "/cr_summary.csv"
-    params:
-        groups=','.join(captures["capture_id"])
-    container:
-        "docker://johnyaku/csvkit:1.1.1"
-    shell:
-        """
-            csvstack --group-name capture --groups {params.groups} {input.individual_summaries} \
-                > {output.group_summary}
-        """
+        

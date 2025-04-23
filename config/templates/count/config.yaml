@@ -1,0 +1,52 @@
+# This is a template config file for running the workflow in a dataset
+# This template is for when only gene expression libraries are present
+# While most items can be left unchanged, review and understand each item
+
+# All paths are relative to the top of the dataset repo
+
+# -- Dependencies -- #
+# Files and directories required for the workflow, including raw data, config data and reference data
+deps:
+  captures: "config/chromium-preprocessing/captures.csv"
+  libraries: "config/chromium-preprocessing/libraries.csv"
+
+# Reference dependencies
+ref:
+  # Reference transcriptome for gene expression
+  gene-expression: "resources/transcriptomes/refdata-gex-GRCh38-2020-A"
+
+# -- Outputs -- #
+# Files and directories produced by the workflow
+outs:
+  results: "data/sc/cellranger"
+  logs: "logs/chromium-preprocessing"
+
+# -- Parameters --#
+# Non-path parameters for tuning the behaviour of the workflow
+params:
+  # Enable/disable additional processing
+  extras:
+    # Aggregate captures with 'cellranger aggr'
+    aggr: true
+    # Cell-type annotation with 'cellranger annotate'
+    annotate: false
+  # Options for 'cellranger count'
+  # Values listed below are defaults
+  # Uncomment/edit to change cellranger behaviour
+  gene-expression:
+    create-bam: true
+    no-secondary: false
+    include-introns: true
+    chemistry: "auto"
+    check-library-compatibility: true
+    # expect-cells:
+    # force-cells:
+    # r1-length:
+    # r2-length:
+    # min-crispr-umi:
+  # Options for 'cellranger aggr'
+  # Options below are defaults, except for 'normalize'
+  # Setting 'normalize: none' is recommended for split captures
+  aggr:
+    normalize: "none"
+    no-secondary: false

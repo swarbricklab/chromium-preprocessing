@@ -1,0 +1,7 @@
+fastq_id,fastqs,feature_types
+PRADO_10a_mini,test/data/PRADO_10a_mini/FB-AB,Antibody Capture
+PRADO_10a_mini,test/data/PRADO_10a_mini/GE5,Gene Expression
+PRADO_10a_mini,test/data/PRADO_10a_mini/VDJ-T,VDJ-T
+PRADO_10c_mini,test/data/PRADO_10c_mini/FB-AB,Antibody Capture
+PRADO_10c_mini,test/data/PRADO_10c_mini/GE5,Gene Expression
+PRADO_10c_mini,test/data/PRADO_10c_mini/VDJ-T,VDJ-T

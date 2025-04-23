@@ -7,7 +7,7 @@ conda activate snakemake_7.32.4
 
 if [[ "$(hostname)" == *"nci"* ]]; then
     echo "Running on NCI"
-    global_profile="--profile profiles/global/nci_a56"
+    global_profile="--profile profiles/global/nci"
     workflow_profile="--workflow-profile profiles/workflow"
     module load singularity
     mkdir -p logs/joblogs
@@ -19,8 +19,13 @@ else
     global_profile=""
 fi
 
-snakemake $global_profile $workflow_profile \
-    --snakefile workflow/Snakefile \
-    --configfile config/chromium-preprocessing/config.yaml \
-    $@
+tests="count multi"
 
+export JOBMODE="'profiles/global/nci/resources/pbspro.template'"
+
+for test in $tests; do
+    snakemake $global_profile $workflow_profile \
+        --snakefile Snakefile \
+        --configfile config/tests/$test/config.yaml \
+        $@
+done

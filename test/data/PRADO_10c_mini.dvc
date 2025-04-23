@@ -1,0 +1,14 @@
+md5: 9c947a9773b59a30d605070266b9451b
+frozen: true
+deps:
+- path: chromium/multi/PRADO_10c_mini
+  repo:
+    url: git@github.com:Swarbricklab/test-data.git
+    rev: further_downsample
+    rev_lock: 585a75bb280fd520b157813871b43a1fd7c0de29
+outs:
+- md5: 74903f5deb3bdec4f8a4ef842577c361.dir
+  size: 1060344341
+  nfiles: 192
+  hash: md5
+  path: PRADO_10c_mini

@@ -1,83 +1,167 @@
 from snakemake.io import expand
 import pandas as pd
+import itertools
 
-# Get list of final targets
-def final_targets(wildcards):
-    targets = []
-    # cellranger count
-    if 'count' in config:
-        count_targets = expand(pep.config.output.cr_outs + "/{capture}/outs/molecule_info.h5", capture = captures["capture_id"])
-        targets.extend(count_targets)
-        targets.append(pep.config.output.cr_outs + "/cr_summary.csv")
-    # cellranger aggr
-    if 'aggr' in config:
-        aggr_targets = aggr_all(wildcards)
-        targets.extend(aggr_targets)
-    print("Final targets: ")
-    for target in targets:
-        print("  -", target)
-    return targets
+# Determine which assays are present in libraries.csv
+def find_assays(libraries):
+    assays=libraries['feature_types'].unique()
+    mapping = {
+        "Gene Expression": "gene-expression",
+        "VDJ-T": "vdj",
+        "Antibody Capture": "feature"
+    }
+    for assay in assays:
+        if assay not in mapping.keys():
+            print("Unexpected assay (feature_type) in libraries.csv: {}".format(assay))
+            exit()
+    return [mapping.get(assay, assay) for assay in assays]
 
-# Look up field in sample_sheet
-def capturesheet(field):
+# Determine which supported VDJ assays are present (VDJ-T or VDJ-B)
+def find_vdj_assays(libraries):
+    supported_vdj_assays = {
+        'VDJ-T': 'vdj_t',
+        'VDJ-B': 'vdj_b'
+    }
+    assays=libraries['feature_types'].unique()
+    vdj_assays = []
+    for assay in assays:
+        if 'VDJ' in assay:
+            if assay == 'VDJ':
+                print("Auto-detection of VDJ assays not supported.")
+                print("Specify a particular type of VDJ assay for 'feature_types' in 'libraries.csv'. Eg, 'VDJ-B' or 'VDJ-T'")
+                exit()
+            elif assay not in supported_vdj_assays.keys():
+                print("Unsupported assay type: " + assay)
+                exit()
+            else:
+                vdj_assays.extend([assay])
+        else:
+            # Non-VDJ assay
+            pass 
+    return [supported_vdj_assays.get(assay, assay) for assay in vdj_assays]
+
+# Get fastq paths for capture of interest from libraries.csv
+# Used in rule cellranger_count
+def get_fastqs(wildcards):
+    libraries=pd.read_csv(config['deps']['libraries'])
+    capture_subset=libraries[libraries['fastq_id'] == wildcards.capture]
+    return capture_subset['fastqs'].tolist()
+
+# Translate aggr options in config to a string that can be passed to 'cellranger aggr/count'
+# Used in rules cellrange_count and cellranger_aggr
+def get_options(section):
     def handle_wildcards(wildcards):
-        result=captures.loc[wildcards.capture, field]
-        return result.split(";")
+        options=""
+        # Here 'flags' are parameters that did not take a value
+        flags=["no-secondary"]
+        # The rename map translates parameters that have different names in multi config versus count/aggr CLI
+        rename_map={ 'no-secondary': 'nosecondary'}
+        for parameter,value in config["params"][section].items():
+            if parameter in flags:
+                # Only add to option string if true
+                if value == "true":
+                    # Rename if necessary
+                    if parameter in rename_map.keys():
+                        parameter = rename_map['parameter']
+                    options=options+" --"+parameter
+                else:
+                    pass
+            else:
+                if type(value) is bool:
+                    value=str(value).lower()
+                options=options+" --"+parameter+" "+str(value)
+        return options
     return handle_wildcards
 
-# Get the capture_ids associated with a specific aggr_id group 
-def get_cellranger_aggr_aggr_captures_input(wildcards):
+# Return h5 files for given pool
+def get_h5_in_pool(wildcards):
+    capture_list = captures[captures['pool'] == wildcards.pool].index.tolist()
+    return expand(out_dir/"h5/captures/{capture}/molecule_info.h5",capture=capture_list)
 
-    wanted_input = []
-
-    df_samples = pd.read_csv(config["aggr"]["samples"], sep = "\t", dtype = {'capture_id': str, 'aggr_id': str})
-
-    capture_ids = df_samples.loc[df_samples["aggr_id"] == wildcards.aggr_id, ["capture_id"]]
-    capture_ids = list(set(capture_ids["capture_id"].tolist()))
-
-    wanted_input.extend(
-        expand([
-            pep.config.output.cr_outs + "/{capture_id}/outs/molecule_info.h5"
-        ],
-            capture_id=capture_ids
-        )
+# Return pb files for given pool
+def get_pb_in_pool(wildcards):
+    capture_list = captures[captures['pool'] == wildcards.pool].index.tolist()
+    return expand(
+        out_dir/"vdj/{vdj_assay}/results/{capture}/vdj_contig_info.pb",
+        capture=capture_list,
+        vdj_assay=wildcards.vdj_assay
     )
 
-    return wanted_input
+# Return a list of valid pools
+# Valid pools do not have the same value as the capture in the same row
+# Valid pools cannot be 'NA', 'None' or the empty string
+def get_pool_list():
+    null_pool_indicators = ['', 'NA', 'None']
+    valid_pools = captures.loc[(captures['pool'] != captures.index) | (captures['pool'].isin(null_pool_indicators))]
+    return valid_pools['pool'].unique().tolist()
 
-# get rule all input files for cellranger aggr
-def aggr_all(wildcards):
-
-    aggr_input = []
-
-    if config["aggr"]["activate"]:
-        # parse sample-sheet
-        df_sample_sheet = pd.read_csv(config["aggr"]["samples"], sep = "\t", dtype = {'capture_id': str, 'aggr_id': str})
-
-        aggr_ids = list(set(df_sample_sheet["aggr_id"].tolist()))
-
-        if "NONE" in aggr_ids:
-            aggr_ids.remove("NONE")
-        
-        aggr_input.extend(
-            expand([
-                pep.config.output.cr_outs + "/aggr/csvs/{aggr_id}.csv",
-                pep.config.output.cr_outs + "/aggr/output/{aggr_id}/outs/count/summary.json",
-                pep.config.output.cr_outs + "/aggr/bams/{aggr_id}/merged.bam"
-            ],
-                aggr_id=aggr_ids
-            )
+# get rule all input files for cellranger aggr count
+def aggr_count_targets():
+    aggr_count_targets=expand(
+        list(itertools.chain(
+            list(rules.merge_bams.output),
+            list(rules.index_merged_bam.output),
+            list(rules.restructure_aggr_counts.output),
+            list(rules.restructure_aggr_summary.output),
+        )),
+        pool=get_pool_list()
+    )
+    if not config['params']['gene-expression']['no-secondary']:
+        aggr_count_targets.extend(
+            expand(rules.restructure_aggr_analysis.output.dir,pool=get_pool_list())
         )
+    return aggr_count_targets
 
-    return aggr_input
+
+# get rule all input files for cellranger aggr count
+def aggr_vdj_targets():
+    return expand(
+        list(rules.cellranger_aggr_vdj.output),
+        pool=get_pool_list(),
+        vdj_assay=vdj_assays
+    )
+
+def count_targets():
+    count_targets = expand(
+        list(itertools.chain(
+            list(rules.restructure_counts.output),
+            list(rules.restructure_summary.output),
+            list(rules.restructure_h5.output),
+            list(rules.restructure_loupe.output)
+        )),
+        capture=captures.index
+    )
+    if config['params']['gene-expression']['create-bam']:
+        count_targets.extend(
+            expand(list(rules.restructure_bams.output),capture=captures.index)
+        )
+    if not config['params']['gene-expression']['no-secondary']:
+        count_targets.extend(
+            expand(rules.restructure_analysis.output.dir,capture=captures.index)
+        )
+    return count_targets
+
+def multi_targets():
+    multi_targets=count_targets()
+    if 'vdj' in assays:
+        vdj_targets=expand(
+            list(itertools.chain(
+                list(rules.restructure_vdj_fa.output),
+                list(rules.restructure_vdj_bams.output),
+                list(rules.restructure_vdj_loupe.output),
+                list(rules.restructure_vdj_annotations.output),
+                list(rules.restructure_vdj_results.output)
+            )),
+            capture=captures.index, vdj_assay=vdj_assays
+        )
+    multi_targets.extend(vdj_targets)
+    return multi_targets
 
 # Returns individual source bam files to be merged as part of aggr
 def get_source_bams(wildcards):
-    df_samples = pd.read_csv(config["aggr"]["samples"], sep = "\t", dtype = {'capture_id': str, 'aggr_id': str})
-    capture_ids = df_samples.loc[df_samples["aggr_id"] == wildcards.aggr_id, ["capture_id"]]
-    capture_ids = list(set(capture_ids["capture_id"].tolist()))
+    capture_list = captures[captures["pool"] == wildcards.pool].index.tolist()
     source_bams = expand(
-        [pep.config.output.cr_outs + "/{capture}/outs/possorted_genome_bam.bam"],
-        capture=capture_ids
+        out_dir/"bam/count/captures/{capture}/assigned_alignments.bam",
+        capture=capture_list
     )
     return source_bams

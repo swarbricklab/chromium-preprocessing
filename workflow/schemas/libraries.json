@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Schema for each row in the libraries.csv file used by cellranger multi (v9). Each record corresponds to a library with metadata required for analysis. See the 10X documentation for details.",
+  "type": "object",
+  "properties": {
+    "fastq_id": {
+      "type": "string",
+      "description": "A unique identifier for the library."
+    },
+    "fastqs": {
+      "type": "string",
+      "description": "Path to a directory containing fastq files"
+    },
+    "feature_types": {
+      "type": "string",
+      "description": "The type of library. Valid options (per 10X documentation) include 'Gene Expression', 'Antibody Capture', 'VDJ-T', 'VDJ-B'",
+      "enum": [
+        "Gene Expression",
+        "Antibody Capture",
+        "VDJ",
+        "VDJ-T",
+        "VDJ-B"
+      ]
+    }
+  },
+  "required": [
+    "fastq_id",
+    "fastqs",
+    "feature_types"
+  ]
+}

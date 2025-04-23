@@ -4,9 +4,11 @@ set -e
 eval  "$(conda shell.bash hook)"
 conda activate snakemake_7.32.4
 
+export JOBMODE="'modules/chromium-preprocessing/profiles/global/nci/resources/pbspro.template'"
+
 if [[ "$(hostname)" == *"nci"* ]]; then
     echo "Running on NCI"
-    global_profile="--profile modules/chromium-preprocessing/profiles/global/nci_a56"
+    global_profile="--profile modules/chromium-preprocessing/profiles/global/nci"
     workflow_profile="--workflow-profile modules/chromium-preprocessing/profiles/workflow "
     module load singularity
     mkdir -p logs/joblogs
@@ -19,6 +21,6 @@ else
 fi
 
 snakemake $global_profile $workflow_profile \
-    --snakefile modules/chromium-preprocessing/workflow/Snakefile \
+    --snakefile modules/chromium-preprocessing/Snakefile \
     --configfile config/chromium-preprocessing/config.yaml \
     $@

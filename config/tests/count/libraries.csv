@@ -1,0 +1,4 @@
+fastq_id,fastqs,feature_types
+TNBC_001,test/data/tiny_tnbc/GE/TNBC_001,Gene Expression
+TNBC_002,test/data/tiny_tnbc/GE/TNBC_002,Gene Expression
+TNBC_003,test/data/tiny_tnbc/GE/TNBC_003,Gene Expression

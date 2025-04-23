@@ -1,0 +1,31 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Configuration schema for cellranger aggr parameters. This schema defines the aggregation-specific options used during the aggregation process.",
+    "type": "object",
+    "properties": {
+      "params": {
+        "type": "object",
+        "description": "Top-level parameters object for the workflow.",
+        "properties": {
+          "aggr": {
+            "type": "object",
+            "description": "Aggregation options for cellranger aggr.",
+            "properties": {
+              "normalize": {
+                "type": "string",
+                "description": "Normalization method to apply during aggregation. Options are defined by 10X documentation.",
+                "enum": ["none", "mapped"]
+              },
+              "no-secondary": {
+                "type": "boolean",
+                "description": "If true, disables secondary analysis during aggregation."
+              }
+            },
+            "required": []
+          }
+        },
+        "required": ["aggr"]
+      }
+    }
+  }
+  

@@ -1,3 +1,11 @@
+__use_yte__: true
+
+__definitions__:
+    - import os
+
+__variables__:
+    JOBMODE: ?os.getenv("JOBMODE")
+
 # Snakemake options (can be over-ridden from the command line)
 restart-times: 0
 rerun-incomplete: true
@@ -10,30 +18,69 @@ use-envmodules: True
 
 # Resource settings per rule
 set-resources:
-  cellranger_count: 
+    cellranger_count: 
         threads: "1"
         mem: "4GB"
         # Resources used by cellranger to dispatch jobs in cluster mode
         mempercore: 8 #GB
         maxjobs: 100
         jobinterval: 2000
-  cr_summarise:
+        jobmode: ?JOBMODE
+    cr_summarise:
         threads: "1"
         mem: "8GB"
         disk: "100MB"
-  generate_aggr_csv:
+    generate_aggr_count_csv:
         threads: "1"
         mem: "16GB"
         disk: "100MB"
-  cellranger_aggr:
+    generate_aggr_vdj_csv:
+        threads: "1"
+        mem: "16GB"
+        disk: "100MB"
+    cellranger_aggr_count:
+        threads: "1"
+        mem: "4GB"
+        runtime: "1600"
+        # Resources used by cellranger to dispatch jobs in cluster mode
+        mempercore: 8 #GB
+        maxjobs: 100
+        jobinterval: 2000
+        jobmode: ?JOBMODE
+    cellranger_aggr_vdj:
         threads: "1"
         mem: "4GB"
         # Resources used by cellranger to dispatch jobs in cluster mode
         mempercore: 8 #GB
         maxjobs: 100
         jobinterval: 2000
-  merge_bams:
+        jobmode: ?JOBMODE
+    merge_bams:
         threads: "1"
         mem: "16GB"
         disk: "100MB"
-        runtime: "24h"  
+        runtime: "24h"
+    index_merged_bams:
+        threads: "1"
+        mem: "24GB"
+        disk: "100MB"
+    cellranger_multi: 
+        threads: "1"
+        mem: "2GB"
+        # Resources used by cellranger to dispatch jobs in cluster mode
+        mempercore: 8 #GB
+        maxjobs: 100
+        jobinterval: 2000
+        jobmode: ?JOBMODE
+    select_libraries:
+        threads: "1"
+        mem: "2GB"
+    create_ini:
+        threads: "1"
+        mem: "2GB"
+    combine_dynamic_config:
+        threads: "1"
+        mem: "2GB"
+    restructure_outs:
+        threads: "1"
+        mem: "4GB"

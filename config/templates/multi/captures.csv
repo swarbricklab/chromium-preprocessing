@@ -1,0 +1,8 @@
+# Template for captures samplesheet
+# Delete these comments
+# Edit to match actual dataset
+# Only include 'pool' column when using aggregation
+# Only include 'sample' column when using HTO demux
+capture,pool,sample
+{capture id},{pool id},{sample id}
+{capture id},{pool id},{sample id}

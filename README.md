@@ -16,8 +16,8 @@ This workflow can be run in either [standalone mode](#standalone-mode) or [modul
 
 In "standalone" mode, the data to be processed by the workflow is included in the same repo as the workflow itself.
 This mode is used mainly for [testing](#tests).
-This repo includes test data, tracked via DVC under [`test_data/raw`](https://github.com/swarbricklab/chromium-preprocessing/tree/main/test_data/raw).
-The [config files](https://github.com/swarbricklab/chromium-preprocessing/tree/main/config/chromium-preprocessing) tracked in this repo have been configured to run the workflow on this test data.
+This repo includes test data, tracked via DVC under [test/data](test/data).
+The [test config files](config/tests) tracked in this repo have been configured to run the workflow on this test data.
 
 ### Module mode
 
@@ -98,157 +98,62 @@ Beter to add the resources to the [references](https://github.com/swarbricklab/r
 
 ## Config
 
-To run this workflow, you will need to edit the following files:
-- [config.yaml](config/chromium-preprocessing/config.yaml)
-- [ge_captures](config/chromium-preprocessing/ge_captures.csv)
-- [pep_config.yaml](config/chromium-preprocessing/pep_config.yaml)
-- [ge_aggr.tsv](config/chromium-preprocessing/ge_aggr.tsv) (if running `aggr``)
-
 When using this workflow as a module, copy these files across to the super project.
+For `{mode}` specify "count" if only gene expression (RNA) libraries are used, or "multi" if feature barcode (CITE/ADT/HTO) or VDJ libraries are also included.
 ```
 cd {top of super project}
 mkdir -p config/chromium-preprocessing
-cp modules/chromium-preprocessing/config/* config/chromium-preprocessing 
+cp modules/chromium-preprocessing/config/templates/{mode} config/chromium-preprocessing 
 ```
 
-### config.yaml
+To run this workflow, you will need to edit the following files within `config/chromium-preprocessing`:
+- `config.yaml` ([template](config/templates/multi/config.yaml)) ([test config](config/tests/multi/config.yaml))
+- `captures.csv` ([template](config/templates/multi/captures.csv)) ([test config](config/tests/multi/captures.csv))
+- `libraries.csv` ([template](config/templates/multi/libraries.csv)) ([test config](config/tests/multi/libraries.csv))
 
-[config.yaml](config/chromium-preprocessing/config.yaml) contains the following three elements:
-- `cellranger` version information (container reference)
-- `count` options
-- `aggr` options
-
-TO DO: Add `multi` options
-
-#### Version options
-
-`cellranger` runs inside a Docker container, which is converted to Singularity format when running on a HPC.
-If you need a more recent version, you might need to locate or build a container for that version of `cellranger`.
-
-#### `count` options
-
-The specifications below the `count` block are passed in to `cellranger count`.
-Core parameters, such as the location of the fastqs are passed in via the capture sheet.
-But you can further control `cellranger` behaviour by passing in additional "flags" such as `--no-secondary`. 
-Multiple flags can be combined into a single string.
-For example, `--no-secondary --include-introns`.
-
-See the [Cellranger Manual](https://www.10xgenomics.com/support/software/cell-ranger/7.2/resources/cr-command-line-arguments) for more options.
-Note: this link is for v7.2 -- switch versions if you are using a different version.
-
-#### `aggr` options
-
-The specifications below the `aggr` block are passed in to `cellranger aggr`.
-This works in much the same way as for `count` above.
-See that section for further details and examples, including external references.
-
-### ge_captures.csv
-
-This sample sheet (or more strictly speaking, "capture sheet") is used for `cellranger count`. 
-[This file](config/chromium-preprocessing/ge_captures.csv) lists the captures to be processed and the locations of the gene expression fastq files for each capture.
-
-This CSV file expects two columns:
-- `capture_id`
-- `ge_fastqs`
-
-If there are multiple fastq paths for a given capture (such as when a capture is sequenced over multiple flow cells) then list each path on the same row, separated by semicolons.
-
-Note: if the locations of the fastq files follow a consistent pattern based on the name of the capture, then it may be convenient to define that pattern in [pep_config.yaml](config/chromium-preprocessing/pep_config.yaml) rather than enter each path manually.
-See the section below for an example of how this works.
-However, if the fastq paths are inconsistent and difficult to capture with a simple pattern then it may be easier to simply enter the paths manually under the `ge_fastqs` column.
-
-### pep_config.yaml
-
-This file follows the [Portable Encapsulated Projects](https://pep.databio.org/) (PEP) format, which -- as the name suggests -- is intended to make projects both portable by handling file paths in a consistent manner.
-
-> While relatively simple, PEP has gained very little traction within the group, and might be phased out in favour of other strategies, such as consolidating these specifications in a single config file 
-
-The contrast between `config.yaml` and `pep_config.yaml` is that the former defines _how_ the workflow runs by specifying the versions and options for the software tools used in the workflow, whereas the latter defines _where_ the data is located.
-
-`pep_config.yaml` contains the following three blocks of specifications:
-- headers
-- interface
-- synthetic columns
-
-#### Headers
-
-This section can be mostly left unchanged.
-If desired, change the name of the CSV file loaded in `sample_table`.
-Do not change the index column (`capture_id`).
-
-#### Interface
-
-This section defines the inputs, outputs and resources used by the workflow.
-For example, the output paths for all rules start with `output.cr_outs`.
-This makes it possible to redirect the outputs for this workflow by changing this single parameter.
-
-> The intention was to use this "interface" definition to automatically create a "stage" in `dvc.yaml`, with the `deps` and `outs` for the staged population based on the specifications here. 
-> However, given the poor uptake of PEP this avenue might not be persued.
-
-This section is required.
-No editing is required, unless you want to redirect inputs or outputs.
-
-#### Synthetic columns
-
-This section makes it possible to define "synthetic columns" in the sample sheet.
-Specifically, if the path for `ge_fastqs` follows a consistent pattern for all samples, then this pattern can be defined by `sample_modifiers`.
-See the [sample pep_config.yaml](config/chromium-preprocessing/pep_config.yaml) in this repo for an example of how this is done with the test data.
-
-This section is optional.
-
-> If there is no consistent pattern, or if the pattern is difficult to capture, then it is often easier to just specify the paths manually in the capture sheet.
+Refer to the [configuration guide](config/README.md) for a detailed explanation and see the templates and test config linked above for examples.
 
 ## Tests
 
-This module includes test data and a test script that veriies that the module can process this test data into the expected results.
+This module includes test data and a test script that verifies that the module can process this test data into the expected results.
 
 ### Test data
 
-The [test_data](test_data) folder contains both the raw test data (under `test_data/raw/`) and the expected results (under `test_data/results`).
-The input data (`test_data/raw/`) is real 10X Chromium scRNA-seq data that has been downsampled to make the fastq files much smaller, so that `cellranger` runs much faster.
-This data is tracked via DVC and can be obtained via `dvc pull -R test_data/`.
-Same goes to the reference data, obtained via `dvc pull resources/transcriptomes/refdata-gex-GRCh38-2020-A`.
+The [test](test) folder contains both the raw test data (under [test/data](test/data)) and the expected results (under [test/results](test/results)).
+The input data is real 10X Chromium scRNA-seq data that has been downsampled to make the fastq files much smaller, so that `cellranger` runs much faster.
+This data is tracked via DVC and can be obtained via `dvc pull -R test/data/`.
 
 ## Test config
 
-The example [config files](config/chromium-preprocessing) in this repo are set up in order to process the [test data](#test-data) above.
-When running this workflow on other datasets (either in "module mode" or "standalone mode") then these config files will need to be edited.
-But when running the [test script](#test-script) below these config files can be left unchanged.
+As well as [template config](config/templates/), this repo includes [test config](config/tests/) for running the workflow on the test data bundled with this repo.
 
 ### Test script
 
-The [run_test.sh](run_test.sh) script runs the module on the [test data](#test-data) above.
+The [run_test.sh](run_test.sh) script runs test on the [test data](#test-data) above.
 This script assumes that 
 1. the test data is available (pulled via DVC)
 2. a conda environment called `snakemake_7.32.4` is available
 
-The script runs the workflow by calling `snakemake` with the appropriate [config](#test-config) and profile, and then compares the results with the expected results in `test_data/results/` by doing a selective `diff`.
-Any differences will be reported.
+The script runs the workflow by calling `snakemake` with the appropriate [config](#test-config) and profile.
+The script then compares the results with the expected results in `test_data/results/` by doing a selective `diff` (TODO).
+Any differences will be reported (TODO).
 
 ### Test results
 
-There are (at least) two scenarios when it can be helpful to run the [test script(#test-script):
+There are (at least) two scenarios when it can be helpful to run the [test script](#test-script):
 1. practicing how to run the workflow
 2. testing whether improvements to the workflow have broken existing functionality
 
 In the latter case, it is possible that the improvements result in additional or different test results.
-If this happens, then update `test_data/results/` to capture the results that should be expected with the latest version of the workflow.
-```
-rm -rf test_data/results          # don't worry, we can always 'dvc pull' it again
-cp -r  results test_data/results
-dvc commit test_data/results
-```
-Make any such changes via git issues and pull requests.
+If this happens, then update `test/results.dvc` to capture the results that should be expected with the latest version of the workflow.
 
 ## Logs
 
 All log files are output to one of the the following locations:
-1. `logs/joblogs/`
+1. `logs/joblogs/{rule}`
 2. `logs/chromium-preprocessing/{rule}`
 
 Job logs are produced by the PBS Pro job scheduler when rules are submitted as jobs via the global profile under `profiles/global`.
 
 Rule logs capture key outputs for each rule, redirected to a log file. 
 Thes logs are stored under `logs/chromium-preprocessing` in a subdirectory based on the rule name.
-
-Both log directories above should be added to the "outs" for the `chromium-preprocessing` stage in `dvc.yaml` when this workflow is used as a module within a larger DVC pipeline.

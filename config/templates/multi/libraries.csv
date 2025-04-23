@@ -1,0 +1,13 @@
+# Template for captures samplesheet
+# Delete these comments and don't include curly braces
+# Edit to match actual dataset
+# If there are two fastq directories (top up sequencing) add a row for each directory, repeating the fastq_id and feature_type
+# The following assays can be specified for 'feature_types':
+# - Gene Expression
+# - Antibody Capture
+# - VDJ-B
+# - VDJ-T
+# Do not specify plain 'VDJ'
+fastq_id,fastqs,feature_types
+{capture id},{path/to/fastq/directory},{assay}
+{capture id},{path/to/fastq/directory},{assay}

@@ -1,0 +1,10 @@
+
+# Template for captures samplesheet
+# Delete these comments and don't include curly braces
+# Edit to match actual dataset
+# This 'count' template assumes that only 'Gene Expression' is used for all libraries
+# If there are two fastq directories (top up sequencing) add a row for each directory, repeating the capture id
+fastq_id,fastqs,feature_types
+{capture id},{path/to/fastq/directory},Gene Expression
+{capture id},{path/to/fastq/directory},Gene Expression
+{capture id},{path/to/fastq/directory},Gene Expression
