@@ -41,5 +41,3 @@ params:
   aggr:
     normalize: "none"
     no-secondary: false
-  annotate:
-    token: "~/.config/txg/credentials"
