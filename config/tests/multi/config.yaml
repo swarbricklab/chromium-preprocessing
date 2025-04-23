@@ -22,6 +22,7 @@ ref:
 # Files and directories produced by the workflow
 outs:
   results: "test/results/cellranger/multi_test"
+  reports: "test/results/cellranger/count_test/reports"
   logs: "logs/chromium-preprocessing"
 
 # -- Parameters --#
@@ -29,7 +30,7 @@ outs:
 params:
   extras:
     aggr: true
-    annotate: false
+    annotate: true
     hto: false
   gene-expression:
     create-bam: true
