@@ -64,14 +64,14 @@ rule cellranger_multi:
     output:
         cr_dir=temp(directory(out_dir/"tmp/{capture}"))
     envmodules:
-        "cellranger/9.0.1"
+        "cellranger/9.0.1",
+        "qsub/ext"
     log:
         "logs/chromium-preprocessing/cellranger_multi/{capture}.log"
     shell:
         """
         # Snakemake creates output directory but cellranger complains if directory alrady exists!
         rm -rf {output.cr_dir}
-        PATH=$PWD/profiles/global/nci_a56/resources/:$PATH \
         cellranger multi \
             --output-dir {output.cr_dir} \
             --id {wildcards.capture} \

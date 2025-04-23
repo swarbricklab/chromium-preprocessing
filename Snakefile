@@ -32,7 +32,7 @@ if assays == ['gene-expression']:
     print("Running cellranger count")
     include: 'workflow/rules/cellranger_count.smk'
     include: 'workflow/rules/restructure_count.smk'
-    validate(config,"workflow/schemas/multi.json")
+    validate(config,"workflow/schemas/count.json")
     targets.extend(count_targets())
 elif assays == ['vdj']:
     # Technically 'cellranger vdj' allows VDJ libraries to be processed alone

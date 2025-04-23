@@ -5,6 +5,14 @@
       "capture": { 
         "type": "string",
         "description": "Capture identifier"
+      },
+      "pool": { 
+        "type": "string",
+        "description": "Pool identifier"
+      },
+      "sample": { 
+        "type": "string",
+        "description": "Sample identifier"
       }
     },
     "required": ["capture"]
