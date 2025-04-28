@@ -81,3 +81,4 @@ set-resources:
         threads: "1"
         mem: "4GB"
         queue: "copyq"
+        runtime: "1h"
