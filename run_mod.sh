@@ -23,15 +23,18 @@ else
 fi
 
 # Make rule graph
+graph_dir=docs/graphs
+mkdir -p $graph_dir
 snakemake $global_profile $workflow_profile \
     --snakefile modules/${module}/Snakefile \
     --configfile config/${module}/config.yaml \
     --rulegraph \
     | dot -Tsvg \
-    > docs/graphs/${module}.svg
+    > ${graph_dir}/${module}.svg
 
 # Run workflow
 snakemake $global_profile $workflow_profile \
     --snakefile modules/${module}/Snakefile \
     --configfile config/${module}/config.yaml \
+    --keep-incomplete \
     $@
