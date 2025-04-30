@@ -22,15 +22,13 @@ else
     global_profile=""
 fi
 
-# Make rule graph
-graph_dir=docs/graphs
-mkdir -p $graph_dir
-snakemake $global_profile $workflow_profile \
-    --snakefile modules/${module}/Snakefile \
-    --configfile config/${module}/config.yaml \
-    --rulegraph \
-    | dot -Tsvg \
-    > ${graph_dir}/${module}.svg
+# # Make rule graph
+# snakemake $global_profile $workflow_profile \
+#     --snakefile modules/${module}/Snakefile \
+#     --configfile config/${module}/config.yaml \
+#     --rulegraph \
+#     | dot -Tsvg \
+#     > docs/graphs/${module}.svg
 
 # Run workflow
 snakemake $global_profile $workflow_profile \
