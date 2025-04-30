@@ -25,7 +25,8 @@ rule cellranger_count:
             --sample={wildcards.capture} \
             --fastqs=$(echo {input.fastqs} | tr ' ' ',') \
             --transcriptome={input.transcriptome} \
-            --jobmode={resources.jobmode} \
+            --jobmode {resources.jobmode} \
+            --overrides {resources.override} \
             --maxjobs {resources.maxjobs} \
             --jobinterval {resources.jobinterval} \
             --mempercore {resources.mempercore} \

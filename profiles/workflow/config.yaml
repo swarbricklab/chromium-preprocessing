@@ -18,6 +18,7 @@ set-resources:
         mempercore: 8 #GB
         maxjobs: 25
         jobinterval: 2000
+        override: "modules/chromium-preprocessing/profiles/workflow/override.json"
     cr_summarise:
         threads: "1"
         mem: "8GB"
