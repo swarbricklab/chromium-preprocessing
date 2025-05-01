@@ -5,6 +5,8 @@ set -e
 eval  "$(conda shell.bash hook)"
 conda activate snakemake_7.32.4
 
+export WORKFLOW_ROOT="."
+
 if [[ "$(hostname)" == *"nci"* ]]; then
     echo "Running on NCI"
     global_profile="--profile profiles/global/nci"

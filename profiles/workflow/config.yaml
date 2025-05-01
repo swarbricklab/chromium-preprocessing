@@ -1,3 +1,8 @@
+__use_yte__: true
+
+__definitions__:
+  - import os
+
 # Snakemake options (can be over-ridden from the command line)
 restart-times: 0
 rerun-incomplete: true
@@ -18,7 +23,7 @@ set-resources:
         mempercore: 8 #GB
         maxjobs: 25
         jobinterval: 2000
-        override: "modules/chromium-preprocessing/profiles/workflow/override.json"
+        override: ?os.getenv("WORKFLOW_ROOT")+"/profiles/workflow/override.json"
     cr_summarise:
         threads: "1"
         mem: "8GB"

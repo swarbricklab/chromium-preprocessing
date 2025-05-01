@@ -4,7 +4,7 @@ set -e
 eval  "$(conda shell.bash hook)"
 conda activate snakemake_7.32.4
 
-export JOBMODE="'modules/chromium-preprocessing/profiles/global/nci/resources/pbspro.template'"
+export WORKFLOW_ROOT="modules/chromium-preprocessing"
 
 module="chromium-preprocessing"
 
