@@ -13,6 +13,7 @@ log_dir=Path(config['outs']['logs'])
 
 include: 'workflow/rules/preflight.smk'
 include: 'workflow/rules/common.smk'
+include: 'workflow/rules/targets.smk'
 include: 'workflow/rules/summarise.smk'
 
 # Find which assays and VDJ sub-assays are present in the libraries
