@@ -89,3 +89,20 @@ def aggr_vdj_targets():
         pool=get_pool_list(),
         vdj_assay=vdj_assays
     )
+
+# Defines the final output files produced by predemux.smk
+def predemux_targets():
+    """
+    Define final targets for the predemux filtering workflow.
+    """
+    targets = [
+        rules.predemux_generate_report.output.html,
+        rules.predemux_generate_report.output.plot_genes,
+        rules.predemux_generate_report.output.plot_mito,
+        rules.predemux_generate_report.output.plot_umi,
+    ]
+    # target the filtered Cell Ranger directories for each capture
+    targets.extend(
+        expand(rules.predemux_filter_seurat.output.cr_dir, capture=captures.index)
+    )
+    return targets

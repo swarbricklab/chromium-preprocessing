@@ -59,6 +59,16 @@ if config['params']['extras']['aggr']:
     validate(config,"workflow/schemas/aggr.json")
     validate(captures, "workflow/schemas/aggr_captures.json")
 
+# Optionally run the 'pre-demux' filtering workflow
+if config['params']['extras'].get('predemux', False):
+    print("Including pre-demux filtering rules...")
+    # Check if required config section exists
+    if 'predemux' not in config['params']:
+        raise ValueError("Config error: 'params: extras: predemux' is true, but 'params: predemux:' section is missing.")
+    include: 'workflow/rules/predemux.smk'
+    targets.extend(predemux_targets())
+    # TODO: Add validation as done above
+
 # Optionally use 'cellranger annotate' to assign cell type labels
 if config['params']['extras']['annotate']:
     print("Running cellranger annotate")
