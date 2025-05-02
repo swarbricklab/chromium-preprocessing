@@ -1,10 +1,7 @@
 __use_yte__: true
 
 __definitions__:
-    - import os
-
-__variables__:
-    JOBMODE: ?os.getenv("JOBMODE")
+  - import os
 
 # Snakemake options (can be over-ridden from the command line)
 restart-times: 0
@@ -21,11 +18,12 @@ set-resources:
     cellranger_count: 
         threads: "1"
         mem: "4GB"
+        runtime: "16h"
         # Resources used by cellranger to dispatch jobs in cluster mode
         mempercore: 8 #GB
-        maxjobs: 100
+        maxjobs: 25
         jobinterval: 2000
-        jobmode: ?JOBMODE
+        override: ?os.getenv("WORKFLOW_ROOT")+"/profiles/workflow/override.json"
     cr_summarise:
         threads: "1"
         mem: "8GB"
@@ -46,7 +44,6 @@ set-resources:
         mempercore: 8 #GB
         maxjobs: 100
         jobinterval: 2000
-        jobmode: ?JOBMODE
     cellranger_aggr_vdj:
         threads: "1"
         mem: "4GB"
@@ -54,7 +51,6 @@ set-resources:
         mempercore: 8 #GB
         maxjobs: 100
         jobinterval: 2000
-        jobmode: ?JOBMODE
     merge_bams:
         threads: "1"
         mem: "16GB"
@@ -71,7 +67,6 @@ set-resources:
         mempercore: 8 #GB
         maxjobs: 100
         jobinterval: 2000
-        jobmode: ?JOBMODE
     select_libraries:
         threads: "1"
         mem: "2GB"
@@ -84,3 +79,12 @@ set-resources:
     restructure_outs:
         threads: "1"
         mem: "4GB"
+    cloud_auth:
+        threads: "1"
+        mem: "4GB"
+        queue: "copyq"
+    annotate:
+        threads: "1"
+        mem: "4GB"
+        queue: "copyq"
+        runtime: "1h"

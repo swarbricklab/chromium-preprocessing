@@ -50,6 +50,10 @@
           "type": "string",
           "description": "Directory where final results will be stored."
         },
+        "reports": {
+          "type": "string",
+          "description": "Directory where cellranger reports will be generated."
+        },
         "logs": {
           "type": "string",
           "description": "Directory where logs will be stored."

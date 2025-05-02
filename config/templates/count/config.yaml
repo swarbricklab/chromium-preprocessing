@@ -19,6 +19,7 @@ ref:
 # Files and directories produced by the workflow
 outs:
   results: "data/sc/cellranger"
+  reports: "reports/cellranger"
   logs: "logs/chromium-preprocessing"
 
 # -- Parameters --#

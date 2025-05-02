@@ -8,9 +8,12 @@ libraries=pd.read_csv(config['deps']['libraries'])
 validate(libraries,"workflow/schemas/libraries.json")
 
 out_dir=Path(config['outs']['results'])
+report_dir=Path(config['outs']['reports'])
+log_dir=Path(config['outs']['logs'])
 
 include: 'workflow/rules/preflight.smk'
 include: 'workflow/rules/common.smk'
+include: 'workflow/rules/targets.smk'
 include: 'workflow/rules/summarise.smk'
 
 # Find which assays and VDJ sub-assays are present in the libraries
@@ -55,6 +58,12 @@ if config['params']['extras']['aggr']:
         targets.extend(aggr_vdj_targets())
     validate(config,"workflow/schemas/aggr.json")
     validate(captures, "workflow/schemas/aggr_captures.json")
+
+# Optionally use 'cellranger annotate' to assign cell type labels
+if config['params']['extras']['annotate']:
+    print("Running cellranger annotate")
+    include: 'workflow/rules/annotate.smk'
+    targets.extend(annotate_targets())
 
 wildcard_constraints:
     capture = "[^/]+"
