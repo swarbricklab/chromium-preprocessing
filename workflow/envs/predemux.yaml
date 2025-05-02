@@ -1,0 +1,25 @@
+# environment.yaml for the predemux filtering workflow
+name: predemux
+channels:
+  - conda-forge
+  - bioconda
+  - defaults # Keep defaults last or near last
+dependencies:
+  # --- R Dependencies ---
+  - r-base >=4.2 # Specify a base R version if desired
+  - r-argparser # For R script argument parsing
+  - r-seurat =5.2 # Core Seurat package (pinning version as specified)
+  - r-seuratobject # Seurat dependency
+  - r-tidyverse # Provides dplyr, readr, tibble, etc.
+  - bioconda::bioconductor-dropletutils # For Read10X, write10xCounts
+  - r-matrix # Explicit dependency for sparse matrices
+
+  # --- Python Dependencies ---
+  - python >=3.8 # Specify minimum Python version
+  - pandas # For data manipulation in Python script
+  - numpy # For numerical operations in Python script
+  - matplotlib # For plotting in Python script
+
+# --- Removed Dependencies ---
+# - r-qs (Not used by these scripts)
+# - r-yaml (Not used by these scripts, handled by Snakemake)
