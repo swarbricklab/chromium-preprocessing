@@ -17,7 +17,7 @@ rule cellranger_count:
     shell:
         """
         # Snakemake creates output directory but cellranger complains if directory alrady exists!
-        rm -rf {output.cr_dir}
+        [ -d {output.cr_dir} ] && [ -z "$(ls -A {output.cr_dir})" ] && rm -rf {output.cr_dir}
 
         cellranger count \
             --output-dir {output.cr_dir} \
@@ -25,7 +25,8 @@ rule cellranger_count:
             --sample={wildcards.capture} \
             --fastqs=$(echo {input.fastqs} | tr ' ' ',') \
             --transcriptome={input.transcriptome} \
-            --jobmode={resources.jobmode} \
+            --jobmode {resources.jobmode} \
+            --overrides {resources.override} \
             --maxjobs {resources.maxjobs} \
             --jobinterval {resources.jobinterval} \
             --mempercore {resources.mempercore} \

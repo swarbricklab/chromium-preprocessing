@@ -151,7 +151,7 @@ rule restructure_aggr_summary:
     input:
         counts=rules.cellranger_aggr_count.output.aggr_dir
     output:
-        web=out_dir/"summary/web/pools/{pool}.html",
+        web=report_dir/"web/pools/{pool}.html",
         loupe=out_dir/"loupe/count/pools/{pool}.cloupe",
         h5=out_dir/"h5/pools/{pool}/filtered_feature_bc_matrix.h5"
     shell:

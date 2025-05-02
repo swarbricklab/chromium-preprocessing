@@ -6,6 +6,7 @@
 # Files and directories required for the workflow, including raw data, config data and reference data
 deps:
   captures: "config/tests/multi/captures.csv"
+  reports: "test/results/cellranger/count_test/reports"
   libraries: "config/tests/multi/libraries.csv"
 
 # Reference dependencies
@@ -21,6 +22,7 @@ ref:
 # Files and directories produced by the workflow
 outs:
   results: "test/results/cellranger/multi_test"
+  reports: "test/results/cellranger/count_test/reports"
   logs: "logs/chromium-preprocessing"
 
 # -- Parameters --#
@@ -28,7 +30,7 @@ outs:
 params:
   extras:
     aggr: true
-    annotate: false
+    annotate: true
     hto: false
   gene-expression:
     create-bam: true
