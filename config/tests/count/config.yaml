@@ -27,6 +27,7 @@ params:
   extras:
     aggr: true
     annotate: true
+    predemux: true
   gene-expression:
     create-bam: true
     no-secondary: false
@@ -41,3 +42,7 @@ params:
   aggr:
     normalize: "none"
     no-secondary: false
+  predemux:
+    min-gene-count: 500
+    min-umi-count: 1000
+    max-mito: 0.2
