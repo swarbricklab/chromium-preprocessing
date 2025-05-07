@@ -32,7 +32,7 @@ params:
     aggr: true
     annotate: true
     hto: false
-    predemux: true
+    predemux: false
   gene-expression:
     create-bam: true
     no-secondary: false
