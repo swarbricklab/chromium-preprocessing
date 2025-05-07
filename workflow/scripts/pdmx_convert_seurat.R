@@ -4,7 +4,8 @@
 # Date Updated: 7/5/2025
 
 # Known issues:
-# 1. The script does not handle Cell Ranger output with multiple matrices
+# 1. When using cellranger multi, the Seurat object is saved with several count layers (one for each type of data).
+#    This leads to issues during cell filtering. 
 # 2. Read10x stores gene names, but not Ensembl IDs. This affects the reconstruction of
 #   features.tsv.tz 
 
