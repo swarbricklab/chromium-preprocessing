@@ -56,7 +56,7 @@ write_10x <- function(mat, path) {
     barcodes   <- colnames(mat)
     DropletUtils::write10xCounts(
         path       = path,
-        x          = to_dgc(mat),
+        x          = to_dgc(mat), 
         gene.id    = gene.ids,
         gene.symbol= gene.names,
         gene.type  = rep("Gene Expression", length(gene.ids)),
@@ -99,6 +99,7 @@ tryCatch({
     initial_cell_count <- ncol(seurat_object)
     message(sprintf("Loaded object with %d cells.", initial_cell_count))
 
+    
     if (initial_cell_count == 0) {
         message("Input Seurat object has 0 cells. Skipping filtering.")
         proportion_discarded <- 0.0
@@ -111,7 +112,6 @@ tryCatch({
             rownames(empty_counts) <- c("DUMMY_GENE")
         } else {
             # Use existing genes but no cells
-            # ERROR NOTE: Error during filtering for PRADO_10c_mini: GetAssayData doesn't work for multiple layers in v5 assay.
             empty_counts <- GetAssayData(seurat_object, layer = "counts")[, 0, drop=FALSE]
         }
         
@@ -203,12 +203,19 @@ tryCatch({
                 empty_counts <- Matrix::Matrix(0, nrow = 1, ncol = 0, sparse = TRUE)
                 rownames(empty_counts) <- c("DUMMY_GENE")
             } else {
+                # ERROR NOTE: Error during filtering for PRADO_10c_mini: GetAssayData doesn't work for multiple layers in v5 assay.
+                # The seurat object structure for multi is, for reference:
+                # An object of class Seurat 
+                # 36873 features across 3215 samples within 1 assay 
+                # Active assay: RNA (36873 features, 0 variable features)
+                # 2 layers present: counts.Gene Expression, counts.Antibody Capture
                 empty_counts <- GetAssayData(seurat_filtered, layer = "counts")[, 0, drop=FALSE]
             }
             # Use the write_10x function
             write_10x(mat = empty_counts, path = output_dir)
         } else {
             # Extract counts for writing
+            
             counts_to_write <- GetAssayData(seurat_filtered, layer = "counts")
 
             # Use the write_10x function
