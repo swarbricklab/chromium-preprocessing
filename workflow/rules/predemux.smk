@@ -10,18 +10,16 @@
 #          at different thresholds
 #       4. Generate a report summarising the filtering process and its impact on the data
 
-import os 
-
 rule predemux_convert_to_seurat:
     """
-    Convert original Cell Ranger output (barcodes/features/matrix files) for a 
+    Convert original Cell Ranger output (filtered h5 file) for a 
     capture into an RDS file containing a Seurat object. Also calculates and adds
     the mitochondrial percentage ('percent.mt') metadata for downstream filtering.
     """
     input:
         # Input does not depend on whether 'count' or 'multi' was run.
-        # since both use the rule `restructure_counts`
-        cr_dir = lambda wildcards: directory(os.path.dirname(rules.restructure_counts.output.filtered_bc.format(capture=wildcards.capture)))
+        # since both use the rule `restructure_h5`
+        filtered_mat = rules.restructure_h5.output.filtered_mat
     output:
         rds = temp(out_dir / "predemux" / "rds" / "{capture}.rds")
     log:
@@ -35,7 +33,7 @@ rule predemux_convert_to_seurat:
     shell:
         """
         Rscript "{params.r_script_path}" \
-            --input-dir "{input.cr_dir}" \
+            --input-h5 "{input.filtered_mat}" \
             --output-rds "{output.rds}" \
             --mito-pattern '{params.mito_pattern}' \
             --capture-id "{params.capture_id}" \

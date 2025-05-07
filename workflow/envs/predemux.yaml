@@ -15,6 +15,7 @@ dependencies:
   - r-tibble
   - bioconda::bioconductor-dropletutils 
   - r-matrix 
+  - r-hdf5r 
 
   # --- Python Dependencies ---
   - python >=3.8 

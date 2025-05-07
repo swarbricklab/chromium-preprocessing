@@ -4,10 +4,10 @@
 # Date Updated: 7/5/2025
 
 # Known issues:
-# 1. When using cellranger multi, the Seurat object is saved with several count layers (one for each type of data).
+# 1. When using cellranger multi, the Seurat object is saved with several count layers (one for each type of data). 
 #    This leads to issues during cell filtering. 
-# 2. Read10x stores gene names, but not Ensembl IDs. This affects the reconstruction of
-#   features.tsv.tz 
+# 2. Read10x_h5 stores gene names, but not Ensembl IDs. This affects the reconstruction of
+#    features.tsv.tz 
 
 library(argparser)
 suppressPackageStartupMessages({
@@ -16,8 +16,8 @@ suppressPackageStartupMessages({
   library(Matrix)
 })
 
-p <- arg_parser("Convert Cell Ranger output to Seurat Object RDS and add mitochondrial percentage")
-p <- add_argument(p, "--input-dir", help="Path to the Cell Ranger output directory (containing matrix.mtx.gz, features.tsv.gz, barcodes.tsv.gz)", type="character")
+p <- arg_parser("Convert Cell Ranger filtered H5 output to Seurat Object RDS and add mitochondrial percentage")
+p <- add_argument(p, "--input-h5", help="Path to the Cell Ranger filtered H5 file (e.g., filtered_feature_bc_matrix.h5)", type="character")
 p <- add_argument(p, "--output-rds", help="Path to save the output Seurat object RDS file", type="character")
 p <- add_argument(p, "--mito-pattern", help="Regex pattern to identify mitochondrial genes", default="^MT-", type="character")
 p <- add_argument(p, "--log-file", help="Path to the log file", type="character", default=NULL)
@@ -26,12 +26,13 @@ p <- add_argument(p, "--capture-id", help="Capture ID for logging", type="charac
 arguments <- parse_args(p)
 
 # --- Validation of Snakemake Directory Settings ---
-if (is.na(arguments$input_dir) || is.na(arguments$output_rds)){
+if (is.na(arguments$input_h5) || is.na(arguments$output_rds)){
   print(p)
-  stop("Input directory (--input-dir) and output RDS path (--output-rds) must be supplied.", call.=FALSE)
+  stop("Input H5 file (--input-h5) and output RDS path (--output-rds) must be supplied.", call.=FALSE)
 }
-if (!dir.exists(arguments$input_dir)) {
-    stop(paste("Input directory does not exist:", arguments$input_dir), call.=FALSE)
+# Check for file existence
+if (!file.exists(arguments$input_h5)) {
+    stop(paste("Input H5 file does not exist:", arguments$input_h5), call.=FALSE)
 }
 
 # --- Logging Setup ---
@@ -49,33 +50,34 @@ if (!is.null(arguments$log_file) && !is.na(arguments$log_file)) {
 
 # --- Main Workflow ---
 capture_id <- arguments$capture_id
-input_dir <- arguments$input_dir
+input_h5_file <- arguments$input_h5
 output_rds <- arguments$output_rds
 mito_pattern <- arguments$mito_pattern
 
 message(sprintf("Starting Seurat object creation for capture: %s", capture_id))
-message(sprintf("Input Cell Ranger directory: %s", input_dir))
+message(sprintf("Input Cell Ranger H5 file: %s", input_h5_file)) # Updated message
 message(sprintf("Output RDS file: %s", output_rds))
 message(sprintf("Mitochondrial gene pattern: %s", mito_pattern))
 
-
 tryCatch({
-    # Read Cell Ranger data
-    message("Reading 10X data...")
-    counts_matrix <- Read10X(data.dir = input_dir)
+    # Read Cell Ranger H5 data
+    message("Reading 10X H5 data...")
+    # use.names = TRUE obtains gene names (vs Ensembl IDs)
+    counts_matrix <- Read10X_h5(filename = input_h5_file, use.names = TRUE, unique.features = TRUE)
+    
     # Catch empty objects
-    if (is.null(counts_matrix) || length(counts_matrix) == 0) {
-        stop("Read10X did not return a valid matrix. Check input directory structure and files.", call.=FALSE)
+    if (is.null(counts_matrix) || 
+        (is.list(counts_matrix) && length(counts_matrix) == 0) || 
+        (!is.list(counts_matrix) && (nrow(counts_matrix) == 0 || ncol(counts_matrix) == 0))) {
+        stop("Read10X_h5 did not return a valid matrix or list of matrices. Check input H5 file.", call.=FALSE) # Updated error
     }
-    initial_dims <- dim(counts_matrix)
-    message(sprintf("Initial matrix dimensions: %d genes x %d cells", initial_dims[1], initial_dims[2]))
 
     # Create Seurat object
     message("Creating Seurat object...")
     # CreateSeuratObject expects a matrix. With multi, it will likely be a list of matrices
     # To add multi compatability, I think we'd have to check if counts_matrix is a list
     # and then find the matrix corresponding to gene expression??
-    seurat_object <- CreateSeuratObject(counts = counts_matrix)
+    seurat_object <- CreateSeuratObject(counts = counts_matrix) 
     message(sprintf("Seurat object created with %d genes and %d cells.", nrow(seurat_object), ncol(seurat_object)))
 
     # Calculate and add mitochondrial percentage
@@ -90,8 +92,8 @@ tryCatch({
 
     # Identify memory usage of the Seurat object
     message("Calculating Seurat object size in memory...")
-    obj_size <- object.size(seurat_object)                     # bytes
-    msg_size <- format(obj_size, units = "auto")               # e.g. "1.3 Gb"
+    obj_size <- object.size(seurat_object)                      # bytes
+    msg_size <- format(obj_size, units = "auto")                # e.g. "1.3 Gb"
     message(sprintf("Seurat object size in memory: %s", msg_size))
 
     # Save Seurat object
