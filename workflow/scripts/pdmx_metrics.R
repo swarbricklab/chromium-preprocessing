@@ -10,6 +10,14 @@ suppressPackageStartupMessages({
   library(tibble)
 })
 
+# Threshold values to evaluate (for downstream graph construction in the report)
+# Current values aim to cover a broad range of possibilities, 
+# while not being too granular
+gene_thresholds <- c(0, 50, 100, 200, 300, 400, 500, 750, 1000, 1500, 2000, 3000, 5000)
+# Mito: High threshold = less filtering.
+mito_thresholds <- c(100, 90, 80, 70, 60, 50, 40, 30, 25, 20, 15, 10, 5, 2.5, 1, 0)
+umi_thresholds <- c(0, 100, 250, 500, 750, 1000, 1500, 2000, 3000, 5000, 7500, 10000, 15000, 20000)
+
 p <- arg_parser("Gather cumulative filter metrics for reporting")
 p <- add_argument(p, "--input-rds", help="Path to the input Seurat object RDS file", type="character")
 p <- add_argument(p, "--output-csv-genes", help="Path to save the genes-per-cell metrics CSV", type="character")
@@ -79,12 +87,6 @@ tryCatch({
          if (!("nCount_RNA" %in% colnames(seurat_object@meta.data))) {
            stop("Metadata column 'nCount_RNA' not found.", call.=FALSE)
         }
-
-        # Define threshold ranges to evaluate
-        gene_thresholds <- c(0, 50, 100, 200, 300, 400, 500, 750, 1000, 1500, 2000, 3000, 5000)
-        # Mito: High threshold = less filtering.
-        mito_thresholds <- c(100, 90, 80, 70, 60, 50, 40, 30, 25, 20, 15, 10, 5, 2.5, 1, 0)
-        umi_thresholds <- c(0, 100, 250, 500, 750, 1000, 1500, 2000, 3000, 5000, 7500, 10000, 15000, 20000)
 
         # Function to calculate cumulative proportion discarded
         calculate_cumulative_discard <- function(metadata_vector, thresholds, filter_type) {
