@@ -80,17 +80,25 @@ rule cellranger_multi:
         "logs/chromium-preprocessing/cellranger_multi/{capture}.log"
     shell:
         """
-        # Snakemake creates output directory but cellranger complains if directory alrady exists!
-        rm -rf {output.cr_dir}
+        # Snakemake creates output directory but cellranger complains if directory already exists!
+        # Check if directory exist
+        if [ -d {output.cr_dir} ]; then
+            # check if empty
+            if [ -z "$(ls -A {output.cr_dir})" ]; then
+                echo "Deleting empty directory {output.cr_dir}" > {log}
+                rm -rf {output.cr_dir}
+            fi
+        fi
         cellranger multi \
             --output-dir {output.cr_dir} \
             --id {wildcards.capture} \
             --csv {input.conf} \
             --jobmode={resources.jobmode} \
+            --overrides {resources.override} \
             --maxjobs {resources.maxjobs} \
             --jobinterval {resources.jobinterval} \
             --mempercore {resources.mempercore} \
-            > {log} 2>&1
+            >> {log} 2>&1
         rm -rf {output.cr_dir}/SC_MULTI_CS
         """
 
