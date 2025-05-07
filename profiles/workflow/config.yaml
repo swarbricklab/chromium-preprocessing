@@ -64,8 +64,9 @@ set-resources:
         threads: "1"
         mem: "2GB"
         # Resources used by cellranger to dispatch jobs in cluster mode
+        override: ?os.getenv("WORKFLOW_ROOT")+"/profiles/workflow/override.json"
         mempercore: 8 #GB
-        maxjobs: 100
+        maxjobs: 25
         jobinterval: 2000
     select_libraries:
         threads: "1"
