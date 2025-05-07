@@ -55,6 +55,7 @@ params:
     no-secondary: false
   # Options for 'predemux' cell filtering
   predemux:
+    # Setting a value to -1 will disable the filter
     min-gene-count: 100
     min-umi-count: 100
     max-mito: 40 # this is a percentage (i.e. 0 - 100)

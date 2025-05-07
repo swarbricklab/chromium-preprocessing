@@ -40,6 +40,7 @@ params:
     normalize: "none"
     no-secondary: false
   predemux:
+    # Setting a value to -1 will disable the filter
     min-gene-count: 500
     min-umi-count: 1000
     max-mito: 20 # this is a percentage (i.e. 0 - 100)
