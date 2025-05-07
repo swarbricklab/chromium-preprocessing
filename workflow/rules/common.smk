@@ -7,6 +7,7 @@ def find_assays(libraries):
     assays=libraries['feature_types'].unique()
     mapping = {
         "Gene Expression": "gene-expression",
+        "VDJ-B": "vdj",
         "VDJ-T": "vdj",
         "Antibody Capture": "feature"
     }
