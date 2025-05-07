@@ -104,5 +104,3 @@ def get_source_bams(wildcards):
     )
     return source_bams
 
-# TODO: Implement a function to return the output files (e.g. barcodes.tsv, features.tsv, matrix.mtx) for each individual capture
-# as produced by the predemux workflow, as well as the summary report files
