@@ -203,19 +203,18 @@ tryCatch({
                 empty_counts <- Matrix::Matrix(0, nrow = 1, ncol = 0, sparse = TRUE)
                 rownames(empty_counts) <- c("DUMMY_GENE")
             } else {
-                # ERROR NOTE: Error during filtering for PRADO_10c_mini: GetAssayData doesn't work for multiple layers in v5 assay.
-                # The seurat object structure for multi is, for reference:
-                # An object of class Seurat 
-                # 36873 features across 3215 samples within 1 assay 
-                # Active assay: RNA (36873 features, 0 variable features)
-                # 2 layers present: counts.Gene Expression, counts.Antibody Capture
                 empty_counts <- GetAssayData(seurat_filtered, layer = "counts")[, 0, drop=FALSE]
             }
             # Use the write_10x function
             write_10x(mat = empty_counts, path = output_dir)
         } else {
             # Extract counts for writing
-            
+            # ERROR NOTE: Error during filtering for PRADO_10c_mini: GetAssayData doesn't work for multiple layers in v5 assay.
+            # The seurat object structure for multi is, for reference:
+            # An object of class Seurat 
+            # 36873 features across 3215 samples within 1 assay 
+            # Active assay: RNA (36873 features, 0 variable features)
+            # 2 layers present: counts.Gene Expression, counts.Antibody Capture
             counts_to_write <- GetAssayData(seurat_filtered, layer = "counts")
 
             # Use the write_10x function
