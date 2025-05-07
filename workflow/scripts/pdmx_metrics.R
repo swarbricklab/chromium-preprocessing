@@ -20,8 +20,7 @@ p <- add_argument(p, "--log-file", help="Path to the log file", type="character"
 
 arguments <- parse_args(p)
 
-# --- Validation ---
-# TODO: Consider removing (Snakemake will handle this)
+# --- Validation of input params ---
 if (is.na(arguments$input_rds) || is.na(arguments$output_csv_genes) || is.na(arguments$output_csv_mito) || is.na(arguments$output_csv_umi)){
   print(p)
   stop("Input RDS (--input-rds) and all three output CSV paths (--output-csv-*) must be supplied.", call.=FALSE)
@@ -82,27 +81,24 @@ tryCatch({
         }
 
         # Define threshold ranges to evaluate
-        # TODO: Establish an optimal threshold range for each filter
         gene_thresholds <- c(0, 50, 100, 200, 300, 400, 500, 750, 1000, 1500, 2000, 3000, 5000)
         # Mito: High threshold = less filtering.
         mito_thresholds <- c(100, 90, 80, 70, 60, 50, 40, 30, 25, 20, 15, 10, 5, 2.5, 1, 0)
         umi_thresholds <- c(0, 100, 250, 500, 750, 1000, 1500, 2000, 3000, 5000, 7500, 10000, 15000, 20000)
 
-
         # Function to calculate cumulative proportion discarded
         calculate_cumulative_discard <- function(metadata_vector, thresholds, filter_type) {
             results <- numeric(length(thresholds))
             # Handle potential NAs in metadata (e.g., percent.mt if counts were 0)
-            # For filtering purposes, treat NA as passing 'min' filters and failing 'max' filters (conservative)
-            # Alternatively, NAs could be treated as 0 for calculation? Let's treat as 0 for consistency.
+            # For filtering purposes, set NAs to 0
             metadata_vector[is.na(metadata_vector)] <- 0
 
             for (i in seq_along(thresholds)) {
                 thresh <- thresholds[i]
                 if (filter_type == "min") { # e.g., min_genes (discard if < thresh)
-                    discarded_count <- sum(metadata_vector < thresh, na.rm = TRUE)
+                    discarded_count <- sum(metadata_vector <= thresh, na.rm = TRUE)
                 } else if (filter_type == "max") { # e.g., max_mito (discard if > thresh)
-                    discarded_count <- sum(metadata_vector > thresh, na.rm = TRUE)
+                    discarded_count <- sum(metadata_vector >= thresh, na.rm = TRUE)
                 } else {
                    stop("Invalid filter_type specified.")
                 }

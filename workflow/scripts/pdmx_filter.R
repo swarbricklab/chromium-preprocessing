@@ -22,8 +22,7 @@ p <- add_argument(p, "--log-file", help="Path to the log file", type="character"
 
 arguments <- parse_args(p)
 
-# --- Validation ---
-# TODO: Consider removing (Snakemake will handle this)
+# --- Validation of Supplied Inputs ---
 if (is.na(arguments$input_rds) || is.na(arguments$output_dir) || is.na(arguments$output_txt)){
   print(p)
   stop("Input RDS (--input-rds), output directory (--output-dir), and output text file path (--output-txt) must be supplied.", call.=FALSE)
@@ -41,6 +40,33 @@ if (!is.null(arguments$log_file) && !is.na(arguments$log_file)) {
     }, add = TRUE)
 }
 
+to_dgc <- function(mat) {
+  if (!is(mat, "dgCMatrix")) as(mat, "dgCMatrix") else mat
+}
+# Write data to Cell Ranger format
+# gene.id should be the Ensembl ID
+#     NOTE ON THIS: The use of Read10x in the previous script removes the Ensembl ID. 
+#     If we need Ensembl IDs, a fix will be needed in the previous script
+#     such as adding Ensembl IDs to the object metadata and then using that here.
+# gene.symbol should be the gene name
+# gene.type should be the type of gene (e.g., "Gene Expression")
+write_10x <- function(mat, path) {
+    gene.names   <- rownames(mat)
+    gene.ids <- paste0("unknown_", seq_len(nrow(mat)))
+    barcodes   <- colnames(mat)
+    DropletUtils::write10xCounts(
+        path       = path,
+        x          = to_dgc(mat),
+        gene.id    = gene.ids,
+        gene.symbol= gene.names,
+        gene.type  = rep("Gene Expression", length(gene.ids)),
+        barcodes   = barcodes,
+        type       = "sparse",
+        version    = "3",
+        overwrite  = TRUE
+    )
+}
+
 # --- Main Workflow ---
 capture_id <- arguments$capture_id
 input_rds <- arguments$input_rds
@@ -49,6 +75,10 @@ output_txt <- arguments$output_txt
 min_genes_thresh <- arguments$min_genes
 max_mito_thresh <- arguments$max_mito
 min_umi_thresh <- arguments$min_umi
+
+if (min_genes_thresh < -1) stop("min-genes must be -1 or >=0")
+if (max_mito_thresh < -1.0 || max_mito_thresh > 100.0) stop("max-mito must be -1.0 or between 0.0 and 100.0")
+if (min_umi_thresh < -1) stop("min-umi must be -1 or >=0")
 
 message(sprintf("Starting filtering for capture: %s", capture_id))
 message(sprintf("Input Seurat RDS: %s", input_rds))
@@ -77,21 +107,17 @@ tryCatch({
         message("Writing empty Cell Ranger output files...")
         # Create a minimal empty matrix structure expected by write10xCounts
         if (nrow(seurat_object) == 0) {
-           empty_counts <- Matrix::Matrix(0, nrow = 1, ncol = 0, sparse = TRUE)
-           rownames(empty_counts) <- c("DUMMY_GENE")
-           empty_features <- data.frame(id="DUMMY_GENE", symbol="DUMMY_GENE", type="Gene Expression")
+            empty_counts <- Matrix::Matrix(0, nrow = 1, ncol = 0, sparse = TRUE)
+            rownames(empty_counts) <- c("DUMMY_GENE")
         } else {
-           # Use existing genes but no cells
-           empty_counts <- GetAssayData(seurat_object, layer = "counts")[, 0, drop=FALSE]
-           empty_features <- data.frame(id=rownames(empty_counts), symbol=rownames(empty_counts), type="Gene Expression")
+            # Use existing genes but no cells
+            # ERROR NOTE: Error during filtering for PRADO_10c_mini: GetAssayData doesn't work for multiple layers in v5 assay.
+            empty_counts <- GetAssayData(seurat_object, layer = "counts")[, 0, drop=FALSE]
         }
-
-        DropletUtils::write10xCounts(path = output_dir,
-                                     x = empty_counts,
-                                     barcodes = character(0), # Empty barcodes
-                                     features = empty_features, # Need features df
-                                     version = "3",
-                                     overwrite = TRUE)
+        
+        # Use the write_10x function
+        write_10x(mat = empty_counts, path = output_dir)
+        
         # Write proportion discarded file
         writeLines(as.character(proportion_discarded), con = output_txt)
         message("Empty output files written.")
@@ -99,17 +125,17 @@ tryCatch({
     } else {
         # Check if necessary metadata exists (should be calculated in Script 1 `pdmx_convert_seurat.R`)
          if (!("percent.mt" %in% colnames(seurat_object@meta.data))) {
-            stop("Metadata column 'percent.mt' not found. Ensure pdmx_convert_seurat.R ran correctly.", call.=FALSE)
+             stop("Metadata column 'percent.mt' not found. Ensure pdmx_convert_seurat.R ran correctly.", call.=FALSE)
          }
         if (!("nFeature_RNA" %in% colnames(seurat_object@meta.data))) {
-           stop("Metadata column 'nFeature_RNA' not found.", call.=FALSE)
+            stop("Metadata column 'nFeature_RNA' not found.", call.=FALSE)
         }
          if (!("nCount_RNA" %in% colnames(seurat_object@meta.data))) {
-           stop("Metadata column 'nCount_RNA' not found.", call.=FALSE)
+            stop("Metadata column 'nCount_RNA' not found.", call.=FALSE)
         }
 
         # Apply filters sequentially
-        cells_to_keep <- rep(TRUE, initial_cell_count)
+        cells_to_keep <- rep(TRUE, initial_cell_count) # This creates a logical vector of TRUEs for all cells
         applied_filters <- c()
 
         # Filter 1: Minimum genes per cell
@@ -117,7 +143,7 @@ tryCatch({
             message(sprintf("Applying filter: nFeature_RNA >= %d", min_genes_thresh))
             cells_passing <- seurat_object$nFeature_RNA >= min_genes_thresh
             message(sprintf("  %d / %d cells remaining after this filter.", sum(cells_to_keep & cells_passing), sum(cells_to_keep)))
-            cells_to_keep <- cells_to_keep & cells_passing
+            cells_to_keep <- cells_to_keep & cells_passing # Update cells_to_keep to only those passing the filter
             applied_filters <- c(applied_filters, sprintf("min_genes >= %d", min_genes_thresh))
         } else {
             message("Skipping filter: Minimum genes per cell (value was -1).")
@@ -128,7 +154,7 @@ tryCatch({
             message(sprintf("Applying filter: percent.mt <= %.1f%%", max_mito_thresh))
             # Handle potential NA values in percent.mt if some cells had 0 reads
             percent_mt_values <- seurat_object$percent.mt
-            percent_mt_values[is.na(percent_mt_values)] <- 0 # Treat NA mito percent (0 reads) as passing
+            percent_mt_values[is.na(percent_mt_values)] <- 0 # Treat NA mito percent (0 reads) as technically passing
             cells_passing <- percent_mt_values <= max_mito_thresh
             message(sprintf("  %d / %d cells remaining after this filter.", sum(cells_to_keep & cells_passing), sum(cells_to_keep)))
             cells_to_keep <- cells_to_keep & cells_passing
@@ -169,36 +195,24 @@ tryCatch({
 
 
         # Save filtered data in Cell Ranger format
-        # TODO: Validate this logic
         message("Writing filtered data to Cell Ranger v3 format...")
         if (final_cell_count == 0) {
-             message("No cells remaining after filtering. Writing empty output.")
-             # Create a minimal empty matrix structure expected by write10xCounts
-             if (nrow(seurat_filtered) == 0) { # Should not happen if initial obj had genes
+            message("No cells remaining after filtering. Writing empty output.")
+            # Create a minimal empty matrix structure expected by write10xCounts
+            if (nrow(seurat_filtered) == 0) { # Should not happen if initial obj had genes
                 empty_counts <- Matrix::Matrix(0, nrow = 1, ncol = 0, sparse = TRUE)
                 rownames(empty_counts) <- c("DUMMY_GENE")
-                empty_features <- data.frame(id="DUMMY_GENE", symbol="DUMMY_GENE", type="Gene Expression")
-             } else {
+            } else {
                 empty_counts <- GetAssayData(seurat_filtered, layer = "counts")[, 0, drop=FALSE]
-                empty_features <- data.frame(id=rownames(empty_counts), symbol=rownames(empty_counts), type="Gene Expression")
-             }
-             DropletUtils::write10xCounts(path = output_dir,
-                                           x = empty_counts,
-                                           barcodes = character(0),
-                                           features = empty_features,
-                                           version = "3", overwrite = TRUE)
+            }
+            # Use the write_10x function
+            write_10x(mat = empty_counts, path = output_dir)
         } else {
-            # Extract counts, features, barcodes for writing
+            # Extract counts for writing
             counts_to_write <- GetAssayData(seurat_filtered, layer = "counts")
-            features_to_write <- data.frame(id = rownames(counts_to_write),
-                                            symbol = rownames(counts_to_write), # Assuming IDs are symbols, adjust if gene symbols are elsewhere
-                                            type = "Gene Expression")
-            barcodes_to_write <- colnames(counts_to_write)
 
-            DropletUtils::write10xCounts(path = output_dir,
-                                          x = counts_to_write,
-                                          version = "3",
-                                          overwrite = TRUE)
+            # Use the write_10x function
+            write_10x(mat = counts_to_write, path = output_dir)
         }
         message("Filtered Cell Ranger files successfully written.")
     } # End else block for initial_cell_count > 0

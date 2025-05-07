@@ -1,6 +1,12 @@
 #!/usr/bin/env Rscript
 # Predemux Script 1: Convert Cell Ranger output to Seurat Object RDS file
 # Calculates 'percent.mt' and adds it to the object metadata.
+# Date Updated: 7/5/2025
+
+# Known issues:
+# 1. The script does not handle Cell Ranger output with multiple matrices
+# 2. Read10x stores gene names, but not Ensembl IDs. This affects the reconstruction of
+#   features.tsv.tz 
 
 library(argparser)
 suppressPackageStartupMessages({
@@ -18,8 +24,7 @@ p <- add_argument(p, "--capture-id", help="Capture ID for logging", type="charac
 
 arguments <- parse_args(p)
 
-# --- Validation ---
-# TODO: Consider removing (Snakemake will handle this)
+# --- Validation of Snakemake Directory Settings ---
 if (is.na(arguments$input_dir) || is.na(arguments$output_rds)){
   print(p)
   stop("Input directory (--input-dir) and output RDS path (--output-rds) must be supplied.", call.=FALSE)
@@ -29,6 +34,7 @@ if (!dir.exists(arguments$input_dir)) {
 }
 
 # --- Logging Setup ---
+# Use sink to redirect output and messages to a log file
 if (!is.null(arguments$log_file) && !is.na(arguments$log_file)) {
     log_con <- file(arguments$log_file, open="wt")
     sink(log_con, type="output")
@@ -56,6 +62,7 @@ tryCatch({
     # Read Cell Ranger data
     message("Reading 10X data...")
     counts_matrix <- Read10X(data.dir = input_dir)
+    # Catch empty objects
     if (is.null(counts_matrix) || length(counts_matrix) == 0) {
         stop("Read10X did not return a valid matrix. Check input directory structure and files.", call.=FALSE)
     }
@@ -64,6 +71,9 @@ tryCatch({
 
     # Create Seurat object
     message("Creating Seurat object...")
+    # CreateSeuratObject expects a matrix. With multi, it will likely be a list of matrices
+    # To add multi compatability, I think we'd have to check if counts_matrix is a list
+    # and then find the matrix corresponding to gene expression??
     seurat_object <- CreateSeuratObject(counts = counts_matrix)
     message(sprintf("Seurat object created with %d genes and %d cells.", nrow(seurat_object), ncol(seurat_object)))
 
@@ -76,6 +86,12 @@ tryCatch({
         message("Skipping mitochondrial percentage calculation (0 cells). Adding empty 'percent.mt' column.")
         seurat_object$percent.mt <- numeric(0) # Add empty column to maintain structure
     }
+
+    # Identify memory usage of the Seurat object
+    message("Calculating Seurat object size in memory...")
+    obj_size <- object.size(seurat_object)                     # bytes
+    msg_size <- format(obj_size, units = "auto")               # e.g. "1.3 Gb"
+    message(sprintf("Seurat object size in memory: %s", msg_size))
 
     # Save Seurat object
     message("Saving Seurat object to RDS file...")

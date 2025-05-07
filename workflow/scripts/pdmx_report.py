@@ -10,7 +10,7 @@ import os
 from pathlib import Path
 
 # --- Argument Parsing ---
-parser = argparse.ArgumentParser(description="Generate scRNA-seq filtering report.")
+parser = argparse.ArgumentParser(description="Generate predemux filtering report.")
 parser.add_argument('--input-gene-csvs', nargs='+', required=True, help='List of input CSV files for gene filter metrics.')
 parser.add_argument('--input-mito-csvs', nargs='+', required=True, help='List of input CSV files for mito filter metrics.')
 parser.add_argument('--input-umi-csvs', nargs='+', required=True, help='List of input CSV files for UMI filter metrics.')
@@ -188,6 +188,14 @@ try:
     discard_at_config_mito = create_filter_plot(mito_agg, args.config_max_mito, 'Impact of Max Mitochondrial % Filter', 'Max Mito % Threshold', 'Cumulative % Cells Discarded (Mean ± SD)', args.output_plot_mito, "max")
     discard_at_config_umi = create_filter_plot(umi_agg, args.config_min_umi, 'Impact of Minimum UMI Filter', 'Min UMIs per Cell Threshold', 'Cumulative % Cells Discarded (Mean ± SD)', args.output_plot_umi, "min")
 
+    # For cases where the filter was not applied
+    def fmt(pct):
+        return f"{pct:.1f}%" if pct is not None else "N/A"
+
+    discard_at_config_genes = fmt(discard_at_config_genes)
+    discard_at_config_mito  = fmt(discard_at_config_mito)
+    discard_at_config_umi   = fmt(discard_at_config_umi)
+
     # 3. Process overall proportion discarded
     logging.info("Processing overall proportion discarded...")
     prop_df = read_proportion_discarded(args.input_prop_txts)
@@ -263,19 +271,19 @@ try:
         <div class="plot-container">
             <h3>Minimum Genes per Cell Filter</h3>
             <img src="{rel_plot_genes}" alt="Minimum Genes Filter Plot">
-             <p><small>At the chosen threshold ({'Disabled' if args.config_min_genes == -1 else args.config_min_genes}), this filter alone discarded ~{discard_at_config_genes:.1f}% of cells on average.</small></p>
+             <p><small>At the chosen threshold ({'Disabled' if args.config_min_genes == -1 else args.config_min_genes}), this filter alone discarded ~{discard_at_config_genes} of cells on average.</small></p>
         </div>
 
         <div class="plot-container">
             <h3>Maximum Mitochondrial % Filter</h3>
             <img src="{rel_plot_mito}" alt="Maximum Mito Filter Plot">
-             <p><small>At the chosen threshold ({'Disabled' if args.config_max_mito == -1.0 else f'{args.config_max_mito:.1f}%'}), this filter alone discarded ~{discard_at_config_mito:.1f}% of cells on average.</small></p>
+             <p><small>At the chosen threshold ({'Disabled' if args.config_max_mito == -1.0 else f'{args.config_max_mito:.1f}%'}), this filter alone discarded ~{discard_at_config_mito} of cells on average.</small></p>
         </div>
 
         <div class="plot-container">
             <h3>Minimum UMIs per Cell Filter</h3>
             <img src="{rel_plot_umi}" alt="Minimum UMI Filter Plot">
-             <p><small>At the chosen threshold ({'Disabled' if args.config_min_umi == -1 else args.config_min_umi}), this filter alone discarded ~{discard_at_config_umi:.1f}% of cells on average.</small></p>
+             <p><small>At the chosen threshold ({'Disabled' if args.config_min_umi == -1 else args.config_min_umi}), this filter alone discarded ~{discard_at_config_umi} of cells on average.</small></p>
         </div>
 
 

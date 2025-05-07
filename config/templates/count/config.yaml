@@ -57,4 +57,5 @@ params:
   predemux:
     min-gene-count: 100
     min-umi-count: 100
-    max-mito: 0.4
+    max-mito: 40 # this is a percentage (i.e. 0 - 100)
+    mito-pattern: "^MT-"

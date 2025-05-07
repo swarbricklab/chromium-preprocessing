@@ -1,33 +1,34 @@
 # workflow/rules/predemux.smk
-# Rules for pre-demultiplexing filtering
 
-# TODO: Check if imports needed
-import pandas as pd
-from pathlib import Path
+# Rules for pre-demultiplexing filtering
+# The predemux workflow is used to filter out low-quality cells from the raw
+# Cell Ranger output before demultiplexing. 
+# It is broken into four rules:
+#       1. Convert Cell Ranger output to Seurat object
+#       2. Filter the Seurat object and save Cell Ranger formatted outputs
+#       3. Identify the proportion of cells that would be discarded by each filter
+#          at different thresholds
+#       4. Generate a report summarising the filtering process and its impact on the data
+
 import os 
 
-# --- Workflow Rules ---
 rule predemux_convert_to_seurat:
     """
-    Convert original Cell Ranger output for a capture
-    into an RDS file containing a Seurat object. Also calculates and adds
-    the mitochondrial percentage ('percent.mt') metadata.
+    Convert original Cell Ranger output (barcodes/features/matrix files) for a 
+    capture into an RDS file containing a Seurat object. Also calculates and adds
+    the mitochondrial percentage ('percent.mt') metadata for downstream filtering.
     """
     input:
         # Input does not depend on whether 'count' or 'multi' was run.
         # since both use the rule `restructure_counts`
         cr_dir = lambda wildcards: directory(os.path.dirname(rules.restructure_counts.output.filtered_bc.format(capture=wildcards.capture)))
     output:
-        # Place predemux outputs in a dedicated subdirectory
-        # TODO: Make temporary
-        rds = out_dir / "predemux" / "rds" / "{capture}.rds"
+        rds = temp(out_dir / "predemux" / "rds" / "{capture}.rds")
     log:
-        # TODO: Create an overarching Predemux log directory
-        log_dir / "predemux_convert" / "{capture}.log"
+        log_dir / "predemux" / "pdmx_convert_seurat" / "{capture}.log"
     params:
         capture_id = "{capture}",
-        # TODO: Add ^MT- to config
-        mito_pattern = config['params']['predemux'].get("mito_pattern", "^MT-"),
+        mito_pattern = config['params']['predemux'].get("mito-pattern", "^MT-"),
         r_script_path = "workflow/scripts/pdmx_convert_seurat.R"
     conda:
         "../envs/predemux.yaml"
@@ -43,24 +44,24 @@ rule predemux_convert_to_seurat:
 
 rule predemux_filter_seurat:
     """
-    Apply user-defined filters (min genes, max mito %, min UMIs from config)
-    to the Seurat object for a capture. Saves the filtered data in Cell Ranger v3
-    format and outputs the proportion of cells discarded to a text file.
+    Apply user-defined filters (min genes, max mito %, min UMIs) from the config
+    to the Seurat object for a capture. Saves the filtered data in Cell Ranger
+    format (barcodes/features/matrix files) and saves the proportion of cells 
+    discarded to a temporary text file (for downstream reporting).
     """
     input:
         rds = rules.predemux_convert_to_seurat.output.rds
     output:
-        cr_dir = directory(out_dir / "predemux" / "filtered_cr" / "{capture}"),
-        # Save proportion of cells discarded after filtering (for later report)
-        prop_txt = out_dir / "predemux" / "qc" / "prop_discarded" / "{capture}.txt"
+        # Place predemux outputs in the same directory as the original Cell Ranger output
+        cr_dir = directory(out_dir / "count/predemux/{capture}"),
+        prop_txt = temp(out_dir / "predemux" / "qc" / "prop_discarded" / "{capture}.txt")
     log:
-        log_dir / "predemux_filter" / "{capture}.log"
+        log_dir /  "predemux" / "pdmx_filter" / "{capture}.log"
     params:
         capture_id = "{capture}",
-        # -1 if missing (skip filter)
+        # Note: -1 is used to skip the filter
         min_genes = config['params']['predemux'].get("min-gene-count", -1),
-        # TODO: Fix inconsistency between percentage input and decimal input
-        max_mito = lambda wc: float(config['params']['predemux'].get("max-mito", -1.0)) * 100.0 if str(config['params']['predemux'].get("max-mito", "-1.0")).replace('.', '', 1).lstrip('-').isdigit() else -1.0,
+        max_mito = config['params']['predemux'].get("max-mito", -1.0),
         min_umi = config['params']['predemux'].get("min-umi-count", -1),
         r_script_path = "workflow/scripts/pdmx_filter.R"
     conda:
@@ -80,18 +81,18 @@ rule predemux_filter_seurat:
 
 rule predemux_gather_qc_metrics:
     """
-    For a capture's Seurat object, calculate the cumulative proportion of cells
+    For a capture's Seurat object, calculate the proportion of cells
     that would be discarded by each filter type (genes, mito, UMI) independently
     across a predefined range of thresholds. Saves results to CSV files for reporting.
     """
     input:
         rds = rules.predemux_convert_to_seurat.output.rds
     output:
-        genes_csv = out_dir / "predemux" / "qc" / "metrics" / "{capture}_genes.csv",
-        mito_csv = out_dir / "predemux" / "qc" / "metrics" / "{capture}_mito.csv",
-        umi_csv = out_dir / "predemux" / "qc" / "metrics" / "{capture}_umi.csv"
+        genes_csv = temp(out_dir / "predemux" / "qc" / "metrics" / "{capture}_genes.csv"),
+        mito_csv = temp(out_dir / "predemux" / "qc" / "metrics" / "{capture}_mito.csv"),
+        umi_csv = temp(out_dir / "predemux" / "qc" / "metrics" / "{capture}_umi.csv")
     log:
-        log_dir / "predemux_metrics" / "{capture}.log"
+        log_dir /  "predemux" / "pdmx_metrics" / "{capture}.log"
     params:
         capture_id = "{capture}",
         r_script_path = "workflow/scripts/pdmx_metrics.R"
@@ -111,27 +112,25 @@ rule predemux_gather_qc_metrics:
 rule predemux_generate_report:
     """
     Aggregate filtering metrics (from *_metrics.csv) and cell discarded proportions
-    (from *_prop_discarded.txt) across all processed captures. Generates an
+    (from *_prop_discarded.txt) across all processed captures. Generates a
     HTML report summarising the impact of the chosen filters, along with plots
     showing average filter effects.
     """
     input:
-        # Aggregate all necessary files
         prop_txts = expand(rules.predemux_filter_seurat.output.prop_txt, capture=captures.index),
         gene_csvs = expand(rules.predemux_gather_qc_metrics.output.genes_csv, capture=captures.index),
         mito_csvs = expand(rules.predemux_gather_qc_metrics.output.mito_csv, capture=captures.index),
         umi_csvs = expand(rules.predemux_gather_qc_metrics.output.umi_csv, capture=captures.index)
     output:
-        html = out_dir / "predemux" / "qc" / "report.html",
-        plot_genes = out_dir / "predemux" / "qc" / "plot_genes.png",
-        plot_mito = out_dir / "predemux" / "qc" / "plot_mito.png",
-        plot_umi = out_dir / "predemux" / "qc" / "plot_umi.png"
+        html = report_dir / "predemux" / "predemux_report.html",
+        plot_genes = report_dir / "predemux" / "img" / "plot_genes.png",
+        plot_mito = report_dir / "predemux" / "img" / "plot_mito.png",
+        plot_umi = report_dir / "predemux" / "img" / "plot_umi.png"
     log:
-        log_dir / "predemux_report.log"
+        log_dir / "predemux" / "predemux_report.log"
     params:
-        # Re-obtain user params from config
         min_genes = config['params']['predemux'].get("min-gene-count", -1),
-        max_mito = lambda wc: float(config['params']['predemux'].get("max-mito", -1.0)) * 100.0 if str(config['params']['predemux'].get("max-mito", "-1.0")).replace('.', '', 1).lstrip('-').isdigit() else -1.0,
+        max_mito = config['params']['predemux'].get("max-mito", -1.0),
         min_umi = config['params']['predemux'].get("min-umi-count", -1),
         py_script_path = "workflow/scripts/pdmx_report.py"
     conda:
