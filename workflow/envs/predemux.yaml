@@ -3,14 +3,16 @@ name: predemux
 channels:
   - conda-forge
   - bioconda
-  - default
+  - defaults
 dependencies:
   # --- R Dependencies ---
   - r-base >=4.2 
   - r-argparser 
   - r-seurat =5.2 
   - r-seuratobject 
-  - r-tidyverse 
+  - r-dplyr
+  - r-readr
+  - r-tibble
   - bioconda::bioconductor-dropletutils 
   - r-matrix 
 
@@ -19,4 +21,3 @@ dependencies:
   - pandas 
   - numpy
   - matplotlib 
-  
