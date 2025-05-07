@@ -103,4 +103,3 @@ def get_source_bams(wildcards):
         capture=capture_list
     )
     return source_bams
-

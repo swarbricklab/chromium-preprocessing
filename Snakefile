@@ -78,5 +78,3 @@ wildcard_constraints:
 rule all:
     input:
         targets
-
-

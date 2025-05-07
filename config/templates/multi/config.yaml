@@ -67,3 +67,4 @@ params:
     min-umi-count: 500 # Integer value
     max-mito: -1 # Integer percentage (0 - 100 inclusive))
     mito-pattern: "^MT-" # String value (for mice: "^mt-")
+    
