@@ -1,4 +1,4 @@
-# This rule file contains rules that restructure the "outs" from 'cellranger count'
+# This rule file contains rules that restructure the "outs" from 'cellranger multi'
 # By grouping related outputs across captures, the dataset becomes easier to navigate.
 # Restructuring also allows users to selectively pull only the data of interest, reducing download times
 # The new structure also makes it possible to specify dependencies more precisely, speeding up data validation.
