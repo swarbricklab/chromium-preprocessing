@@ -17,11 +17,26 @@ suppressPackageStartupMessages({
 })
 
 p <- arg_parser("Convert Cell Ranger filtered H5 output to Seurat Object RDS and add mitochondrial percentage")
-p <- add_argument(p, "--input-h5", help="Path to the Cell Ranger filtered H5 file (e.g., filtered_feature_bc_matrix.h5)", type="character")
-p <- add_argument(p, "--output-rds", help="Path to save the output Seurat object RDS file", type="character")
-p <- add_argument(p, "--mito-pattern", help="Regex pattern to identify mitochondrial genes", default="^MT-", type="character")
-p <- add_argument(p, "--log-file", help="Path to the log file", type="character", default=NULL)
-p <- add_argument(p, "--capture-id", help="Capture ID for logging", type="character", default="unknown_capture")
+p <- add_argument(p, "--input-h5", 
+                  help="Path to the Cell Ranger filtered H5 file (e.g., filtered_feature_bc_matrix.h5)", 
+                  type="character", 
+                  default=snakemake@input[["filtered_mat"]])
+p <- add_argument(p, "--output-rds", 
+                  help="Path to save the output Seurat object RDS file", 
+                  type="character", 
+                  default=snakemake@output[["rds"]])
+p <- add_argument(p, "--mito-pattern", 
+                  help="Regex pattern to identify mitochondrial genes", 
+                  type="character", 
+                  default=snakemake@params[["mito_pattern"]])
+p <- add_argument(p, "--capture-id", 
+                  help="Capture ID for logging", 
+                  type="character", 
+                  default=snakemake@params[["capture_id"]])
+p <- add_argument(p, "--log-file", 
+                  help="Path to the log file. If run via Snakemake, this defaults to the Snakemake log file.", 
+                  type="character", 
+                  default=snakemake@log[[1]]) # Assumes log is always defined in the rule
 
 arguments <- parse_args(p)
 

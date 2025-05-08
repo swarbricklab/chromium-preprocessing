@@ -19,12 +19,30 @@ mito_thresholds <- c(100, 90, 80, 70, 60, 50, 40, 30, 25, 20, 15, 10, 5, 2.5, 1,
 umi_thresholds <- c(0, 100, 250, 500, 750, 1000, 1500, 2000, 3000, 5000, 7500, 10000, 15000, 20000)
 
 p <- arg_parser("Gather cumulative filter metrics for reporting")
-p <- add_argument(p, "--input-rds", help="Path to the input Seurat object RDS file", type="character")
-p <- add_argument(p, "--output-csv-genes", help="Path to save the genes-per-cell metrics CSV", type="character")
-p <- add_argument(p, "--output-csv-mito", help="Path to save the mito-percentage metrics CSV", type="character")
-p <- add_argument(p, "--output-csv-umi", help="Path to save the UMI-count metrics CSV", type="character")
-p <- add_argument(p, "--capture-id", help="Capture ID for logging and reporting", type="character", default="unknown_capture")
-p <- add_argument(p, "--log-file", help="Path to the log file", type="character", default=NULL)
+p <- add_argument(p, "--input-rds",
+                  help="Path to the input Seurat object RDS file",
+                  type="character",
+                  default=snakemake@input[["rds"]])
+p <- add_argument(p, "--output-csv-genes",
+                  help="Path to save the genes-per-cell metrics CSV",
+                  type="character",
+                  default=snakemake@output[["genes_csv"]])
+p <- add_argument(p, "--output-csv-mito",
+                  help="Path to save the mito-percentage metrics CSV",
+                  type="character",
+                  default=snakemake@output[["mito_csv"]])
+p <- add_argument(p, "--output-csv-umi",
+                  help="Path to save the UMI-count metrics CSV",
+                  type="character",
+                  default=snakemake@output[["umi_csv"]])
+p <- add_argument(p, "--capture-id",
+                  help="Capture ID for logging and reporting (derived from wildcard)",
+                  type="character",
+                  default=snakemake@wildcards[["capture"]]) # Access wildcard directly
+p <- add_argument(p, "--log-file",
+                  help="Path to the log file. If run via Snakemake, this defaults to the Snakemake log file.",
+                  type="character",
+                  default=snakemake@log[[1]]) # Assumes log is always defined and is the first one
 
 arguments <- parse_args(p)
 

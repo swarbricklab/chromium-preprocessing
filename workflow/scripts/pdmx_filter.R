@@ -11,14 +11,39 @@ suppressPackageStartupMessages({
 })
 
 p <- arg_parser("Apply filters to Seurat object and save outputs")
-p <- add_argument(p, "--input-rds", help="Path to the input Seurat object RDS file", type="character")
-p <- add_argument(p, "--output-dir", help="Path to the output directory for filtered Cell Ranger files", type="character")
-p <- add_argument(p, "--output-txt", help="Path to save the proportion discarded text file", type="character")
-p <- add_argument(p, "--min-genes", help="Minimum number of genes per cell. Set to -1 to disable.", type="integer", default=-1)
-p <- add_argument(p, "--max-mito", help="Maximum mitochondrial percentage per cell. Set to -1.0 to disable.", type="double", default=-1.0)
-p <- add_argument(p, "--min-umi", help="Minimum UMI count per cell. Set to -1 to disable.", type="integer", default=-1)
-p <- add_argument(p, "--capture-id", help="Capture ID for logging and reporting", type="character", default="unknown_capture")
-p <- add_argument(p, "--log-file", help="Path to the log file", type="character", default=NULL)
+p <- add_argument(p, "--input-rds",
+                  help="Path to the input Seurat object RDS file",
+                  type="character",
+                  default=snakemake@input[["rds"]])
+p <- add_argument(p, "--output-dir",
+                  help="Path to the output directory for filtered Cell Ranger files",
+                  type="character",
+                  default=snakemake@output[["cr_dir"]])
+p <- add_argument(p, "--output-txt",
+                  help="Path to save the proportion discarded text file",
+                  type="character",
+                  default=snakemake@output[["prop_txt"]])
+p <- add_argument(p, "--min-genes",
+                  help="Minimum number of genes per cell. Set to -1 to disable.",
+                  type="integer",
+                  default=snakemake@params[["min_genes"]])
+p <- add_argument(p, "--max-mito",
+                  help="Maximum mitochondrial percentage per cell. Set to -1.0 to disable.",
+                  type="double",
+                  default=snakemake@params[["max_mito"]])
+p <- add_argument(p, "--min-umi",
+                  help="Minimum UMI count per cell. Set to -1 to disable.",
+                  type="integer",
+                  default=snakemake@params[["min_umi"]])
+# UPDATED DEFAULT FOR CAPTURE ID
+p <- add_argument(p, "--capture-id",
+                  help="Capture ID for logging and reporting (derived from wildcard)",
+                  type="character",
+                  default=snakemake@wildcards[["capture"]]) # Access wildcard directly
+p <- add_argument(p, "--log-file",
+                  help="Path to the log file. If run via Snakemake, this defaults to the Snakemake log file.",
+                  type="character",
+                  default=snakemake@log[[1]]) # Assumes log is always defined and is the first one
 
 arguments <- parse_args(p)
 

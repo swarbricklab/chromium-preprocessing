@@ -26,19 +26,12 @@ rule predemux_convert_to_seurat:
         log_dir / "predemux" / "pdmx_convert_seurat" / "{capture}.log"
     params:
         capture_id = "{capture}",
-        mito_pattern = config['params']['predemux'].get("mito-pattern", "^MT-"),
-        r_script_path = "workflow/scripts/pdmx_convert_seurat.R"
+        mito_pattern = config['params']['predemux'].get("mito-pattern", "^MT-")
+        # r_script_path is no longer needed here for the script directive
     conda:
         "../envs/predemux.yaml"
-    shell:
-        """
-        Rscript "{params.r_script_path}" \
-            --input-h5 "{input.filtered_mat}" \
-            --output-rds "{output.rds}" \
-            --mito-pattern '{params.mito_pattern}' \
-            --capture-id "{params.capture_id}" \
-            --log-file "{log}" > "{log}" 2>&1
-        """
+    script:
+        "../scripts/pdmx_convert_seurat.R"
 
 rule predemux_filter_seurat:
     """
@@ -54,28 +47,16 @@ rule predemux_filter_seurat:
         cr_dir = directory(out_dir / "count/predemux/{capture}"),
         prop_txt = temp(out_dir / "predemux" / "qc" / "prop_discarded" / "{capture}.txt")
     log:
-        log_dir /  "predemux" / "pdmx_filter" / "{capture}.log"
+        log_dir / "predemux" / "pdmx_filter" / "{capture}.log"
     params:
-        capture_id = "{capture}",
         # Note: -1 is used to skip the filter
         min_genes = config['params']['predemux'].get("min-gene-count", -1),
         max_mito = config['params']['predemux'].get("max-mito", -1.0),
-        min_umi = config['params']['predemux'].get("min-umi-count", -1),
-        r_script_path = "workflow/scripts/pdmx_filter.R"
+        min_umi = config['params']['predemux'].get("min-umi-count", -1)
     conda:
         "../envs/predemux.yaml"
-    shell:
-        """
-        Rscript "{params.r_script_path}" \
-            --input-rds "{input.rds}" \
-            --output-dir "{output.cr_dir}" \
-            --output-txt "{output.prop_txt}" \
-            --min-genes "{params.min_genes}" \
-            --max-mito "{params.max_mito}" \
-            --min-umi "{params.min_umi}" \
-            --capture-id "{params.capture_id}" \
-            --log-file "{log}" > "{log}" 2>&1
-        """
+    script:
+        "../scripts/pdmx_filter.R"
 
 rule predemux_gather_qc_metrics:
     """
@@ -90,22 +71,11 @@ rule predemux_gather_qc_metrics:
         mito_csv = temp(out_dir / "predemux" / "qc" / "metrics" / "{capture}_mito.csv"),
         umi_csv = temp(out_dir / "predemux" / "qc" / "metrics" / "{capture}_umi.csv")
     log:
-        log_dir /  "predemux" / "pdmx_metrics" / "{capture}.log"
-    params:
-        capture_id = "{capture}",
-        r_script_path = "workflow/scripts/pdmx_metrics.R"
+        log_dir / "predemux" / "pdmx_metrics" / "{capture}.log"
     conda:
         "../envs/predemux.yaml"
-    shell:
-        """
-        Rscript "{params.r_script_path}" \
-            --input-rds "{input.rds}" \
-            --output-csv-genes "{output.genes_csv}" \
-            --output-csv-mito "{output.mito_csv}" \
-            --output-csv-umi "{output.umi_csv}" \
-            --capture-id "{params.capture_id}" \
-            --log-file "{log}" > "{log}" 2>&1
-        """
+    script:
+        "../scripts/pdmx_metrics.R"
 
 rule predemux_generate_report:
     """
@@ -129,23 +99,8 @@ rule predemux_generate_report:
     params:
         min_genes = config['params']['predemux'].get("min-gene-count", -1),
         max_mito = config['params']['predemux'].get("max-mito", -1.0),
-        min_umi = config['params']['predemux'].get("min-umi-count", -1),
-        py_script_path = "workflow/scripts/pdmx_report.py"
+        min_umi = config['params']['predemux'].get("min-umi-count", -1)
     conda:
         "../envs/predemux.yaml"
-    shell:
-         """
-         python "{params.py_script_path}" \
-             --input-prop-txts {input.prop_txts} \
-             --input-gene-csvs {input.gene_csvs} \
-             --input-mito-csvs {input.mito_csvs} \
-             --input-umi-csvs {input.umi_csvs} \
-             --config-min-genes "{params.min_genes}" \
-             --config-max-mito "{params.max_mito}" \
-             --config-min-umi "{params.min_umi}" \
-             --output-report-html "{output.html}" \
-             --output-plot-genes "{output.plot_genes}" \
-             --output-plot-mito "{output.plot_mito}" \
-             --output-plot-umi "{output.plot_umi}" \
-             --log-file "{log}" > "{log}" 2>&1
-         """
+    script:
+        "../scripts/pdmx_report.py"
