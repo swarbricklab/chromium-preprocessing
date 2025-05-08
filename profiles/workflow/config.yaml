@@ -84,7 +84,12 @@ set-resources:
         threads: "1"
         mem: "4GB"
         queue: "copyq"
-    annotate:
+    annotate_sample:
+        threads: "1"
+        mem: "4GB"
+        queue: "copyq"
+        runtime: "1h"
+    annotate_capture:
         threads: "1"
         mem: "4GB"
         queue: "copyq"
