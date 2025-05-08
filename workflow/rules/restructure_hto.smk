@@ -3,6 +3,16 @@
 # Restructuring also allows users to selectively pull only the data of interest, reducing download times
 # The new structure also makes it possible to specify dependencies more precisely, speeding up data validation.
 
+rule restructure_multiplexing_analysis:
+    input: 
+        tmp=rules.cellranger_multi.output.cr_dir
+    output:
+        analysis=directory(out_dir/"multiplexing_analysis/{capture}")
+    shell:
+        """
+        cp -v -r {input.tmp}/outs/multi/multiplexing_analysis {output.analysis}
+        """
+
 # Restructure summary data
 rule restructure_summary:
     input:
@@ -104,12 +114,12 @@ rule restructure_raw_h5:
         """
 
 # Restructure and rename sample h5 files
-rule restructure_sample_h5:
+rule restructure_h5:
     input:
         tmp=rules.cellranger_multi.output.cr_dir
     output:
-        mat=out_dir/"h5/captures/{capture}/feature_bc_matrix.h5",
-        mol=out_dir/"h5/captures/{capture}/molecule_info.h5"
+        mat=out_dir/"h5/captures/{capture}/{sample}/feature_bc_matrix.h5",
+        mol=out_dir/"h5/captures/{capture}/{sample}/molecule_info.h5"
     shell:
         """
         # Source directory
@@ -131,7 +141,7 @@ rule restructure_raw_loupe:
         """
 
 # Restructure raw non-VDJ loupe files
-rule restructure_sample_loupe:
+rule restructure_loupe:
     input:
         tmp=rules.cellranger_multi.output.cr_dir
     output:
@@ -140,6 +150,8 @@ rule restructure_sample_loupe:
         """
         cp -v {input.tmp}/outs/per_sample_outs/{wildcards.sample}/count/sample_cloupe.cloupe {output.cloupe}
         """
+
+# -- vdj ---
 
 rule restructure_raw_vdj_fa:
     input:
@@ -281,14 +293,4 @@ rule restructure_analysis:
     shell:
         """
         cp -v -r {input.tmp}/outs/per_sample_outs/{wildcards.sample}/count/analysis {output.dir}
-        """
-
-rule restructure_multiplexing_analysis:
-    input: 
-        tmp=rules.cellranger_multi.output.cr_dir
-    output:
-        analysis=out_dir/"multiplexing_analysis/{capture}"
-    shell:
-        """
-        cp -v {input.tmp}/outs/multi/multiplexing_analysis {output.analysis}
         """
