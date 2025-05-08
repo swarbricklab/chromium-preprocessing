@@ -32,7 +32,7 @@ p <- add_argument(p, "--mito-pattern",
 p <- add_argument(p, "--capture-id", 
                   help="Capture ID for logging", 
                   type="character", 
-                  default=snakemake@params[["capture_id"]])
+                  default=snakemake@wildcards[["capture"]])
 p <- add_argument(p, "--log-file", 
                   help="Path to the log file. If run via Snakemake, this defaults to the Snakemake log file.", 
                   type="character", 
