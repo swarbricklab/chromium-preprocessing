@@ -95,14 +95,6 @@ def predemux_targets():
     """
     The following targets are enabled if 'params.extras.predemux' is 'true'
     """
-    predemux_targets = [
-        rules.predemux_generate_report.output.html,
-        rules.predemux_generate_report.output.plot_genes,
-        rules.predemux_generate_report.output.plot_mito,
-        rules.predemux_generate_report.output.plot_umi,
-    ]
-    # target the filtered Cell Ranger directories for each capture
-    predemux_targets.extend(
-        expand(rules.predemux_filter_seurat.output.cr_dir, capture=captures.index)
-    )
+    predemux_targets = [rules.predemux_generate_report.output]
+
     return predemux_targets

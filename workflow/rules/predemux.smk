@@ -41,16 +41,18 @@ rule predemux_filter_seurat:
     input:
         rds = rules.predemux_convert_to_seurat.output.rds
     output:
-        # Place predemux outputs in the same directory as the original Cell Ranger output
-        cr_dir = directory(out_dir/"count/predemux/{capture}"),
+        # For compatability with features.tsv.gz replacement, we specify exact files
+        # rather than the directory function and output directory
+        features_predemux = out_dir/"count/predemux/{capture}/features.tsv.gz",
+        barcodes = out_dir/"count/predemux/{capture}/barcodes.tsv.gz",
+        matrix = out_dir/"count/predemux/{capture}/matrix.mtx.gz",
         prop_txt = temp(out_dir/"predemux/qc/prop_discarded/{capture}.txt")
     log:
         log_dir/"predemux/pdmx_filter/{capture}.log"
     params:
-        # Note: -1 is used to skip the filter
         min_genes = config['params']['predemux']["min-gene-count"],
         max_mito = config['params']['predemux']["max-mito"],
-        min_umi = config['params']['predemux']["min-umi-count"]
+        min_umi = config['params']['predemux']["min-umi-count"],
     conda:
         "../envs/predemux.yaml"
     script:
