@@ -18,33 +18,33 @@ gene_thresholds <- c(0, 50, 100, 200, 300, 400, 500, 750, 1000, 1500, 2000, 3000
 mito_thresholds <- c(100, 90, 80, 70, 60, 50, 40, 30, 25, 20, 15, 10, 5, 2.5, 1, 0)
 umi_thresholds <- c(0, 100, 250, 500, 750, 1000, 1500, 2000, 3000, 5000, 7500, 10000, 15000, 20000)
 
-p <- arg_parser("Gather cumulative filter metrics for reporting")
-p <- add_argument(p, "--input-rds",
-                  help="Path to the input Seurat object RDS file",
-                  type="character",
-                  default=snakemake@input[["rds"]])
-p <- add_argument(p, "--output-csv-genes",
-                  help="Path to save the genes-per-cell metrics CSV",
-                  type="character",
-                  default=snakemake@output[["genes_csv"]])
-p <- add_argument(p, "--output-csv-mito",
-                  help="Path to save the mito-percentage metrics CSV",
-                  type="character",
-                  default=snakemake@output[["mito_csv"]])
-p <- add_argument(p, "--output-csv-umi",
-                  help="Path to save the UMI-count metrics CSV",
-                  type="character",
-                  default=snakemake@output[["umi_csv"]])
-p <- add_argument(p, "--capture-id",
-                  help="Capture ID for logging and reporting (derived from wildcard)",
-                  type="character",
-                  default=snakemake@wildcards[["capture"]]) # Access wildcard directly
-p <- add_argument(p, "--log-file",
-                  help="Path to the log file. If run via Snakemake, this defaults to the Snakemake log file.",
-                  type="character",
-                  default=snakemake@log[[1]]) # Assumes log is always defined and is the first one
+arguments <- arg_parser("Gather cumulative filter metrics for reporting") %>% 
+  add_argument("--input-rds",
+               help = "Path to the input Seurat object RDS file",
+               type = "character",
+               default = snakemake@input[["rds"]]) %>% 
+  add_argument("--output-csv-genes",
+               help = "Path to save the genes-per-cell metrics CSV",
+               type = "character",
+               default = snakemake@output[["genes_csv"]]) %>% 
+  add_argument("--output-csv-mito",
+               help = "Path to save the mito-percentage metrics CSV",
+               type = "character",
+               default = snakemake@output[["mito_csv"]]) %>% 
+  add_argument("--output-csv-umi",
+               help = "Path to save the UMI-count metrics CSV",
+               type = "character",
+               default = snakemake@output[["umi_csv"]]) %>% 
+  add_argument("--capture-id",
+               help = "Capture ID for logging and reporting (derived from wildcard)",
+               type = "character",
+               default = snakemake@wildcards[["capture"]]) %>% 
+  add_argument("--log-file",
+               help = "Path to the log file. If run via Snakemake, this defaults to the Snakemake log file.",
+               type = "character",
+               default = snakemake@log[[1]]) %>% 
+  parse_args()
 
-arguments <- parse_args(p)
 
 # --- Validation of input params ---
 if (is.na(arguments$input_rds) || is.na(arguments$output_csv_genes) || is.na(arguments$output_csv_mito) || is.na(arguments$output_csv_umi)){
