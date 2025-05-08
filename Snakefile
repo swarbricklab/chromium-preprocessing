@@ -46,9 +46,15 @@ else:
     # Use 'cellranger multi' if more than one assay present
     print("Running cellranger multi")
     include: 'workflow/rules/cellranger_multi.smk'
-    include: 'workflow/rules/restructure_multi.smk'
-    validate(config,"workflow/schemas/multi.json")
-    targets.extend(multi_targets())
+    if config['params']['extras']['hto']:
+        print("Running HTO demux")
+        include: 'workflow/rules/restructure_hto.smk'
+        validate(captures,"workflow/schemas/hto.json")
+        targets.extend(hto_targets())
+    else:
+        include: 'workflow/rules/restructure_multi.smk'
+        validate(config,"workflow/schemas/multi.json")
+        targets.extend(multi_targets())
 # Optionally use 'cellranger aggr' to aggregate split pools
 if config['params']['extras']['aggr']:
     print("Running cellranger aggr")
