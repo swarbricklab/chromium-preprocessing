@@ -88,14 +88,6 @@ def get_pb_in_pool(wildcards):
         vdj_assay=wildcards.vdj_assay
     )
 
-# Return a list of valid pools
-# Valid pools do not have the same value as the capture in the same row
-# Valid pools cannot be 'NA', 'None' or the empty string
-def get_pool_list():
-    null_pool_indicators = ['', 'NA', 'None']
-    valid_pools = captures.loc[(captures['pool'] != captures.index) | (captures['pool'].isin(null_pool_indicators))]
-    return valid_pools['pool'].unique().tolist()
-
 # Returns individual source bam files to be merged as part of aggr
 def get_source_bams(wildcards):
     capture_list = captures[captures["pool"] == wildcards.pool].index.tolist()
