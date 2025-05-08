@@ -18,7 +18,7 @@ arguments <- arg_parser("Apply filters to Seurat object and save outputs") %>%
   add_argument("--output-dir",
                help = "Path to the output directory for filtered Cell Ranger files",
                type = "character",
-               default = dirname(snakemake@output[["features_predemux"]])) %>%
+               default = dirname(snakemake@output[["barcodes"]])) %>%
   add_argument("--output-txt",
                help = "Path to save the proportion discarded text file",
                type = "character",
@@ -250,5 +250,15 @@ tryCatch({
     message(sprintf("Error during filtering for %s: %s", capture_id, e$message))
     stop(e$message, call.=FALSE)
 })
+
+# Remove the features.tsv.gz file from output_dir, to allow later replacement 
+# with its original version (restoring Ensembl IDs)
+features_file <- file.path(output_dir, "features.tsv.gz")
+if (file.exists(features_file)) {
+    message(sprintf("Removing features.tsv.gz file from output directory: %s", features_file))
+    file.remove(features_file)
+} else {
+    message(sprintf("features.tsv.gz file not found in output directory: %s", features_file))
+}
 
 message(sprintf("Successfully completed filtering for capture: %s", capture_id))

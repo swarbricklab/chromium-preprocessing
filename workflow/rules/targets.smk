@@ -97,4 +97,8 @@ def predemux_targets():
     """
     predemux_targets = [rules.predemux_generate_report.output]
 
+    predemux_targets.extend(
+        expand(list(rules.copy_original_features.output), capture=captures.index)
+    )
+
     return predemux_targets

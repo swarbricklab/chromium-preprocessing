@@ -36,14 +36,15 @@ rule predemux_filter_seurat:
     Apply user-defined filters (min genes, max mito %, min UMIs) from the config
     to the Seurat object for a capture. Saves the filtered data in Cell Ranger
     format (barcodes/features/matrix files) and saves the proportion of cells
-    discarded to a temporary text file (for downstream reporting).
+    discarded to a temporary text file (for downstream reporting). After running, 
+    features.tsv.gz is removed (replaced in rule `copy_original_features`).
     """
     input:
         rds = rules.predemux_convert_to_seurat.output.rds
     output:
         # For compatability with features.tsv.gz replacement, we specify exact files
-        # rather than the directory function and output directory
-        features_predemux = out_dir/"count/predemux/{capture}/features.tsv.gz",
+        # rather than the directory function and output directory, 
+        # and remove the features.tsv.gz file from the output
         barcodes = out_dir/"count/predemux/{capture}/barcodes.tsv.gz",
         matrix = out_dir/"count/predemux/{capture}/matrix.mtx.gz",
         prop_txt = temp(out_dir/"predemux/qc/prop_discarded/{capture}.txt")
@@ -104,3 +105,20 @@ rule predemux_generate_report:
         "../envs/predemux.yaml"
     script:
         "../scripts/pdmx_report.py"
+
+rule copy_original_features:
+    """
+    Copy the original features.tsv.gz file from the filtered Cell Ranger output directory
+    to the predemux output directory. This is done to replace the features
+    file in the filtered Cell Ranger output with the original one, overcoming
+    the loss of Ensembl IDs during Seurat conversion.
+    """
+    input:
+        features = rules.restructure_counts.output.filtered_feat,
+        predemux_outs = rules.predemux_filter_seurat.output
+    output:
+        out_dir/"count/predemux/{capture}/features.tsv.gz"
+    log:
+        log_dir/"predemux/copy_features/{capture}.log"
+    shell:
+        "cp -v {input.features} {output}"
