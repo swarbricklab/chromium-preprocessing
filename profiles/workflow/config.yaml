@@ -88,3 +88,20 @@ set-resources:
         mem: "4GB"
         queue: "copyq"
         runtime: "1h"
+    # Predemux rules
+    predemux_convert_to_seurat:
+        threads: "1"
+        mem: "20GB"
+        runtime: "1h"
+    predemux_filter_seurat:
+        threads: "1"
+        mem: "20GB"
+        runtime: "1h"
+    predemux_gather_qc_metrics:
+        threads: "1"
+        mem: "20GB"
+        runtime: "1h"
+    predemux_generate_report:
+        threads: "1"
+        mem: "4GB"
+        runtime: "1h"

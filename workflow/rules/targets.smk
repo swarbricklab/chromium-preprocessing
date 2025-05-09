@@ -89,3 +89,16 @@ def aggr_vdj_targets():
         pool=get_pool_list(),
         vdj_assay=vdj_assays
     )
+
+# --- predemux ---
+def predemux_targets():
+    """
+    The following targets are enabled if 'params.extras.predemux' is 'true'
+    """
+    predemux_targets = [rules.predemux_generate_report.output]
+
+    predemux_targets.extend(
+        expand(list(rules.copy_original_features.output), capture=captures.index)
+    )
+
+    return predemux_targets

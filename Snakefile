@@ -59,6 +59,13 @@ if config['params']['extras']['aggr']:
     validate(config,"workflow/schemas/aggr.json")
     validate(captures, "workflow/schemas/aggr_captures.json")
 
+# Optionally run the 'pre-demux' filtering workflow
+if config['params']['extras']['predemux']:
+    print("Running pre-demux cell filtering")
+    include: 'workflow/rules/predemux.smk'
+    targets.extend(predemux_targets())
+    validate(config, "workflow/schemas/predemux.json")
+
 # Optionally use 'cellranger annotate' to assign cell type labels
 if config['params']['extras']['annotate']:
     print("Running cellranger annotate")
@@ -71,5 +78,3 @@ wildcard_constraints:
 rule all:
     input:
         targets
-
-

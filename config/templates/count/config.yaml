@@ -31,6 +31,8 @@ params:
     aggr: true
     # Cell-type annotation with 'cellranger annotate'
     annotate: false
+    # Extra cell filtering of cellranger outputs prior to SNP demux
+    predemux: true
   # Options for 'cellranger count'
   # Values listed below are defaults
   # Uncomment/edit to change cellranger behaviour
@@ -51,3 +53,12 @@ params:
   aggr:
     normalize: "none"
     no-secondary: false
+  # Options for 'predemux' cell filtering
+  predemux:
+    # Setting a filter below to -1 will disable (skip) it
+    # Values cannot be empty
+    min-gene-count: 300 # Integer value
+    min-umi-count: 500 # Integer value
+    max-mito: -1 # Integer percentage (0 - 100 inclusive))
+    mito-pattern: "^MT-" # String value (for mice: "^mt-")
+    
