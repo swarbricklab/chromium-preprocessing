@@ -10,8 +10,7 @@ from pathlib import Path
 
 # --- Logging Setup ---
 log_format = '%(asctime)s - %(levelname)s - %(message)s'
-log_file_path = str(snakemake.log[0]) # Use the log file specified in the rule
-
+log_file_path = str(snakemake.log[0])
 
 logging.basicConfig(filename=log_file_path, level=logging.INFO, format=log_format, filemode='w')
 logging.info("Starting report generation script.")
@@ -19,84 +18,55 @@ logging.info("Starting report generation script.")
 # --- Helper Functions ---
 def load_and_aggregate_metrics(csv_files, filter_name):
     """Loads multiple metric CSVs, concatenates, and calculates mean/std."""
-    if not csv_files:
-        logging.warning(f"No CSV files provided for filter: {filter_name}. Skipping aggregation.")
-        return pd.DataFrame(columns=['threshold', 'mean_discarded', 'std_discarded'])
-
     all_dfs = []
     for f in csv_files:
         try:
             df = pd.read_csv(f)
-            if not df.empty:
-                all_dfs.append(df)
-            else:
-                logging.warning(f"Empty CSV file skipped: {f}")
+            all_dfs.append(df)
         except Exception as e:
-            logging.error(f"Error reading CSV {f}: {e}")
-            continue # Skip this file
-
-    if not all_dfs:
-        logging.warning(f"No valid data found in CSVs for filter: {filter_name}.")
-        return pd.DataFrame(columns=['threshold', 'mean_discarded', 'std_discarded'])
+            logging.error(f"Error reading CSV {f} for {filter_name}: {e}")
+            pass
 
     combined_df = pd.concat(all_dfs, ignore_index=True)
-
-    if combined_df.empty:
-        logging.warning(f"Combined DataFrame is empty for filter: {filter_name}.")
-        return pd.DataFrame(columns=['threshold', 'mean_discarded', 'std_discarded'])
 
     # Ensure correct types
     combined_df['threshold'] = pd.to_numeric(combined_df['threshold'], errors='coerce')
     combined_df['cumulative_prop_discarded'] = pd.to_numeric(combined_df['cumulative_prop_discarded'], errors='coerce')
     combined_df.dropna(subset=['threshold', 'cumulative_prop_discarded'], inplace=True)
 
-
     aggregated = combined_df.groupby('threshold')['cumulative_prop_discarded'].agg(['mean', 'std']).reset_index()
     aggregated.rename(columns={'mean': 'mean_discarded', 'std': 'std_discarded'}, inplace=True)
-    aggregated['std_discarded'] = aggregated['std_discarded'].fillna(0) # Replace NaN std (e.g., single sample) with 0
+    aggregated['std_discarded'] = aggregated['std_discarded'].fillna(0) 
 
-    logging.info(f"Aggregated metrics for {filter_name} across {len(all_dfs)} samples.")
+    logging.info(f"Aggregated metrics for {filter_name} across {len(all_dfs)} captures.")
     return aggregated
 
 def create_filter_plot(agg_data, config_threshold, title, xlabel, ylabel, output_path, filter_type):
     """Generates and saves a plot for a single filter."""
     # TODO: Improve visual appearance of plots (more y-axis ticks, better formatting, etc.)
-    if agg_data.empty:
-        logging.warning(f"No data to plot for {title}. Creating empty plot.")
-        fig, ax = plt.subplots(figsize=(8, 5))
-        ax.text(0.5, 0.5, 'No data available', horizontalalignment='center', verticalalignment='center', transform=ax.transAxes)
-        ax.set_title(title)
-        plt.tight_layout()
-        plt.savefig(str(output_path), dpi=100) # Ensure output_path is string
-        plt.close(fig)
-        return None # Return None to indicate no valid threshold value
-
+    
     plt.style.use('seaborn-v0_8-whitegrid')
     fig, ax = plt.subplots(figsize=(8, 5))
 
-    # Sort by threshold for correct line plotting
     agg_data = agg_data.sort_values('threshold')
 
     ax.errorbar(agg_data['threshold'], agg_data['mean_discarded'] * 100,
                 yerr=agg_data['std_discarded'] * 100, fmt='-o', capsize=3, alpha=0.8,
                 label='Mean ± SD Discarded')
 
-    # Add vertical line for the filter threshold in the config
     config_val_text = "N/A"
     mean_discarded_at_config = None
     if (filter_type == "min" and config_threshold != -1) or \
        (filter_type == "max" and config_threshold != -1.0):
 
         ax.axvline(x=config_threshold, color='red', linestyle='--', linewidth=1.5, label=f'Chosen Threshold ({config_threshold})')
-
-        # Interpolate the mean discarded percentage at the config threshold
+        
         try:
             mean_discarded_at_config = np.interp(config_threshold, agg_data['threshold'], agg_data['mean_discarded']) * 100
             config_val_text = f"{mean_discarded_at_config:.1f}%"
-            # Add text annotation slightly to the right of the line
             ax.text(config_threshold, ax.get_ylim()[1]*0.9, f'~{config_val_text} discarded', color='red',
                     ha='left', va='top', rotation=0, fontsize=9,
-                    bbox=dict(boxstyle='round,pad=0.3', fc='white', alpha=0.7, ec='none')) # Use bbox for better visibility
+                    bbox=dict(boxstyle='round,pad=0.3', fc='white', alpha=0.7, ec='none')) 
         except Exception as e:
             logging.warning(f"Could not interpolate value for threshold {config_threshold} in {title}: {e}")
             config_val_text = "Error"
@@ -104,107 +74,144 @@ def create_filter_plot(agg_data, config_threshold, title, xlabel, ylabel, output
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     ax.set_title(title)
-    ax.legend(loc='best', fontsize='small') # Adjust legend position and size
-    ax.set_ylim(bottom=max(-5, ax.get_ylim()[0])) # Ensure y-axis starts near 0 but allows negative if error bars go below
-    ax.set_xlim(left=min(agg_data['threshold']) - (max(agg_data['threshold']) - min(agg_data['threshold']))*0.05,
-                right=max(agg_data['threshold']) + (max(agg_data['threshold']) - min(agg_data['threshold']))*0.05) # Add padding to x-axis
+    ax.legend(loc='best', fontsize='small') 
+    ax.set_ylim(bottom=max(-5, ax.get_ylim()[0])) 
 
-    # To fix x-axis for the mito filter
+    if not agg_data['threshold'].empty:
+        ax.set_xlim(left=min(agg_data['threshold']) - (max(agg_data['threshold']) - min(agg_data['threshold']))*0.05,
+                    right=max(agg_data['threshold']) + (max(agg_data['threshold']) - min(agg_data['threshold']))*0.05)
+
     if filter_type == "max":
         ax.invert_xaxis()
 
     plt.tight_layout()
-    plt.savefig(str(output_path), dpi=100) # Ensure output_path is string
+    plt.savefig(str(output_path), dpi=100) 
     logging.info(f"Saved plot: {output_path}")
     plt.close(fig)
-    return mean_discarded_at_config # Return the interpolated value for the report
+    return mean_discarded_at_config
 
-def read_proportion_discarded(txt_files):
-    """Reads proportion discarded from each capture (in txt files)."""
-    proportions = {}
-    if not txt_files:
-        logging.warning("No proportion discarded TXT files provided.")
-        return pd.DataFrame(columns=['capture_id', 'prop_discarded'])
-
-    for f_path_obj in txt_files: # f_path_obj might be a Path object from snakemake
+def read_filter_statistics_csvs(csv_files):
+    """Reads filter statistics from CSV files generated by the R script."""
+    all_capture_stats = []
+    for f_path_obj in csv_files: 
         f_path = str(f_path_obj)
         try:
             p = Path(f_path)
-            # Infer capture_id from filename (assuming format like 'capture_id.anything.proportion.txt')
-            # More robustly get the first part of the name
-            capture_id = p.name.split('.')[0]
-            with open(f_path, 'r') as f:
-                value = float(f.readline().strip())
-                proportions[capture_id] = value
+            capture_id = p.name.split('.')[0] 
+            
+            df_capture = pd.read_csv(f_path)
+            
+            df_capture['capture_id'] = capture_id
+            all_capture_stats.append(df_capture)
+            
         except Exception as e:
-            logging.error(f"Error reading proportion file {f_path}: {e}")
-            continue # Skip this file
+            logging.error(f"Error reading filter statistics CSV {f_path}: {e}")
+            pass
 
-    if not proportions:
-        logging.warning("No valid data found in proportion TXT files.")
-        return pd.DataFrame(columns=['capture_id', 'prop_discarded'])
 
-    prop_df = pd.DataFrame(list(proportions.items()), columns=['capture_id', 'prop_discarded'])
-    logging.info(f"Read proportion discarded data for {len(prop_df)} samples.")
-    return prop_df
+    stats_df = pd.concat(all_capture_stats, ignore_index=True)
+            
+    logging.info(f"Read filter statistics for {len(stats_df)} captures.")
+    return stats_df
 
 
 # --- Main Execution ---
 try:
-    # 1. Aggregate metrics for each filter
-    logging.info("Aggregating filter metrics...")
+    # 1. Aggregate metrics for each filter (for plots)
+    logging.info("Aggregating filter metrics for plots...")
     gene_agg = load_and_aggregate_metrics(snakemake.input.gene_csvs, "Min Genes")
     mito_agg = load_and_aggregate_metrics(snakemake.input.mito_csvs, "Max Mito")
     umi_agg = load_and_aggregate_metrics(snakemake.input.umi_csvs, "Min UMI")
 
     # 2. Generate Plots
     logging.info("Generating filter plots...")
-    discard_at_config_genes = create_filter_plot(gene_agg, snakemake.params.min_genes, 'Impact of Minimum Genes Filter', 'Min Genes per Cell Threshold', 'Cumulative % Cells Discarded (Mean ± SD)', snakemake.output.plot_genes, "min")
-    # Mito thresholds are plotted in decreasing order to show increasing stringency left-to-right
-    discard_at_config_mito = create_filter_plot(mito_agg, snakemake.params.max_mito, 'Impact of Max Mitochondrial % Filter', 'Max Mito % Threshold', 'Cumulative % Cells Discarded (Mean ± SD)', snakemake.output.plot_mito, "max")
-    discard_at_config_umi = create_filter_plot(umi_agg, snakemake.params.min_umi, 'Impact of Minimum UMI Filter', 'Min UMIs per Cell Threshold', 'Cumulative % Cells Discarded (Mean ± SD)', snakemake.output.plot_umi, "min")
+    discard_at_config_genes = create_filter_plot(gene_agg, snakemake.params.min_genes, 'Impact of Minimum Genes Filter', 'Min Genes per Cell Threshold', '% Cells Discarded (Mean ± SD)', snakemake.output.plot_genes, "min")
+    discard_at_config_mito = create_filter_plot(mito_agg, snakemake.params.max_mito, 'Impact of Max Mitochondrial % Filter', 'Max Mito % Threshold', '% Cells Discarded (Mean ± SD)', snakemake.output.plot_mito, "max")
+    discard_at_config_umi = create_filter_plot(umi_agg, snakemake.params.min_umi, 'Impact of Minimum UMI Filter', 'Min UMIs per Cell Threshold', '% Cells Discarded (Mean ± SD)', snakemake.output.plot_umi, "min")
 
-    # For cases where the filter was not applied
     def fmt(pct):
         return f"{pct:.1f}%" if pct is not None else "N/A"
 
-    discard_at_config_genes_str = fmt(discard_at_config_genes) # Renamed to avoid conflict in HTML f-string
-    discard_at_config_mito_str  = fmt(discard_at_config_mito)  # Renamed
-    discard_at_config_umi_str   = fmt(discard_at_config_umi)   # Renamed
+    discard_at_config_genes_str = fmt(discard_at_config_genes) 
+    discard_at_config_mito_str  = fmt(discard_at_config_mito)  
+    discard_at_config_umi_str   = fmt(discard_at_config_umi)   
 
-    # 3. Process overall proportion discarded
-    logging.info("Processing overall proportion discarded...")
-    prop_df = read_proportion_discarded(snakemake.input.prop_txts)
-    num_samples = len(prop_df)
+    # 3. Process overall filtering statistics from new CSVs
+    logging.info("Processing overall filtering statistics from CSVs...")
+    filter_stats_df = read_filter_statistics_csvs(snakemake.input.filter_stats_csvs) 
+    num_captures = len(filter_stats_df) # Assumes filter_stats_df is populated
 
-    overall_mean_discarded = np.nanmean(prop_df['prop_discarded']) * 100 if num_samples > 0 else 0
-    overall_std_discarded = np.nanstd(prop_df['prop_discarded']) * 100 if num_samples > 0 else 0
+    overall_mean_discarded = np.nanmean(filter_stats_df['total_proportion_discarded']) * 100
+    overall_std_discarded = np.nanstd(filter_stats_df['total_proportion_discarded']) * 100
+    
+    # 4. Identify high discard captures
+    valid_proportions = filter_stats_df['total_proportion_discarded'].dropna()
+    # Check if valid_proportions is empty before calling nanpercentile to avoid error
+    if not valid_proportions.empty:
+        high_discard_threshold_prop = np.nanpercentile(valid_proportions, 90)
+        high_discard_captures_df = filter_stats_df[filter_stats_df['total_proportion_discarded'] >= high_discard_threshold_prop].copy()
+        high_discard_captures_df = high_discard_captures_df.sort_values('total_proportion_discarded', ascending=False)
+    else:
+        high_discard_threshold_prop = -1 # Default if no valid proportions
+        high_discard_captures_df = pd.DataFrame(columns=filter_stats_df.columns)
+        logging.warning("No valid proportions to calculate high discard threshold; high_discard_captures_df will be empty.")
 
-    # 4. Identify high discard samples
-    high_discard_threshold = np.nanpercentile(prop_df['prop_discarded'], 90) if num_samples > 0 else -1
-    high_discard_samples = prop_df[prop_df['prop_discarded'] >= high_discard_threshold].sort_values('prop_discarded', ascending=False) if num_samples > 0 else pd.DataFrame(columns=['capture_id', 'prop_discarded'])
+    # Prepare data for HTML tables
+    filter_stats_df['total_cells_discarded_count'] = filter_stats_df['total_initial_cells'] - filter_stats_df['total_final_cells_after_filters']
+    filter_stats_df['total_discarded_formatted'] = filter_stats_df.apply(
+        lambda row: f"{int(row['total_cells_discarded_count'])} ({row['total_proportion_discarded']*100:.1f}%)"
+        if pd.notnull(row['total_cells_discarded_count']) and pd.notnull(row['total_proportion_discarded']) else "N/A", axis=1
+    )
+    
+    if not high_discard_captures_df.empty:
+        high_discard_captures_df['total_cells_discarded_count'] = high_discard_captures_df['total_initial_cells'] - high_discard_captures_df['total_final_cells_after_filters']
+        high_discard_captures_df['total_discarded_formatted'] = high_discard_captures_df.apply(
+            lambda row: f"{int(row['total_cells_discarded_count'])} ({row['total_proportion_discarded']*100:.1f}%)"
+            if pd.notnull(row['total_cells_discarded_count']) and pd.notnull(row['total_proportion_discarded']) else "N/A", axis=1
+        )
+ 
+    table_columns_display_map = {
+        'capture_id': 'Capture ID',
+        'total_initial_cells': 'Initial cell count',
+        'cells_discarded_by_min_gene_filter': 'Cells discarded by min-genes',
+        'cells_discarded_by_max_mito_filter': 'Cells discarded by max-mito',
+        'cells_discarded_by_min_umi_filter': 'Cells discarded by min-umi',
+        'total_discarded_formatted': 'Total cells discarded (%)'
+    }
+    
+    display_cols_ordered = [
+        'capture_id', 'total_initial_cells', 'cells_discarded_by_min_gene_filter',
+        'cells_discarded_by_max_mito_filter', 'cells_discarded_by_min_umi_filter',
+        'total_discarded_formatted'
+    ]
 
-    # Convert proportions to percentage strings for the table
-    prop_df['prop_discarded_pct_str'] = (prop_df['prop_discarded'] * 100).map('{:.2f}%'.format)
-    high_discard_samples['prop_discarded_pct_str'] = (high_discard_samples['prop_discarded'] * 100).map('{:.2f}%'.format)
+    if not high_discard_captures_df.empty:
+        high_discard_table_df = high_discard_captures_df[display_cols_ordered].rename(columns=table_columns_display_map)
+        high_discard_html_table = high_discard_table_df.to_html(index=False, classes='small-table', na_rep='N/A')
+    else:
+        high_discard_html_table = '<p>No captures identified in the top 90th percentile for discarded cells, or data unavailable.</p>'
+
+    # Sort by the numerical 'total_proportion_discarded' column in descending order
+    sorted_filter_stats_df = filter_stats_df.sort_values('total_proportion_discarded', ascending=False)
+    all_captures_table_df = sorted_filter_stats_df[display_cols_ordered].rename(columns=table_columns_display_map)
+    all_captures_html_table = all_captures_table_df.to_html(index=False, classes='full-table', na_rep='N/A')
+
 
     # 5. Generate HTML Report
     logging.info("Generating HTML report...")
 
-    # Get relative paths for images in HTML
-    # snakemake.output.html can be a string or a Snakemake OutputPath object. Convert to Path.
     output_report_html_path = Path(str(snakemake.output.html))
     report_dir = output_report_html_path.parent
     try:
-        # Ensure paths passed to relpath are strings or Path objects
         rel_plot_genes = os.path.relpath(str(snakemake.output.plot_genes), report_dir)
         rel_plot_mito = os.path.relpath(str(snakemake.output.plot_mito), report_dir)
         rel_plot_umi = os.path.relpath(str(snakemake.output.plot_umi), report_dir)
-    except ValueError: # Happens if paths are on different drives on Windows
-        logging.warning("Could not create relative paths for plots. Using absolute paths.")
-        rel_plot_genes = str(snakemake.output.plot_genes)
-        rel_plot_mito = str(snakemake.output.plot_mito)
-        rel_plot_umi = str(snakemake.output.plot_umi)
+    except ValueError: 
+        logging.warning("Could not create relative paths for plots due to different drives (Windows). Using absolute paths as fallback.")
+        # Using Path().resolve() to get absolute paths robustly
+        rel_plot_genes = str(Path(snakemake.output.plot_genes).resolve())
+        rel_plot_mito = str(Path(snakemake.output.plot_mito).resolve())
+        rel_plot_umi = str(Path(snakemake.output.plot_umi).resolve())
 
 # TODO: Customise report formatting
     html_content = f"""
@@ -215,16 +222,19 @@ try:
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pre-demux Cell Filtering Report</title>
     <style>
-        body {{ font-family: sans-serif; margin: 20px; }}
-        h1, h2, h3 {{ color: #333; }}
-        table {{ border-collapse: collapse; width: auto; margin-bottom: 20px; }}
-        th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
-        th {{ background-color: #f2f2f2; }}
-        .container {{ max-width: 900px; margin: auto; }}
-        .summary-box {{ background-color: #eef; padding: 15px; border: 1px solid #ccd; margin-bottom: 20px; }}
-        .plot-container {{ margin-bottom: 30px; text-align: center; }}
-        img {{ max-width: 100%; height: auto; border: 1px solid #ccc; }}
-        .code {{ font-family: monospace; background-color: #eee; padding: 2px 5px; }}
+        body {{ font-family: sans-serif; margin: 20px; color: #333; }}
+        h1, h2, h3 {{ color: #2c3e50; }}
+        table {{ border-collapse: collapse; width: auto; margin-bottom: 20px; font-size: 0.9em; }}
+        th, td {{ border: 1px solid #ddd; padding: 8px 10px; text-align: left; }}
+        th {{ background-color: #f2f2f2; color: #333; font-weight: bold; }}
+        tr:nth-child(even) {{ background-color: #f9f9f9; }}
+        .container {{ max-width: 1000px; margin: auto; background-color: #fff; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }}
+        .summary-box {{ background-color: #eaf2f8; padding: 15px; border: 1px solid #aed6f1; margin-bottom: 20px; border-radius: 5px; }}
+        .plot-container {{ margin-bottom: 30px; text-align: center; padding: 15px; border: 1px solid #eee; border-radius: 5px; background-color: #fdfefe; }}
+        img {{ max-width: 100%; height: auto; border: 1px solid #ccc; border-radius: 4px; }}
+        .code {{ font-family: monospace; background-color: #ecf0f1; padding: 2px 5px; border-radius: 3px; color: #555; }}
+        caption {{ caption-side: top; font-weight: bold; margin-bottom: 5px; text-align: left; color: #333; font-size: 1.1em;}}
+        .table-wrapper {{ overflow-x: auto; margin-bottom: 20px; }}
     </style>
 </head>
 <body>
@@ -233,59 +243,70 @@ try:
 
         <div class="summary-box">
             <h2>Summary</h2>
-            <p><strong>Number of samples processed:</strong> {num_samples}</p>
-            <h3>User-Defined Filter Thresholds:</h3>
+            <p><strong>Number of captures processed:</strong> {num_captures}</p>
+            <h3>Your Chosen Filter Thresholds:</h3>
             <ul>
                 <li>Minimum Genes per Cell (<span class="code">nFeature_RNA</span>): {'Disabled' if snakemake.params.min_genes == -1 else snakemake.params.min_genes}</li>
                 <li>Maximum Mitochondrial % (<span class="code">percent.mt</span>): {'Disabled' if snakemake.params.max_mito == -1.0 else f'{snakemake.params.max_mito:.1f}%'}</li>
                 <li>Minimum UMIs per Cell (<span class="code">nCount_RNA</span>): {'Disabled' if snakemake.params.min_umi == -1 else snakemake.params.min_umi}</li>
             </ul>
             <p><strong>Overall % of cells discarded (Mean ± SD):</strong> {overall_mean_discarded:.2f}% ± {overall_std_discarded:.2f}%</p>
-            <p><small>Note: The 'Overall % discarded' considers the combined effect of all enabled filters.</small></p>
+            <p><small>Note: The 'Overall % discarded' considers the combined effect of all filters.</small></p>
         </div>
 
         <h2>Impact of Individual Filters</h2>
-        <p>These plots show the average cumulative percentage of cells that would be discarded by each filter *independently* across a range of thresholds. The red dashed line indicates the threshold chosen in the configuration.</p>
+        <p>These plots show the average percentage of cells that would be discarded in your data if each filter were applied *independently* (i.e. in isolation) across a range of thresholds. The red dashed line indicates the current threshold chosen.</p>
 
         <div class="plot-container">
             <h3>Minimum Genes per Cell Filter</h3>
             <img src="{rel_plot_genes}" alt="Minimum Genes Filter Plot">
-            <p><small>At the chosen threshold ({'Disabled' if snakemake.params.min_genes == -1 else snakemake.params.min_genes}), this filter alone discarded ~{discard_at_config_genes_str} of cells on average.</small></p>
+            <p><small>At the chosen threshold ({'Disabled' if snakemake.params.min_genes == -1 else snakemake.params.min_genes}), this filter alone would discard ~{discard_at_config_genes_str} of cells on average.</small></p>
         </div>
 
         <div class="plot-container">
             <h3>Maximum Mitochondrial % Filter</h3>
             <img src="{rel_plot_mito}" alt="Maximum Mito Filter Plot">
-            <p><small>At the chosen threshold ({'Disabled' if snakemake.params.max_mito == -1.0 else f'{snakemake.params.max_mito:.1f}%'}), this filter alone discarded ~{discard_at_config_mito_str} of cells on average.</small></p>
+            <p><small>At the chosen threshold ({'Disabled' if snakemake.params.max_mito == -1.0 else f'{snakemake.params.max_mito:.1f}%'}), this filter alone would discard ~{discard_at_config_mito_str} of cells on average.</small></p>
         </div>
 
         <div class="plot-container">
             <h3>Minimum UMIs per Cell Filter</h3>
             <img src="{rel_plot_umi}" alt="Minimum UMI Filter Plot">
-            <p><small>At the chosen threshold ({'Disabled' if snakemake.params.min_umi == -1 else snakemake.params.min_umi}), this filter alone discarded ~{discard_at_config_umi_str} of cells on average.</small></p>
+            <p><small>At the chosen threshold ({'Disabled' if snakemake.params.min_umi == -1 else snakemake.params.min_umi}), this filter alone would discard ~{discard_at_config_umi_str} of cells on average.</small></p>
         </div>
 
+        <h2>Capture-Specific Filtering Statistics</h2>
+        
+        <h3>Captures with a High Proportion of Cells Discarded</h3>
+        <p>Captures listed below had a total percentage of cells discarded in the 90th percentile or higher (≥ {high_discard_threshold_prop*100:.2f}%).</p>
+        <div class="table-wrapper">
+        {high_discard_html_table}
+        </div>
 
-        <h2>Samples with High Proportion of Cells Discarded</h2>
-        <p>Samples listed below had a total percentage of cells discarded (by the combined filters) in the 90th percentile or higher (≥ {high_discard_threshold*100:.2f}%).</p>
-        {high_discard_samples[['capture_id', 'prop_discarded_pct_str']].rename(columns={'prop_discarded_pct_str': '% Discarded'}).to_html(index=False, classes='small-table') if not high_discard_samples.empty else '<p>No samples identified in the top 90th percentile for discarded cells.</p>'}
-
-        <h2>Reference: % Cells Discarded per Sample</h2>
-        <p>The following table lists the total percentage of cells discarded for each sample using the combined filter settings.</p>
-        {prop_df[['capture_id', 'prop_discarded_pct_str']].rename(columns={'prop_discarded_pct_str': '% Discarded'}).sort_values('capture_id').to_html(index=False, classes='full-table') if not prop_df.empty else '<p>No proportion data available.</p>'}
+        <h3>Summary per Capture</h3>
+        <p>The following table displays the filtering outcomes for each included capture. Note that the reported number of cells discarded at each filter is dependent on the order of filters here. The order the filters were applied in are the same as the column order.</p>
+        <div class="table-wrapper">
+        {all_captures_html_table}
+        </div>
 
     </div>
 </body>
 </html>
 """
 
-    # Write HTML report to output directory
-    with open(output_report_html_path, 'w') as f_html: # Use the Path object directly or str(output_report_html_path)
+    with open(output_report_html_path, 'w') as f_html: 
         f_html.write(html_content)
     logging.info(f"Successfully generated HTML report: {snakemake.output.html}")
 
 except Exception as e:
     logging.error(f"An error occurred during script execution: {e}", exc_info=True)
-    raise # Re-raise the exception to notify Snakemake of failure
+    try:
+        if snakemake.output.html:
+            error_html_content = f"<html><body><h1>Error in Report Generation</h1><pre>{str(e)}</pre><p>Check logs for more details: {log_file_path}</p></body></html>"
+            with open(str(snakemake.output.html), 'w') as f_err: # Ensure path is string for open
+                f_err.write(error_html_content)
+    except Exception as e_report:
+        logging.error(f"Could not write error report to HTML: {e_report}")
+    raise 
 
 logging.info("Report generation script finished.")

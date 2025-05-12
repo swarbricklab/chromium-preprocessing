@@ -19,10 +19,10 @@ arguments <- arg_parser("Apply filters to Seurat object and save outputs") %>%
                help = "Path to the output directory for filtered Cell Ranger files",
                type = "character",
                default = dirname(snakemake@output[["barcodes"]])) %>%
-  add_argument("--output-txt",
-               help = "Path to save the proportion discarded text file",
+  add_argument("--output-csv", 
+               help = "Path to save the filtering statistics CSV file", 
                type = "character",
-               default = snakemake@output[["prop_txt"]]) %>%
+               default = snakemake@output[["filter_metrics"]]) %>%
   add_argument("--min-genes",
                help = "Minimum number of genes per cell. Set to -1 to disable.",
                type = "integer",
@@ -44,12 +44,6 @@ arguments <- arg_parser("Apply filters to Seurat object and save outputs") %>%
                type = "character",
                default = snakemake@log[[1]]) %>%
   parse_args()
-
-# --- Validation of Supplied Inputs ---
-if (is.na(arguments$input_rds) || is.na(arguments$output_dir) || is.na(arguments$output_txt)){
-  print(p)
-  stop("Input RDS (--input-rds), output directory (--output-dir), and output text file path (--output-txt) must be supplied.", call.=FALSE)
-}
 
 # --- Logging Setup ---
 if (!is.null(arguments$log_file) && !is.na(arguments$log_file)) {
@@ -75,7 +69,8 @@ to_dgc <- function(mat) {
 # gene.type should be the type of gene (e.g., "Gene Expression")
 write_10x <- function(mat, path) {
     gene.names   <- rownames(mat)
-    gene.ids <- paste0("unknown_", seq_len(nrow(mat)))
+    # Using placeholder if Ensembl IDs are not available or not consistently named 'gene.id' in input
+    gene.ids <- if ("gene.id" %in% colnames(rownames(mat))) rownames(mat)$gene.id else paste0("unknown_", seq_len(nrow(mat)))
     barcodes   <- colnames(mat)
     DropletUtils::write10xCounts(
         path       = path,
@@ -94,7 +89,7 @@ write_10x <- function(mat, path) {
 capture_id <- arguments$capture_id
 input_rds <- arguments$input_rds
 output_dir <- arguments$output_dir
-output_txt <- arguments$output_txt
+output_csv_path <- arguments$output_csv 
 min_genes_thresh <- arguments$min_genes
 max_mito_thresh <- arguments$max_mito
 min_umi_thresh <- arguments$min_umi
@@ -106,11 +101,24 @@ if (min_umi_thresh < -1) stop("min-umi must be -1 or >=0")
 message(sprintf("Starting filtering for capture: %s", capture_id))
 message(sprintf("Input Seurat RDS: %s", input_rds))
 message(sprintf("Output Cell Ranger directory: %s", output_dir))
-message(sprintf("Output proportion discarded file: %s", output_txt))
+message(sprintf("Output filtering statistics CSV: %s", output_csv_path)) 
 message(sprintf("Filter Thresholds: min_genes= %s, max_mito= %s, min_umi= %s (-1 means disabled)",
                 ifelse(min_genes_thresh == -1, "Disabled", as.character(min_genes_thresh)),
                 ifelse(max_mito_thresh == -1.0, "Disabled", sprintf("%.1f%%", max_mito_thresh)),
                 ifelse(min_umi_thresh == -1, "Disabled", as.character(min_umi_thresh))))
+
+# Data frame to store filtering outcomes
+stats_df <- data.frame(
+    total_initial_cells = NA_integer_,
+    cells_discarded_by_min_gene_filter = NA_integer_, 
+    cells_discarded_by_max_mito_filter = NA_integer_, 
+    cells_discarded_by_min_umi_filter = NA_integer_, 
+    total_final_cells_after_filters = NA_integer_,
+    proportion_discarded_after_min_gene_filter = NA_real_,
+    proportion_discarded_after_max_mito_filter = NA_real_,
+    proportion_discarded_after_min_umi_filter = NA_real_,
+    total_proportion_discarded = NA_real_
+)
 
 tryCatch({
     # Load Seurat object
@@ -121,29 +129,36 @@ tryCatch({
     }
     initial_cell_count <- ncol(seurat_object)
     message(sprintf("Loaded object with %d cells.", initial_cell_count))
-
+    
+    stats_df$total_initial_cells <- initial_cell_count
     
     if (initial_cell_count == 0) {
         message("Input Seurat object has 0 cells. Skipping filtering.")
-        proportion_discarded <- 0.0
         applied_filters_str <- "None (0 initial cells)"
+        
+        stats_df$cells_discarded_by_min_gene_filter <- 0
+        stats_df$cells_discarded_by_max_mito_filter <- 0 
+        stats_df$cells_discarded_by_min_umi_filter <- 0 
+        stats_df$total_final_cells_after_filters <- 0
+        stats_df$proportion_discarded_after_min_gene_filter <- 0.0
+        stats_df$proportion_discarded_after_max_mito_filter <- 0.0
+        stats_df$proportion_discarded_after_min_umi_filter <- 0.0
+        stats_df$total_proportion_discarded <- 0.0
+        
         # Write empty Cell Ranger output
         message("Writing empty Cell Ranger output files...")
-        # Create a minimal empty matrix structure expected by write10xCounts
         if (nrow(seurat_object) == 0) {
             empty_counts <- Matrix::Matrix(0, nrow = 1, ncol = 0, sparse = TRUE)
             rownames(empty_counts) <- c("DUMMY_GENE")
         } else {
-            # Use existing genes but no cells
             empty_counts <- GetAssayData(seurat_object, layer = "counts")[, 0, drop=FALSE]
         }
-        
-        # Use the write_10x function
         write_10x(mat = empty_counts, path = output_dir)
         
-        # Write proportion discarded file
-        writeLines(as.character(proportion_discarded), con = output_txt)
-        message("Empty output files written.")
+        # Write filtering statistics CSV file
+        message(sprintf("Saving filtering statistics to %s", output_csv_path))
+        write.csv(stats_df, file = output_csv_path, row.names = FALSE, quote = FALSE)
+        message("Filtering statistics CSV and empty output files written.")
 
     } else {
         # Check if necessary metadata exists (should be calculated in Script 1 `pdmx_convert_seurat.R`)
@@ -158,77 +173,90 @@ tryCatch({
         }
 
         # Apply filters sequentially
-        cells_to_keep <- rep(TRUE, initial_cell_count) # This creates a logical vector of TRUEs for all cells
+        cells_to_keep_logical <- rep(TRUE, initial_cell_count) 
         applied_filters <- c()
-
-        # Filter 1: Minimum genes per cell
-        if (min_genes_thresh != -1 && min_genes_thresh >= 0) { # Allow 0 as a valid threshold
+        
+        # --- Filter 1: Minimum genes per cell ---
+        cells_count_before_current_filter <- sum(cells_to_keep_logical)
+        if (min_genes_thresh != -1 && min_genes_thresh >= 0) {
             message(sprintf("Applying filter: nFeature_RNA >= %d", min_genes_thresh))
-            cells_passing <- seurat_object$nFeature_RNA >= min_genes_thresh
-            message(sprintf("  %d / %d cells remaining after this filter.", sum(cells_to_keep & cells_passing), sum(cells_to_keep)))
-            cells_to_keep <- cells_to_keep & cells_passing # Update cells_to_keep to only those passing the filter
+            cells_passing_current_filter <- seurat_object$nFeature_RNA >= min_genes_thresh
+            message(sprintf("  %d / %d cells would pass this specific filter if applied alone to current set.", sum(cells_to_keep_logical & cells_passing_current_filter), sum(cells_to_keep_logical)))
+            cells_to_keep_logical <- cells_to_keep_logical & cells_passing_current_filter
             applied_filters <- c(applied_filters, sprintf("min_genes >= %d", min_genes_thresh))
         } else {
             message("Skipping filter: Minimum genes per cell (value was -1).")
         }
+        cells_remaining_after_current_filter <- sum(cells_to_keep_logical)
+        stats_df$cells_discarded_by_min_gene_filter <- cells_count_before_current_filter - cells_remaining_after_current_filter
+        stats_df$proportion_discarded_after_min_gene_filter <- if (cells_count_before_current_filter > 0) stats_df$cells_discarded_by_min_gene_filter / cells_count_before_current_filter else 0.0
+        message(sprintf("  Cells remaining after min gene filter stage: %d. Discarded at this step: %d.", cells_remaining_after_current_filter, stats_df$cells_discarded_by_min_gene_filter))
 
-        # Filter 2: Maximum mitochondrial percentage
-        if (max_mito_thresh != -1.0 && max_mito_thresh <= 100 && max_mito_thresh >= 0) { # Allow 0 and 100
+        # --- Filter 2: Maximum mitochondrial percentage ---
+        cells_count_before_current_filter <- sum(cells_to_keep_logical) # Cells that passed previous filters
+        if (max_mito_thresh != -1.0 && max_mito_thresh <= 100 && max_mito_thresh >= 0) {
             message(sprintf("Applying filter: percent.mt <= %.1f%%", max_mito_thresh))
-            # Handle potential NA values in percent.mt if some cells had 0 reads
             percent_mt_values <- seurat_object$percent.mt
-            percent_mt_values[is.na(percent_mt_values)] <- 0 # Treat NA mito percent (0 reads) as technically passing
-            cells_passing <- percent_mt_values <= max_mito_thresh
-            message(sprintf("  %d / %d cells remaining after this filter.", sum(cells_to_keep & cells_passing), sum(cells_to_keep)))
-            cells_to_keep <- cells_to_keep & cells_passing
+            percent_mt_values[is.na(percent_mt_values)] <- 0 
+            cells_passing_current_filter <- percent_mt_values <= max_mito_thresh
+            message(sprintf("  %d / %d cells would pass this specific filter if applied alone to current set.", sum(cells_to_keep_logical & cells_passing_current_filter), sum(cells_to_keep_logical)))
+            cells_to_keep_logical <- cells_to_keep_logical & cells_passing_current_filter
             applied_filters <- c(applied_filters, sprintf("max_mito <= %.1f%%", max_mito_thresh))
         } else {
             message("Skipping filter: Maximum mitochondrial percentage (value was -1.0 or invalid).")
         }
-
-        # Filter 3: Minimum UMI count
-        if (min_umi_thresh != -1 && min_umi_thresh >= 0) { # Allow 0 as valid threshold
+        cells_remaining_after_current_filter <- sum(cells_to_keep_logical)
+        stats_df$cells_discarded_by_max_mito_filter <- cells_count_before_current_filter - cells_remaining_after_current_filter
+        stats_df$proportion_discarded_after_max_mito_filter <- if (cells_count_before_current_filter > 0) stats_df$cells_discarded_by_max_mito_filter / cells_count_before_current_filter else 0.0
+        message(sprintf("  Cells remaining after max mito filter stage: %d. Discarded at this step: %d.", cells_remaining_after_current_filter, stats_df$cells_discarded_by_max_mito_filter))
+        
+        # --- Filter 3: Minimum UMI count ---
+        cells_count_before_current_filter <- sum(cells_to_keep_logical) # Cells that passed previous filters
+        if (min_umi_thresh != -1 && min_umi_thresh >= 0) {
             message(sprintf("Applying filter: nCount_RNA >= %d", min_umi_thresh))
-            cells_passing <- seurat_object$nCount_RNA >= min_umi_thresh
-            message(sprintf("  %d / %d cells remaining after this filter.", sum(cells_to_keep & cells_passing), sum(cells_to_keep)))
-            cells_to_keep <- cells_to_keep & cells_passing
+            cells_passing_current_filter <- seurat_object$nCount_RNA >= min_umi_thresh
+            message(sprintf("  %d / %d cells would pass this specific filter if applied alone to current set.", sum(cells_to_keep_logical & cells_passing_current_filter), sum(cells_to_keep_logical)))
+            cells_to_keep_logical <- cells_to_keep_logical & cells_passing_current_filter
             applied_filters <- c(applied_filters, sprintf("min_umi >= %d", min_umi_thresh))
         } else {
             message("Skipping filter: Minimum UMI count (value was -1).")
         }
+        cells_remaining_after_current_filter <- sum(cells_to_keep_logical)
+        stats_df$cells_discarded_by_min_umi_filter <- cells_count_before_current_filter - cells_remaining_after_current_filter
+        stats_df$proportion_discarded_after_min_umi_filter <- if (cells_count_before_current_filter > 0) stats_df$cells_discarded_by_min_umi_filter / cells_count_before_current_filter else 0.0
+        message(sprintf("  Cells remaining after min UMI filter stage: %d. Discarded at this step: %d.", cells_remaining_after_current_filter, stats_df$cells_discarded_by_min_umi_filter))
 
         # Subset the object
-        seurat_filtered <- seurat_object[, cells_to_keep]
+        seurat_filtered <- seurat_object[, cells_to_keep_logical]
         final_cell_count <- ncol(seurat_filtered)
-        cells_discarded <- initial_cell_count - final_cell_count
-        proportion_discarded <- if (initial_cell_count > 0) cells_discarded / initial_cell_count else 0.0
+        stats_df$total_final_cells_after_filters <- final_cell_count
+        
+        cells_discarded_total <- initial_cell_count - final_cell_count
+        proportion_discarded_total_calc <- if (initial_cell_count > 0) cells_discarded_total / initial_cell_count else 0.0
+        stats_df$total_proportion_discarded <- proportion_discarded_total_calc
 
         applied_filters_str <- if(length(applied_filters) > 0) paste(applied_filters, collapse=", ") else "None"
 
         message(sprintf("Filtering complete. Kept %d / %d cells.", final_cell_count, initial_cell_count))
         message(sprintf("%.2f%% of cells discarded from %s after applying filters: %s",
-                        proportion_discarded * 100,
+                        stats_df$total_proportion_discarded * 100,
                         capture_id,
                         applied_filters_str))
 
-        # Save proportion discarded as a txt file (will be used in summary report)
-        message(sprintf("Saving proportion discarded (%.6f) to %s", proportion_discarded, output_txt))
-        # Use format to ensure standard decimal notation without unexpected scientific notation
-        writeLines(format(proportion_discarded, scientific = FALSE, digits = 6, nsmall = 6), con = output_txt)
-
+        # Save filtering statistics as a CSV file
+        message(sprintf("Saving filtering statistics to %s", output_csv_path))
+        write.csv(stats_df, file = output_csv_path, row.names = FALSE, quote = FALSE)
 
         # Save filtered data in Cell Ranger format
         message("Writing filtered data to Cell Ranger v3 format...")
         if (final_cell_count == 0) {
             message("No cells remaining after filtering. Writing empty output.")
-            # Create a minimal empty matrix structure expected by write10xCounts
-            if (nrow(seurat_filtered) == 0) { # Should not happen if initial obj had genes
+            if (nrow(seurat_filtered) == 0) { 
                 empty_counts <- Matrix::Matrix(0, nrow = 1, ncol = 0, sparse = TRUE)
                 rownames(empty_counts) <- c("DUMMY_GENE")
             } else {
                 empty_counts <- GetAssayData(seurat_filtered, layer = "counts")[, 0, drop=FALSE]
             }
-            # Use the write_10x function
             write_10x(mat = empty_counts, path = output_dir)
         } else {
             # Extract counts for writing
@@ -238,9 +266,7 @@ tryCatch({
             # 36873 features across 3215 samples within 1 assay 
             # Active assay: RNA (36873 features, 0 variable features)
             # 2 layers present: counts.Gene Expression, counts.Antibody Capture
-            counts_to_write <- GetAssayData(seurat_filtered, layer = "counts")
-
-            # Use the write_10x function
+            counts_to_write <- GetAssayData(seurat_filtered, layer = "counts") # Assumes default assay and "counts" layer
             write_10x(mat = counts_to_write, path = output_dir)
         }
         message("Filtered Cell Ranger files successfully written.")
@@ -248,7 +274,12 @@ tryCatch({
 
 }, error = function(e) {
     message(sprintf("Error during filtering for %s: %s", capture_id, e$message))
-    stop(e$message, call.=FALSE)
+    # Attempt to write partial stats if some were computed
+    if (!all(is.na(stats_df$total_initial_cells))) { # Check if initial count was set
+         message(sprintf("Attempting to write available statistics to %s due to error.", output_csv_path))
+         write.csv(stats_df, file = output_csv_path, row.names = FALSE, quote = FALSE)
+    }
+    stop(e$message, call.=FALSE) # Re-throw the error to ensure Snakemake catches it
 })
 
 # Remove the features.tsv.gz file from output_dir, to allow later replacement 
