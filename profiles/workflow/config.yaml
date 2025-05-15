@@ -105,3 +105,7 @@ set-resources:
         threads: "1"
         mem: "4GB"
         runtime: "1h"
+    copy_original_features:
+        threads: "1"
+        mem: "500MB"
+        runtime: "10m"
