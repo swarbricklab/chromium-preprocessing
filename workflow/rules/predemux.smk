@@ -47,7 +47,7 @@ rule predemux_filter_seurat:
         # and remove the features.tsv.gz file from the output
         barcodes = out_dir/"count/predemux/{capture}/barcodes.tsv.gz",
         matrix = out_dir/"count/predemux/{capture}/matrix.mtx.gz",
-        prop_txt = temp(out_dir/"predemux/qc/prop_discarded/{capture}.txt")
+        filter_metrics = temp(out_dir/"predemux/qc/discarded_metrics/{capture}.csv")
     log:
         log_dir/"predemux/pdmx_filter/{capture}.log"
     params:
@@ -86,7 +86,7 @@ rule predemux_generate_report:
     showing average filter effects.
     """
     input:
-        prop_txts = expand(rules.predemux_filter_seurat.output.prop_txt, capture=captures.index),
+        filter_stats_csvs = expand(rules.predemux_filter_seurat.output.filter_metrics, capture=captures.index),
         gene_csvs = expand(rules.predemux_gather_qc_metrics.output.genes_csv, capture=captures.index),
         mito_csvs = expand(rules.predemux_gather_qc_metrics.output.mito_csv, capture=captures.index),
         umi_csvs = expand(rules.predemux_gather_qc_metrics.output.umi_csv, capture=captures.index)
