@@ -22,6 +22,11 @@ outs:
   reports: "reports/cellranger"
   logs: "logs/chromium-preprocessing"
 
+# -- Module versions --#
+# Software module versions (when using environment modules)
+modules:
+  cellranger: "9.0.1"
+
 # -- Parameters --#
 # Non-path parameters for tuning the behaviour of the workflow
 params:

@@ -29,7 +29,7 @@ rule cellranger_aggr_count:
     params:
         aggr_options=get_options("aggr")
     envmodules:
-        "cellranger/9.0.1",
+        f"cellranger/{config['modules']['cellranger']}",
         "qsub/ext"
     log:
         "logs/chromium-preprocessing/cellranger_aggr/count/{pool}.log"
@@ -85,7 +85,7 @@ rule cellranger_aggr_vdj:
     params:
         aggr_options=get_options("aggr")
     envmodules:
-        "cellranger/9.0.1",
+        f"cellranger/{config['modules']['cellranger']}",
         "qsub/ext"
     log:
         "logs/chromium-preprocessing/cellranger_aggr/{vdj_assay}/{pool}.log"

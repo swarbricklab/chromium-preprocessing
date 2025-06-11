@@ -64,7 +64,7 @@ rule cellranger_multi:
     output:
         cr_dir=temp(directory(out_dir/"tmp/{capture}"))
     envmodules:
-        "cellranger/9.0.1",
+        f"cellranger/{config['modules']['cellranger']}",
         "qsub/ext"
     log:
         "logs/chromium-preprocessing/cellranger_multi/{capture}.log"
