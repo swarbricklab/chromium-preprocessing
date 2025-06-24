@@ -13,6 +13,7 @@ rule generate_web_indexes:
 
 rule generate_master_index:
 	input:
+		logo="resources/swarbricklablogo.png",
 		predemux_report=rules.predemux_generate_report.output.html,
 		cell_types_index=rules.generate_web_indexes.output.cell_types_index,
 		summary_index=rules.generate_web_indexes.output.summary_index

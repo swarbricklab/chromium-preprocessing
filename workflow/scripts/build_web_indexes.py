@@ -22,11 +22,18 @@ with open(snakemake.input.captures) as f:
 # parent folder for both cell_types/ and summary/
 captures_dir = pathlib.Path(snakemake.output.cell_types_index).parent
 
-for name, out_index in [
-    ("cell_types", snakemake.output.cell_types_index),
-    ("summary",    snakemake.output.summary_index),
-]:
-    title      = f"Cell Ranger {name}"
+# Determine which indexes to build based on config
+indexes_to_build = []
+
+# Only include "cell_types" if annotate is true
+if getattr(snakemake.config, "predemux", True):
+    indexes_to_build.append(("cell_types", snakemake.output.cell_types_index))
+
+# Always include "summary"
+indexes_to_build.append(("summary", snakemake.output.summary_index))
+
+for name, out_index in indexes_to_build:
+    title = f"Cellranger {name}"
     # we no longer glob — we iterate over capture_ids
     items = []
     for cid in capture_ids:
