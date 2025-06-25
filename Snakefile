@@ -28,7 +28,7 @@ if not preflight_check():
 # and validates config schemas according to these selections
 # A list of final targets is built depending on these choices.
 
-targets = []
+targets = [out_dir/"reports/cellranger/master_index.html"]
 
 if assays == ['gene-expression']:
     # When only gene-expression libraries are present use 'cellranger count.
@@ -71,6 +71,8 @@ if config['params']['extras']['annotate']:
     print("Running cellranger annotate")
     include: 'workflow/rules/annotate.smk'
     targets.extend(annotate_targets())
+
+include: 'workflow/rules/html_reports.smk'
 
 wildcard_constraints:
     capture = "[^/]+"
