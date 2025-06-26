@@ -6,6 +6,8 @@ rule generate_web_indexes:
 	output:
 		cell_types_index=report_dir/"web/captures/cell_types_index.html",
 		summary_index=report_dir/"web/captures/summary_index.html"
+	params:
+		annotate=config["params"]["extras"]["annotate"]
 	log:
 		log_dir/"cellranger_reports/generate_web_indexes.log"
 	script:
@@ -18,7 +20,9 @@ rule generate_master_index:
 		cell_types_index=rules.generate_web_indexes.output.cell_types_index,
 		summary_index=rules.generate_web_indexes.output.summary_index
 	output:
-		master_index=report_dir/"cellranger/master_index.html"
+		master_index=report_dir/"master_index.html"
+	params:
+		predemux=config["params"]["extras"]["predemux"]
 	log:
 		log_dir/"cellranger_reports/generate_master_indexes.log"
 	script:
