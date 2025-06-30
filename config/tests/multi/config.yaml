@@ -17,6 +17,8 @@ ref:
   feature: "config/feature_barcode_reference.csv"
   # Reference for VDJ-T
   vdj: "resources/vdj/refdata-cellranger-vdj-GRCh38-alts-ensembl-7.1.0"
+  # Logo for reports (must be DVC checked out)
+  logo: "resources/swarbricklablogo.png"
 
 # -- Outputs -- #
 # Files and directories produced by the workflow
