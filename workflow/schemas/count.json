@@ -14,6 +14,10 @@
         "libraries": {
           "type": "string",
           "description": "Path to the libraries CSV file."
+        },
+        "fastqs": {
+          "type": "string",
+          "description": "Optional path to the directory containing FASTQ files."
         }
       },
       "required": [
@@ -56,6 +60,19 @@
         "logs"
       ]
     },
+    "modules": {
+      "type": "object",
+      "description": "Software module versions when using environment modules.",
+      "properties": {
+        "cellranger": {
+          "type": "string",
+          "description": "Version of cellranger module to use."
+        }
+      },
+      "required": [
+        "cellranger"
+      ]
+    },
     "params": {
       "type": "object",
       "description": "Parameters controlling the behavior of cellranger count and (optionally) cellranger aggr.",
@@ -72,6 +89,10 @@
               "type": "boolean",
               "description": "If true, annotation is performed."
             },
+            "predemux": {
+              "type": "boolean", 
+              "description": "If true, predemux cell filtering is enabled."
+            }
           },
           "required": []
         },
@@ -135,6 +156,7 @@
     "deps",
     "ref",
     "outs",
+    "modules",
     "params"
   ]
 }
