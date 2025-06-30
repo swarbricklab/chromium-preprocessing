@@ -45,11 +45,11 @@ rule predemux_filter_seurat:
         # For compatability with features.tsv.gz replacement, we specify exact files
         # rather than the directory function and output directory, 
         # and remove the features.tsv.gz file from the output
-        barcodes = out_dir/"count/predemux/{capture}/barcodes.tsv.gz",
-        matrix = out_dir/"count/predemux/{capture}/matrix.mtx.gz",
-        filter_metrics = temp(out_dir/"predemux/qc/discarded_metrics/{capture}.csv")
+        barcodes = out_dir/"{mode}/predemux/{capture}/barcodes.tsv.gz",
+        matrix = out_dir/"{mode}/predemux/{capture}/matrix.mtx.gz",
+        filter_metrics = temp(out_dir/"{mode}/predemux/qc/discarded_metrics/{capture}.csv")
     log:
-        log_dir/"predemux/pdmx_filter/{capture}.log"
+        log_dir/"{mode}/predemux/pdmx_filter/{capture}.log"
     params:
         min_genes = config['params']['predemux']["min-gene-count"],
         max_mito = config['params']['predemux']["max-mito"],
