@@ -32,6 +32,10 @@
         "gene-expression": {
           "type": "string",
           "description": "Path to the reference transcriptome for gene expression."
+        },
+        "logo": {
+          "type": "string",
+          "description": "Path to the logo file for reports."
         }
       },
       "required": [
@@ -57,6 +61,7 @@
       },
       "required": [
         "results",
+        "reports",
         "logs"
       ]
     },
