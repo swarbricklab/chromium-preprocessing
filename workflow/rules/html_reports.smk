@@ -15,11 +15,12 @@ rule generate_web_indexes:
 
 rule generate_master_index:
 	input:
-		logo="resources/swarbricklablogo.png",
+		logo=config['ref']['logo'],
 		predemux_report=rules.predemux_generate_report.output.html,
 		cell_types_index=rules.generate_web_indexes.output.cell_types_index,
 		summary_index=rules.generate_web_indexes.output.summary_index
 	output:
+		logo=report_dir/"resources/swarbricklablogo.png",
 		master_index=report_dir/"master_index.html"
 	params:
 		predemux=config["params"]["extras"]["predemux"]

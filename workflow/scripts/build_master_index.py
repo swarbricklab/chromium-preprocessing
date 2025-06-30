@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Produce a master_index.html that embeds indexes generated in `build_web_indexes.py` plus predemux_report.html
 
-import sys, os, pathlib, html, datetime, base64
+import sys, os, pathlib, html, datetime, base64, shutil
 
 # redirect into Snakemake log
 log = open(snakemake.log[0], "w")
@@ -46,10 +46,12 @@ items_html = "\n".join(
 )
 
 # only master index gets the logo, and the logo has been converted base64 format and enbeded here so no need to keep a separate .png
-logo_path = snakemake.input.logo
+shutil.copy(snakemake.input.logo, snakemake.output.logo)
+logo_rel_path = os.path.relpath(snakemake.output.logo, pathlib.Path(snakemake.output.master_index).parent)
+
 logo_html = (
 	'<div class="logo">'
-	f'<img src="{logo_path}"' 
+	f'<img src="{logo_rel_path}"' 
 	'   alt="Swarbrick Lab Logo" '
 	'   style="max-width:100%; margin-bottom:1rem;">'
 	'</div>'
