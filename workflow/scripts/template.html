@@ -4,13 +4,26 @@
 <meta charset="utf-8">
 <title>{page_title}</title>
 <style>
-  /* Overall container: two‐column flexbox */
-  body {{
+  /* Header with logo */
+  .report-header {{
+    display: flex;
+    align-items: center;
+    padding: 0 0 0 0;
+    background: #fff;
+    border-bottom: 1px solid #eee;
+  }}
+  .logo {{
+    height: 62px;
+    width: auto;
     margin: 0;
     padding: 0;
-    height: 100vh;
+    display: block;
+  }}
+
+  /* Main flex container: sidebar + content */
+  .main-flex {{
     display: flex;
-    font-family: sans-serif;
+    height: calc(100vh - 72px); /* header height (48px + padding) */
   }}
 
   /* Sidebar styling */
@@ -87,24 +100,30 @@
 </head>
 <body>
 
-  <!-- Sidebar -->
-  <div class="sidebar">
+  <!-- Header with logo -->
+  <header class="report-header">
     {logo_html}
-    <h1>{page_title}</h1>
-    <label><strong>Filter samples:</strong><br>
-      <input id="filter" type="search" placeholder="Type to filter…" />
-    </label>
-    <ul id="samples">
-{items}
-    </ul>
-    <div class="footer">
-      Generated {timestamp}
-    </div>
-  </div>
+  </header>
 
-  <!-- Content iframe -->
-  <div class="content">
-    <iframe id="viewer" src=""></iframe>
+  <div class="main-flex">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <h1>{page_title}</h1>
+      <label><strong>Filter samples:</strong><br>
+        <input id="filter" type="search" placeholder="Type to filter…" />
+      </label>
+      <ul id="samples">
+{items}
+      </ul>
+      <div class="footer">
+        Generated {timestamp}
+      </div>
+    </div>
+
+    <!-- Content iframe -->
+    <div class="content">
+      <iframe id="viewer" src=""></iframe>
+    </div>
   </div>
 
 <script>

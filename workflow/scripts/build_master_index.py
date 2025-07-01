@@ -18,7 +18,7 @@ TEMPLATE = template_path.read_text()
 entries = []
 
 # 1) standalone predemux report, only if enabled in config
-if config['params']['extras']['predemux']:
+if snakemake.config['params']['extras']['predemux']:
     pred = pathlib.Path(snakemake.input.predemux_report)
     if pred.exists():
         # path relative to master_index.html’s dir

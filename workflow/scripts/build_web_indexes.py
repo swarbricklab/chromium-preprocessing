@@ -26,7 +26,7 @@ captures_dir = pathlib.Path(snakemake.output.cell_types_index).parent
 indexes_to_build = []
 
 # Only include "cell_types" if annotate is true
-if config['params']['extras']['annotate']:
+if snakemake.config['params']['extras']['annotate']:
     indexes_to_build.append(("cell_types", snakemake.output.cell_types_index))
 
 # Always include "summary"
