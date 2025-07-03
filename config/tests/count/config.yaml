@@ -7,7 +7,7 @@
 deps:
   captures: "config/tests/count/captures.csv"
   libraries: "config/tests/count/libraries.csv"
-  fastqs: "test/data/"
+  fastqs: "test/data/tiny_tnbc"
 
 # Reference dependencies
 ref:
