@@ -134,7 +134,7 @@
     </div>
     <!-- Content iframe -->
     <div class="content">
-      <iframe id="viewer" src=""></iframe>
+      <iframe id="viewer" src="{iframe_src}"></iframe>
     </div>
   </div>
 <script>
@@ -142,29 +142,65 @@
   const filterInput = document.getElementById("filter");
   const listItems = document.querySelectorAll("#samples li");
   const viewerFrame = document.getElementById("viewer");
+  
+  // Get the initial src from the iframe (set by {iframe_src})
+  const initialSrc = viewerFrame.getAttribute("src");
+
   filterInput.addEventListener("input", e => {{
     const term = e.target.value.toLowerCase();
     listItems.forEach(li => {{
       li.classList.toggle("hidden", !li.dataset.name.includes(term));
     }});
   }});
-  // Click handler: load into iframe and highlight active link
+
+  function highlightHomeIfInitial() {{
+    const homeLink = document.querySelector('.home-link');
+    if (!homeLink) return;
+    if (viewerFrame.getAttribute("src") === initialSrc && initialSrc) {{
+      homeLink.classList.add("active");
+    }} else {{
+      homeLink.classList.remove("active");
+    }}
+  }}
+
+  // Home icon click handler - return to initial state
+  const homeLink = document.querySelector('.home-link');
+  if (homeLink) {{
+    homeLink.addEventListener('click', function(ev) {{
+      ev.preventDefault();
+      // Remove active from all sidebar links
+      document.querySelectorAll("#samples a").forEach(a => a.classList.remove("active"));
+      // Set iframe src back to initial src (chromium_summary.html in master index)
+      viewerFrame.setAttribute("src", initialSrc);
+      // Highlight home icon
+      highlightHomeIfInitial();
+    }});
+  }}
+
+  // Sidebar link click handler
   listItems.forEach(li => {{
     const link = li.querySelector("a");
     link.addEventListener("click", ev => {{
       ev.preventDefault();
-      document.querySelectorAll("#samples a")
-              .forEach(a => a.classList.remove("active"));
+      // Remove active from all links including home
+      document.querySelectorAll("#samples a").forEach(a => a.classList.remove("active"));
+      if (homeLink) homeLink.classList.remove("active");
+      // Set this link as active
       link.classList.add("active");
+      // Set iframe src
       const url = link.getAttribute("href");
       viewerFrame.setAttribute("src", url);
     }});
   }});
-  // On load: auto-load first sample if exists
-  if (listItems.length > 0) {{
+
+  // On load: auto-load first sample if exists, but only if iframe src is empty
+  if (listItems.length > 0 && !viewerFrame.getAttribute("src")) {{
     const firstLink = listItems[0].querySelector("a");
     firstLink.classList.add("active");
     viewerFrame.setAttribute("src", firstLink.getAttribute("href"));
+  }} else {{
+    // If iframe has initial src, highlight home icon
+    highlightHomeIfInitial();
   }}
 </script>
 </body>

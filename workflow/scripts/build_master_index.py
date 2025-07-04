@@ -65,11 +65,12 @@ logo_html = (
 page_title = f"CellRanger Reports"
 try:
     out_html   = TEMPLATE.format(
-        logo_html  = logo_html,
-        page_title = html.escape(page_title),
-        home_link  = home_link_html,
-        items      = items_html,
-        timestamp  = datetime.datetime.now().isoformat(timespec="seconds")
+        logo_html=logo_html,
+        page_title=html.escape(page_title),
+        home_link=home_link_html,  # home icon HTML
+        items=items_html,
+        timestamp=datetime.datetime.now().isoformat(timespec="seconds"),
+        iframe_src="chromium_summary.html"
     )
 except Exception as e:
     print(f"TEMPLATE FORMAT ERROR: {e}")

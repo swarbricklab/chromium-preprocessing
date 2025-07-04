@@ -47,11 +47,12 @@ for name, out_index in indexes_to_build:
 
     # render
     page = TEMPLATE.format(
-        logo_html  = "",
-        page_title = html.escape(title),
-        home_link  = "",
-        items      = items_html,
-        timestamp  = datetime.datetime.now().isoformat(timespec="seconds")
+        logo_html="",
+        page_title=html.escape(title),
+        home_link="",  # no home icon
+        items=items_html,
+        timestamp=datetime.datetime.now().isoformat(timespec="seconds"),
+        iframe_src=""  # or another default
     )
 
     out_path = pathlib.Path(out_index)
