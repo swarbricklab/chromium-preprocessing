@@ -9,9 +9,9 @@ sys.stdout = sys.stderr = log
 
 # load the shared template
 script_dir    = pathlib.Path(__file__).parent
-template_path = script_dir / "template.html"
+template_path = script_dir / "base_template.html"
 if not template_path.exists():
-    sys.exit(f"ERROR: missing template.html in {script_dir}")
+    sys.exit(f"ERROR: missing base_template.html in {script_dir}")
 TEMPLATE = template_path.read_text()
 
 # determine the “captures”.html via snakemake.input.captures --> captures.csv under the column capture
@@ -45,10 +45,11 @@ for name, out_index in indexes_to_build:
         )
     items_html = "\n".join(items)
 
-    # render with no logo
+    # render
     page = TEMPLATE.format(
         logo_html  = "",
         page_title = html.escape(title),
+        home_link  = "",
         items      = items_html,
         timestamp  = datetime.datetime.now().isoformat(timespec="seconds")
     )

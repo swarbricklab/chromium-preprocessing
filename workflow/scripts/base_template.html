@@ -3,37 +3,56 @@
 <head>
 <meta charset="utf-8">
 <title>{page_title}</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <style>
-  /* Header with logo */
   .report-header {{
     display: flex;
     align-items: center;
     padding: 0 0 0 0;
     background: #fff;
     border-bottom: 1px solid #eee;
+    justify-content: space-between;
   }}
   .logo {{
     height: 62px;
     width: auto;
     margin: 0;
-    padding: 0;
     display: block;
   }}
-
-  /* Main flex container: sidebar + content */
+  header.report-header:empty {{
+  display: none;
+  }}
   .main-flex {{
     display: flex;
-    height: calc(100vh - 72px); /* header height (48px + padding) */
+    height: 100vh;
+    min-height: 100vh;
   }}
-
-  /* Sidebar styling */
   .sidebar {{
-    flex: 0 0 300px;             /* fixed 300px width */
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    flex: 0 0 300px;
     background: #f7f7f7;
     border-right: 1px solid #ddd;
     padding: 1rem;
     box-sizing: border-box;
     overflow-y: auto;
+    position: relative;
+  }}
+  .sidebar .home-link {{
+    display: flex;
+    align-items: center;
+    gap: 0.4em;
+    font-size: 1.1em;
+    font-weight: 500;
+    color: #333;
+    text-decoration: none;
+    margin-bottom: 1.2em;
+  }}
+  .sidebar .home-link:hover {{
+    color: #0d6efd;
+    text-decoration: underline;
   }}
   .sidebar h1 {{
     font-size: 1.2rem;
@@ -71,10 +90,8 @@
   .sidebar .hidden {{
     display: none;
   }}
-
-  /* Content area: iframe */
   .content {{
-    flex: 1;                     /* fill remaining width */
+    flex: 1;
     background: #fff;
     overflow: hidden;
     position: relative;
@@ -87,10 +104,8 @@
     height: 100%;
     border: none;
   }}
-
-  /* Footer (timestamp) at bottom of sidebar */
   .footer {{
-    margin-top: 1rem;
+    margin-top: auto;
     font-size: 0.8rem;
     color: #666;
     border-top: 1px solid #ccc;
@@ -99,16 +114,14 @@
 </style>
 </head>
 <body>
-
-  <!-- Header with logo -->
-  <header class="report-header">
-    {logo_html}
-  </header>
+  <!-- Header with logo-->
+  <header class="report-header">{logo_html}</header>
 
   <div class="main-flex">
     <!-- Sidebar -->
     <div class="sidebar">
       <h1>{page_title}</h1>
+      {home_link}
       <label><strong>Filter samples:</strong><br>
         <input id="filter" type="search" placeholder="Type to filter…" />
       </label>
@@ -119,41 +132,34 @@
         Generated {timestamp}
       </div>
     </div>
-
     <!-- Content iframe -->
     <div class="content">
       <iframe id="viewer" src=""></iframe>
     </div>
   </div>
-
 <script>
   // Filter logic: hide/show based on data-name
   const filterInput = document.getElementById("filter");
   const listItems = document.querySelectorAll("#samples li");
   const viewerFrame = document.getElementById("viewer");
-
   filterInput.addEventListener("input", e => {{
     const term = e.target.value.toLowerCase();
     listItems.forEach(li => {{
       li.classList.toggle("hidden", !li.dataset.name.includes(term));
     }});
   }});
-
   // Click handler: load into iframe and highlight active link
   listItems.forEach(li => {{
     const link = li.querySelector("a");
     link.addEventListener("click", ev => {{
       ev.preventDefault();
-      // Remove active from all
       document.querySelectorAll("#samples a")
               .forEach(a => a.classList.remove("active"));
       link.classList.add("active");
-      // Set iframe src
       const url = link.getAttribute("href");
       viewerFrame.setAttribute("src", url);
     }});
   }});
-
   // On load: auto-load first sample if exists
   if (listItems.length > 0) {{
     const firstLink = listItems[0].querySelector("a");
@@ -161,6 +167,5 @@
     viewerFrame.setAttribute("src", firstLink.getAttribute("href"));
   }}
 </script>
-
 </body>
 </html>
