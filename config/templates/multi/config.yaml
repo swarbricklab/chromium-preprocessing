@@ -9,6 +9,7 @@
 deps:
   captures: "config/chromium-preprocessing/captures.csv"
   libraries: "config/chromium-preprocessing/libraries.csv"
+  fastqs: "data/fastqs"
 
 # Reference dependencies
 ref:
