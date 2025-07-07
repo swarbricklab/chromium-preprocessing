@@ -17,10 +17,12 @@ TEMPLATE = template_path.read_text()
 # prepare master entries
 entries = []
 
-# Always add chromium_summary.html as the first entry with a house icon
-# (but now the home icon is injected via {home_link} in the template, not as a list item)
+# Always add the summary report as the first entry with a house icon
+# Get the relative path to the summary report
+summary_report_path = pathlib.Path(snakemake.input.summary_report)
+summary_href = os.path.relpath(summary_report_path, pathlib.Path(snakemake.output.master_index).parent)
 home_link_html = (
-    '<a class="home-link" href="chromium_summary.html" target="viewer">'
+    f'<a class="home-link" href="{summary_href}" target="viewer">'
     '<i class="bi bi-house"></i> Summary</a>'
 )
 
@@ -71,7 +73,7 @@ try:
         home_link=home_link_html,  # home icon HTML
         items=items_html,
         timestamp=datetime.datetime.now().isoformat(timespec="seconds"),
-        iframe_src="chromium_summary.html"
+        iframe_src=summary_href
     )
 except Exception as e:
     print(f"TEMPLATE FORMAT ERROR: {e}")
