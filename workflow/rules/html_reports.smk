@@ -10,24 +10,42 @@ rule generate_web_indexes:
 		annotate=config['params']['extras']['annotate']
 	log:
 		log_dir/"cellranger_reports/generate_web_indexes.log"
+	conda:
+		"../envs/html_reports.yaml"
 	script:
 		"../scripts/build_web_indexes.py"
 
-# rule generate_summary_report:
-# 	input:
-# 		cell_types_index=rules.generate_web_indexes.output.cell_types_index,
-# 		summary_index=rules.generate_web_indexes.output.summary_index
-# 	output:
-# 		summary_report=report_dir/"cellranger/summary_report.html"
-# 	log:
-# 		log_dir/"cellranger_reports/generate_summary_report.log"
-# 	script:
-# 		"../scripts/build_summary_report.py"
+# Rule to combine individual capture CSV files into summary
+rule combine_metrics:
+	input:
+		captures=config["deps"]["captures"]
+	output:
+		combined_csv=temp(out_dir/"summary/metrics/gene_expression_cell_summary.csv")
+	log:
+		log_dir/"cellranger_reports/combine_metrics.log"
+	conda:
+		"../envs/html_reports.yaml"
+	script:
+		"../scripts/combine_metrics.py"
+
+rule generate_summary_report:
+	input:
+		combined_csv=rules.combine_metrics.output.combined_csv,
+		cell_types_index=rules.generate_web_indexes.output.cell_types_index,
+		summary_index=rules.generate_web_indexes.output.summary_index
+	output:
+		summary_report=report_dir/"cellranger/summary_report.html"
+	log:
+		log_dir/"cellranger_reports/generate_summary_report.log"
+	conda:
+		"../envs/html_reports.yaml"
+	script:
+		"../scripts/build_summary_report.py"
 
 rule generate_master_index:
 	input:
 		logo=config["ref"]["logo"],
-		# summary_report=rules.generate_summary_report.output.summary_report,
+		summary_report=rules.generate_summary_report.output.summary_report,
 		predemux_report=rules.predemux_generate_report.output.html if config['params']['extras']['predemux'] else "",
 		cell_types_index=rules.generate_web_indexes.output.cell_types_index if config['params']['extras']['annotate'] else "",
 		summary_index=rules.generate_web_indexes.output.summary_index
@@ -38,5 +56,7 @@ rule generate_master_index:
 		predemux=config['params']['extras']['predemux']
 	log:
 		log_dir/"cellranger_reports/generate_master_indexes.log"
+	conda:
+		"../envs/html_reports.yaml"
 	script:
 		"../scripts/build_master_index.py"

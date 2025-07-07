@@ -1,0 +1,8 @@
+name: html_reports
+dependencies:
+  - python>=3.8
+  - pandas
+  - matplotlib
+  - jinja2
+  - seaborn
+  - numpy
