@@ -14,6 +14,10 @@
         "libraries": {
           "type": "string",
           "description": "Path to the libraries CSV file."
+        },
+        "fastqs": {
+          "type": "string",
+          "description": "Optional path to the directory containing FASTQ files."
         }
       },
       "required": [
@@ -28,6 +32,10 @@
         "gene-expression": {
           "type": "string",
           "description": "Path to the reference transcriptome for gene expression."
+        },
+        "logos": {
+          "type": "string",
+          "description": "Path to the logo file for reports."
         }
       },
       "required": [
@@ -53,7 +61,21 @@
       },
       "required": [
         "results",
+        "reports",
         "logs"
+      ]
+    },
+    "modules": {
+      "type": "object",
+      "description": "Software module versions when using environment modules.",
+      "properties": {
+        "cellranger": {
+          "type": "string",
+          "description": "Version of cellranger module to use."
+        }
+      },
+      "required": [
+        "cellranger"
       ]
     },
     "params": {
@@ -72,6 +94,10 @@
               "type": "boolean",
               "description": "If true, annotation is performed."
             },
+          },
+          "predemux": {
+            "type": "boolean",
+            "description": "If true, predemux cell filtering is enabled."
           },
           "required": []
         },
@@ -135,6 +161,7 @@
     "deps",
     "ref",
     "outs",
+    "modules",
     "params"
   ]
 }
