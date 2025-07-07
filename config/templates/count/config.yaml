@@ -9,11 +9,14 @@
 deps:
   captures: "config/chromium-preprocessing/captures.csv"
   libraries: "config/chromium-preprocessing/libraries.csv"
+  fastqs: "data/fastqs"
 
 # Reference dependencies
 ref:
   # Reference transcriptome for gene expression
   gene-expression: "resources/transcriptomes/refdata-gex-GRCh38-2020-A"
+  # Logo for reports (must be DVC checked out)
+  logo: "modules/chromium-preprocessing/resources/swarbricklablogo.png"
 
 # -- Outputs -- #
 # Files and directories produced by the workflow
