@@ -5,15 +5,27 @@ rule cr_summarise:
         individual_summaries=expand(
             out_dir/"summary/metrics/{capture}.csv", 
             capture=captures.index
-        )
+        ),
+        captures_config=config["deps"]["captures"]
     output:
-        group_summary=out_dir/"summary/metrics/cr_summary.csv"
+        group_summary=temp(out_dir/"summary/metrics/cr_summary.csv")
     params:
         groups=','.join(captures.index)
     container:
         "docker://johnyaku/csvkit:1.1.1"
     shell:
         """
+            # Stack the individual summaries with capture names
             csvstack --group-name capture --groups {params.groups} {input.individual_summaries} \
-                > {output.group_summary}
+                > temp_stacked.csv
+            
+            # Use csvjoin to add pool information from captures config
+            csvjoin --no-inference -c capture temp_stacked.csv {input.captures_config} \
+                > temp_joined.csv
+            
+            # Rename columns to capitalize Capture and Pool
+            sed '1s/capture/Capture/g; 1s/pool/Pool/g' temp_joined.csv > {output.group_summary}
+            
+            # Clean up temp files
+            rm temp_stacked.csv temp_joined.csv
         """
