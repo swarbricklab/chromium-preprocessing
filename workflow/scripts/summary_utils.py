@@ -80,6 +80,10 @@ def metric_plot(df, x, y, hue, title, y_percent=False, stacked=False):
                 if len(capture_data) > 0:
                     pool_data[pool][capture] = capture_data[y].iloc[0]
         
+        # For grouped bars, assign consistent colors to captures across all pools
+        all_captures = list(df[hue].unique())
+        capture_colors = {capture: f'C{i}' for i, capture in enumerate(all_captures)}
+        
         # Calculate positions for proper centering
         bar_width = 0.6
         group_spacing = 1.0
@@ -95,7 +99,7 @@ def metric_plot(df, x, y, hue, title, y_percent=False, stacked=False):
                 # Single capture - center it
                 capture = captures[0]
                 value = pool_data[pool][capture]
-                color = f'C{pool_idx}'
+                color = capture_colors[capture]
                 all_bars_data.append((current_x, value, color, capture))
                 pool_centers.append(current_x)
                 current_x += group_spacing
@@ -107,7 +111,7 @@ def metric_plot(df, x, y, hue, title, y_percent=False, stacked=False):
                 for i, capture in enumerate(captures):
                     pos = start_x + i * bar_width
                     value = pool_data[pool][capture]
-                    color = f'C{i}'
+                    color = capture_colors[capture]
                     all_bars_data.append((pos, value, color, capture))
                 
                 pool_centers.append(current_x)
