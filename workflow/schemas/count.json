@@ -33,7 +33,7 @@
           "type": "string",
           "description": "Path to the reference transcriptome for gene expression."
         },
-        "logos": {
+        "logo": {
           "type": "string",
           "description": "Path to the logo file for reports."
         }

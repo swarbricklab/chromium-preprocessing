@@ -47,7 +47,7 @@
           "type": "string",
           "description": "Path to the reference for V(D)J libraries (if applicable)."
         },
-        "logos": {
+        "logo": {
           "type": "string",
           "description": "Path to the logo file for reports."
         }
