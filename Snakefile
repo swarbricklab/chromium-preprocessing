@@ -33,6 +33,7 @@ targets = [out_dir/"reports/cellranger/master_index.html"]
 if assays == ['gene-expression']:
     # When only gene-expression libraries are present use 'cellranger count.
     print("Running cellranger count")
+    mode = "count"
     include: 'workflow/rules/cellranger_count.smk'
     include: 'workflow/rules/restructure_count.smk'
     validate(config,"workflow/schemas/count.json")
@@ -42,9 +43,11 @@ elif assays == ['vdj']:
     # But so far we never do this, so there are no rules defined for this case
     print("No support for 'cellranger vdj' yet")
     print("Use multi by providing gene expression libraries as well")
+    mode = "vdj"  # Define mode for consistency even though this case isn't supported
 else:
     # Use 'cellranger multi' if more than one assay present
     print("Running cellranger multi")
+    mode = "multi"
     include: 'workflow/rules/cellranger_multi.smk'
     include: 'workflow/rules/restructure_multi.smk'
     validate(config,"workflow/schemas/multi.json")
