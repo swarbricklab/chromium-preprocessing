@@ -15,22 +15,9 @@ rule generate_web_indexes:
 	script:
 		"../scripts/build_web_indexes.py"
 
-# Rule to combine individual capture CSV files into summary
-rule combine_metrics:
-	input:
-		captures=config["deps"]["captures"]
-	output:
-		combined_csv=temp(out_dir/"summary/metrics/gene_expression_cell_summary.csv")
-	log:
-		log_dir/"cellranger_reports/combine_metrics.log"
-	conda:
-		"../envs/html_reports.yaml"
-	script:
-		"../scripts/combine_metrics.py"
-
 rule generate_summary_report:
 	input:
-		combined_csv=rules.combine_metrics.output.combined_csv,
+		combined_csv=rules.cr_summarise.output.group_summary,
 		cell_types_index=rules.generate_web_indexes.output.cell_types_index,
 		summary_index=rules.generate_web_indexes.output.summary_index
 	output:
@@ -50,7 +37,6 @@ rule generate_master_index:
 		cell_types_index=rules.generate_web_indexes.output.cell_types_index if config['params']['extras']['annotate'] else "",
 		summary_index=rules.generate_web_indexes.output.summary_index
 	output:
-		logo=report_dir/"resources/swarbricklablogo.png",
 		master_index=report_dir/"cellranger/master_index.html"
 	params:
 		predemux=config['params']['extras']['predemux']

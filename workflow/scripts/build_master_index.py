@@ -54,15 +54,18 @@ items_html = "\n".join(
     for label, href in entries
 )
 
-# only master index gets the logo, and the logo has been converted base64 format and enbeded here so no need to keep a separate .png
-shutil.copy(snakemake.input.logo, snakemake.output.logo)
-logo_rel_path = os.path.relpath(snakemake.output.logo, pathlib.Path(snakemake.output.master_index).parent)
+# Copy logo to destination, creating directory if needed
+logo_dest = pathlib.Path(snakemake.output.master_index).parent.parent / "resources" / "swarbricklablogo.png"
+logo_dest.parent.mkdir(parents=True, exist_ok=True)
+if not logo_dest.exists():
+    shutil.copy(snakemake.input.logo, logo_dest)
+logo_rel_path = os.path.relpath(logo_dest, pathlib.Path(snakemake.output.master_index).parent)
 logo_html = (
-	'<div class="logo">'
-	f'<img src="{logo_rel_path}"' 
-	'   alt="Swarbrick Lab Logo" '
-	'   style="max-width:100%; margin-bottom:1rem;">'
-	'</div>'
+    '<div class="logo">'
+    f'<img src="{logo_rel_path}"'
+    '   alt="Swarbrick Lab Logo" '
+    '   style="max-width:100%; margin-bottom:1rem;">'
+    '</div>'
 )
 
 page_title = f"CellRanger Reports"
