@@ -28,7 +28,7 @@ if not preflight_check():
 # and validates config schemas according to these selections
 # A list of final targets is built depending on these choices.
 
-targets = [out_dir/"reports/cellranger/master_index.html"]
+targets = [report_dir/"cellranger/master_index.html"]
 
 if assays == ['gene-expression']:
     # When only gene-expression libraries are present use 'cellranger count.

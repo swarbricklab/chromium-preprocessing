@@ -14,10 +14,20 @@
         "libraries": {
           "type": "string",
           "description": "Path to the libraries CSV file."
+        },
+        "fastqs": {
+          "type": "string",
+          "description": "Optional path to the directory containing FASTQ files."
+        },
+        "reports": {
+          "type": "string",
+          "description": "Directory where cellranger reports will be generated."
         }
       },
       "required": [
         "captures",
+        "fastqs",
+        "reports",
         "libraries"
       ]
     },
@@ -36,6 +46,10 @@
         "vdj": {
           "type": "string",
           "description": "Path to the reference for V(D)J libraries (if applicable)."
+        },
+        "logo": {
+          "type": "string",
+          "description": "Path to the logo file for reports."
         }
       },
       "required": [
@@ -83,6 +97,10 @@
             "hto": {
               "type": "boolean",
               "description": "If true, HTO demux is enabled."
+            },
+            "predemux": {
+              "type": "boolean",
+              "description": "If true, predemux cell filtering is enabled."
             }
           },
           "required": []
@@ -98,6 +116,39 @@
             "no-secondary": {
               "type": "boolean",
               "description": "Disable secondary alignments if true."
+            },
+            "include-introns": {
+              "type": "boolean",
+              "description": "If true, intronic reads are included."
+            },
+            "chemistry": {
+              "type": "string",
+              "description": "Specifies the library chemistry. Options are defined by 10X documentation.",
+              "enum": ["auto", "SC3Pv2", "SC3Pv3", "ARC-v1", "SC5P-PE", "SC5P-R1", "SC5Pv1"]
+            },
+            "check-library-compatibility": {
+              "type": "boolean",
+              "description": "If true, the workflow checks for library compatibility."
+            },
+            "expect-cells": {
+              "type": "number",
+              "description": "Optional. The expected number of cells."
+            },
+            "force-cells": {
+              "type": "number",
+              "description": "Optional. The number of cells to force."
+            },
+            "r1-length": {
+              "type": "number",
+              "description": "Optional. The length of read 1."
+            },
+            "r2-length": {
+              "type": "number",
+              "description": "Optional. The length of read 2."
+            },
+            "min-crispr-umi": {
+              "type": "number",
+              "description": "Optional. The minimum CRISPR UMI count."
             }
           },
           "required": [
@@ -108,11 +159,25 @@
       "required": [
         "gene-expression"
       ]
+    },
+    "modules": {
+      "type": "object",
+      "description": "Software modules versions when using environment modules",
+      "properties": {
+        "aggr": {
+          "type": "string",
+          "description": "Version of cellranger module to use."
+        }
+      },
+      "required": [
+        "cellranger"
+      ]
     }
   },
   "required": [
     "deps",
     "ref",
+    "modules",
     "outs",
     "params"
   ]

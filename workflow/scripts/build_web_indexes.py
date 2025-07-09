@@ -9,9 +9,9 @@ sys.stdout = sys.stderr = log
 
 # load the shared template
 script_dir    = pathlib.Path(__file__).parent
-template_path = script_dir / "template.html"
+template_path = script_dir / "base_template.html"
 if not template_path.exists():
-    sys.exit(f"ERROR: missing template.html in {script_dir}")
+    sys.exit(f"ERROR: missing base_template.html in {script_dir}")
 TEMPLATE = template_path.read_text()
 
 # determine the “captures”.html via snakemake.input.captures --> captures.csv under the column capture
@@ -26,7 +26,7 @@ captures_dir = pathlib.Path(snakemake.output.cell_types_index).parent
 indexes_to_build = []
 
 # Only include "cell_types" if annotate is true
-if config['params']['extras']['annotate']:
+if snakemake.params.annotate:
     indexes_to_build.append(("cell_types", snakemake.output.cell_types_index))
 
 # Always include "summary"
@@ -45,12 +45,14 @@ for name, out_index in indexes_to_build:
         )
     items_html = "\n".join(items)
 
-    # render with no logo
+    # render
     page = TEMPLATE.format(
-        logo_html  = "",
-        page_title = html.escape(title),
-        items      = items_html,
-        timestamp  = datetime.datetime.now().isoformat(timespec="seconds")
+        logo_html="",
+        page_title=html.escape(title),
+        home_link="",  # no home icon
+        items=items_html,
+        timestamp=datetime.datetime.now().isoformat(timespec="seconds"),
+        iframe_src=""  # or another default
     )
 
     out_path = pathlib.Path(out_index)

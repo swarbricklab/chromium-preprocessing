@@ -7,12 +7,13 @@
 deps:
   captures: "config/tests/count/captures.csv"
   libraries: "config/tests/count/libraries.csv"
-  fastqs: "test/data/"
+  fastqs: "test/data/tiny_tnbc"
 
 # Reference dependencies
 ref:
   # Reference transcriptome for gene expression
   gene-expression: "resources/transcriptomes/refdata-gex-GRCh38-2020-A"
+  logo: "resources/swarbricklablogo.png"
 
 # -- Outputs -- #
 # Files and directories produced by the workflow
