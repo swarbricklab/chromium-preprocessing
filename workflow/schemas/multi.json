@@ -18,16 +18,11 @@
         "fastqs": {
           "type": "string",
           "description": "Optional path to the directory containing FASTQ files."
-        },
-        "reports": {
-          "type": "string",
-          "description": "Directory where cellranger reports will be generated."
         }
       },
       "required": [
         "captures",
         "fastqs",
-        "reports",
         "libraries"
       ]
     },
