@@ -28,7 +28,7 @@ home_link_html = (
 
 # 1) standalone predemux report, only if enabled in config
 if snakemake.params.predemux:
-    pred = pathlib.Path(snakemake.input.predemux_report)
+    pred = pathlib.Path(snakemake.params.predemux_report)
     if pred.exists():
         # path relative to master_index.html’s dir
         href = os.path.relpath(pred, pathlib.Path(snakemake.output.master_index).parent)
@@ -39,7 +39,7 @@ else:
     print("Skipping predemux_report: predemux disabled in config")
 
 # 2) the two sub-indexes
-for idx in [snakemake.input.cell_types_index, snakemake.input.summary_index]:
+for idx in [snakemake.params.cell_types_index, snakemake.input.summary_index]:
     p = pathlib.Path(idx)
     if p.exists():
         href = os.path.relpath(p, pathlib.Path(snakemake.output.master_index).parent)
