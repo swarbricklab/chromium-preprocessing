@@ -45,8 +45,8 @@ rule predemux_filter_seurat:
         # For compatability with features.tsv.gz replacement, we specify exact files
         # rather than the directory function and output directory, 
         # and remove the features.tsv.gz file from the output
-        barcodes = out_dir/"count/predemux/{capture}/barcodes.tsv.gz",
-        matrix = out_dir/"count/predemux/{capture}/matrix.mtx.gz",
+        barcodes = out_dir/f"{config['mode']}/predemux/{{capture}}/barcodes.tsv.gz",
+        matrix = out_dir/f"{config['mode']}/predemux/{{capture}}/matrix.mtx.gz",
         filter_metrics = temp(out_dir/"predemux/qc/discarded_metrics/{capture}.csv")
     log:
         log_dir/"predemux/pdmx_filter/{capture}.log"
@@ -117,7 +117,7 @@ rule copy_original_features:
         features = rules.restructure_counts.output.filtered_feat,
         predemux_outs = rules.predemux_filter_seurat.output
     output:
-        out_dir/"count/predemux/{capture}/features.tsv.gz"
+        out_dir/f"{config['mode']}/predemux/{{capture}}/features.tsv.gz"
     log:
         log_dir/"predemux/copy_features/{capture}.log"
     shell:
