@@ -26,7 +26,7 @@ captures_dir = pathlib.Path(snakemake.output.cell_types_index).parent
 indexes_to_build = []
 
 # Only include "cell_types" if annotate is true
-if snakemake.params.annotate:
+if snakemake.output.cell_types_index:
     indexes_to_build.append(("cell_types", snakemake.output.cell_types_index))
 else:
     # Create empty placeholder so Snakemake output requirement is satisfied
@@ -43,8 +43,8 @@ for name, out_index in indexes_to_build:
     # we no longer glob — we iterate over capture_ids
     items = []
     for cid in capture_ids:
-        # each html is named {capture_id}.html under that subfolder
-        href = f"{name}/{cid}.html"
+        # each html is named {capture_id}.html in the same directory as the index
+        href = f"{cid}.html"
         items.append(
             f'      <li data-name="{html.escape(cid.lower())}">'
             f'<a href="{html.escape(href)}">{html.escape(cid)}</a></li>'

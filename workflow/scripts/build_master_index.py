@@ -19,33 +19,33 @@ entries = []
 
 # Always add the summary report as the first entry with a house icon
 # Get the relative path to the summary report
-summary_report_path = pathlib.Path(snakemake.input.summary_report)
-summary_href = os.path.relpath(summary_report_path, pathlib.Path(snakemake.output.master_index).parent)
+cellranger_summary_report_path = pathlib.Path(snakemake.input.cellranger_summary_report)
+summary_href = os.path.relpath(cellranger_summary_report_path, pathlib.Path(snakemake.output.master_index).parent)
 home_link_html = (
     f'<a class="home-link" href="{summary_href}" target="viewer">'
     '<i class="bi bi-house"></i> Summary</a>'
 )
 
-# 1) standalone predemux report, only if enabled in config
-if snakemake.params.predemux:
-    pred = pathlib.Path(snakemake.params.predemux_report)
-    if pred.exists():
-        # path relative to master_index.html’s dir
-        href = os.path.relpath(pred, pathlib.Path(snakemake.output.master_index).parent)
-        entries.append(("predemux_report", href))
-    else:
-        print(f"Warning: missing {pred}")
+# Standalone predemux report, only if enabled in input
+pred_report = getattr(snakemake.input, "predemux_report", None)
+if pred_report:
+    pred = pathlib.Path(pred_report)
+    href = os.path.relpath(pred, pathlib.Path(snakemake.output.master_index).parent)
+    entries.append(("predemux_report", href))
 else:
-    print("Skipping predemux_report: predemux disabled in config")
+    print("Skipping predemux_report: not enabled or missing in input")
 
-# 2) the two sub-indexes
-for idx in [snakemake.params.cell_types_index, snakemake.input.summary_index]:
-    p = pathlib.Path(idx)
-    if p.exists():
-        href = os.path.relpath(p, pathlib.Path(snakemake.output.master_index).parent)
-        entries.append((p.stem, href))
-    else:
-        print(f"Warning: missing {p}")
+# Add optional cell_types_index if present
+cell_types_index = getattr(snakemake.input, "cell_types_index", None)
+if cell_types_index:
+    p = pathlib.Path(cell_types_index)
+    href = os.path.relpath(p, pathlib.Path(snakemake.output.master_index).parent)
+    entries.append((p.stem, href))
+
+# summary_index is assumed always present
+p = pathlib.Path(snakemake.input.summary_index)
+href = os.path.relpath(p, pathlib.Path(snakemake.output.master_index).parent)
+entries.append((p.stem, href))
 
 # build <li>
 items_html = "\n".join(
