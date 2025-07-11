@@ -2,6 +2,11 @@
 
 # All paths are relative to the top of the dataset repo
 
+# -- Modes -- #
+# The mode of the workflow, which determines the type of data being processed
+# Options are 'count' for gene expression libraries, 'multi' for multiome libraries
+mode: "multi"
+
 # -- Dependencies -- #
 # Files and directories required for the workflow, including raw data, config data and reference data
 deps:
@@ -39,7 +44,7 @@ params:
     aggr: true
     annotate: true
     hto: false
-    predemux: false
+    predemux: true
   gene-expression:
     create-bam: true
     no-secondary: false
