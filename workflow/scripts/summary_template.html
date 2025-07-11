@@ -103,42 +103,52 @@
         </div>
     </div>
 
+    {% if has_data %}
+    {% for section in sections %}
+    {% if section.has_data %}
     <div class="section">
-        <h2>Gene Expression</h2>
-        <p>This section presents a high level overview of the gene expression assays across all captures.</p>
+        <h2>{{ section.name }}</h2>
+        <p>This section presents a high level overview of the {{ section.name.lower() }} assays across all captures.</p>
+        
+        {% set table_key = section.key + '_table' %}
+        {% if tables[table_key] %}
         <h3>Table</h3>
         <div class="table-responsive">
-            {{ tables.ge_table|safe }}
+            {{ tables[table_key]|safe }}
         </div>
-        <ul class="nav nav-tabs" id="geTab" role="tablist">
+        {% endif %}
+        
+        {% set section_plots = plots[section.key] %}
+        {% if section_plots %}
+        <ul class="nav nav-tabs" id="{{ section.key }}Tab" role="tablist">
+            {% for plot_key in section_plots.keys() %}
             <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="cells-tab" data-bs-toggle="tab" data-bs-target="#cells" type="button" role="tab">Estimated Number of Cells</button>
+                <button class="nav-link {% if loop.first %}active{% endif %}" 
+                        id="{{ section.key }}-{{ plot_key }}-tab" 
+                        data-bs-toggle="tab" 
+                        data-bs-target="#{{ section.key }}-{{ plot_key }}" 
+                        type="button" 
+                        role="tab">{{ plot_key.replace('_', ' ').title() }}</button>
             </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="confident-tab" data-bs-toggle="tab" data-bs-target="#confident" type="button" role="tab">Reads Mapped Confidently to Genome</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="umi-tab" data-bs-toggle="tab" data-bs-target="#umi" type="button" role="tab">Median UMI Counts per Cell</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="genes-tab" data-bs-toggle="tab" data-bs-target="#genes" type="button" role="tab">Median Genes per Cell</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="meanreads-tab" data-bs-toggle="tab" data-bs-target="#meanreads" type="button" role="tab">Mean Reads per Cell</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="totalgenes-tab" data-bs-toggle="tab" data-bs-target="#totalgenes" type="button" role="tab">Total Genes Detected</button>
-            </li>
+            {% endfor %}
         </ul>
         <div class="tab-content">
-            <div class="tab-pane fade show active plot" id="cells" role="tabpanel">{{ plots.gex.estimated_number_of_cells|safe }}</div>
-            <div class="tab-pane fade plot" id="confident" role="tabpanel">{{ plots.gex.reads_mapped_confidently_to_genome|safe }}</div>
-            <div class="tab-pane fade plot" id="umi" role="tabpanel">{{ plots.gex.median_umi_counts_per_cell|safe }}</div>
-            <div class="tab-pane fade plot" id="genes" role="tabpanel">{{ plots.gex.median_genes_per_cell|safe }}</div>
-            <div class="tab-pane fade plot" id="meanreads" role="tabpanel">{{ plots.gex.mean_reads_per_cell|safe }}</div>
-            <div class="tab-pane fade plot" id="totalgenes" role="tabpanel">{{ plots.gex.total_genes_detected|safe }}</div>
+            {% for plot_key, plot_html in section_plots.items() %}
+            <div class="tab-pane fade {% if loop.first %}show active{% endif %} plot" 
+                 id="{{ section.key }}-{{ plot_key }}" 
+                 role="tabpanel">{{ plot_html|safe }}</div>
+            {% endfor %}
         </div>
+        {% endif %}
     </div>
+    {% endif %}
+    {% endfor %}
+    {% else %}
+    <div class="section">
+        <h2>No Data Available</h2>
+        <p>No data was found to generate the summary report. Please check the input files and configuration.</p>
+    </div>
+    {% endif %}
     <div class="footer">
         Generated {{ timestamp }}
     </div>
