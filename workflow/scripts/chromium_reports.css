@@ -1,0 +1,264 @@
+/* Chromium Preprocessing Reports Stylesheet */
+
+/* Base styles */
+body { 
+    font-family: sans-serif; 
+    margin: 0; 
+    color: #333; 
+}
+
+/* Container styles */
+.container { 
+    max-width: 1100px; 
+    margin: auto; 
+    background-color: #fff; 
+    padding: 20px; 
+    box-shadow: 0 0 10px rgba(0,0,0,0.1); 
+}
+
+/* Typography */
+h1, h2, h3 { 
+    color: #2c3e50; 
+}
+
+h1 { 
+    color: #2c3e50; 
+    text-align: left; 
+    margin-bottom: 1em;
+    font-size: 1.5rem;
+}
+
+/* Thin line under each sub-title (h2, h3) */
+h2, h3 {
+    color: #2c3e50;
+    border-bottom: 1px solid #bbb;
+    padding-bottom: 0.2em;
+    margin-bottom: 0.5em;
+}
+
+/* Layout components */
+.section { 
+    margin-bottom: 30px; 
+}
+
+/* Report header and logo */
+.report-header {
+    display: flex;
+    align-items: center;
+    padding: 0 0 0 0;
+    background: #fff;
+    border-bottom: 1px solid #eee;
+    justify-content: space-between;
+}
+
+.logo {
+    height: 62px;
+    width: auto;
+    margin: 0;
+    display: block;
+}
+
+header.report-header:empty {
+    display: none;
+}
+
+/* Main layout for master index */
+.main-flex {
+    display: flex;
+    height: 100vh;
+    min-height: 100vh;
+}
+
+/* Sidebar styles */
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    flex: 0 0 300px;
+    background: #f7f7f7;
+    border-right: 1px solid #ddd;
+    padding: 1rem;
+    box-sizing: border-box;
+    overflow-y: auto;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.sidebar.collapsed {
+    flex: 0 0 50px;
+    padding: 0.5rem;
+}
+
+.sidebar.collapsed .sidebar-content {
+    display: none;
+}
+
+.toggle-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 0.3rem 0.5rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    z-index: 10;
+}
+
+.toggle-btn:hover {
+    background: #f0f0f0;
+}
+
+.sidebar.collapsed .toggle-btn {
+    right: 5px;
+    top: 5px;
+}
+
+.sidebar .home-link {
+    display: flex;
+    align-items: center;
+    gap: 0.4em;
+    font-size: 1.1em;
+    font-weight: 500;
+    color: #333;
+    text-decoration: none;
+    margin-bottom: 1.2em;
+}
+
+.sidebar .home-link:hover {
+    color: #0d6efd;
+    text-decoration: underline;
+}
+
+.sidebar h1 {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.sidebar input[type="search"] {
+    width: 100%;
+    padding: 0.5rem;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar li {
+    margin: 0.25rem 0;
+}
+
+.sidebar a {
+    text-decoration: none;
+    color: #0366d6;
+    display: block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+}
+
+.sidebar a:hover,
+.sidebar a.active {
+    background: #e1ecf4;
+    text-decoration: none;
+}
+
+.sidebar .hidden {
+    display: none;
+}
+
+/* Content area */
+.content {
+    flex: 1;
+    background: #fff;
+    overflow: hidden;
+    position: relative;
+}
+
+.content iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+/* Tables */
+.table { 
+    background: #fff; 
+}
+
+.table tbody td {
+    text-align: right;
+}
+
+.table-responsive {
+    margin-bottom: 1rem;
+}
+
+/* Tabs */
+.tab-content { 
+    margin-top: 0.5em; 
+}
+
+.nav-tabs { 
+    justify-content: left; 
+}
+
+.tab-pane { 
+    text-align: left; 
+}
+
+/* Methods tabs special styling */
+.methods-tab-content .tab-pane {
+    border-left: 1px solid #dee2e6;
+    border-right: 1px solid #dee2e6;
+    border-bottom: 1px solid #dee2e6;
+    padding: 0 1em 0 1em;
+    background: #f8f9fa;
+    margin-bottom: 1em;
+    margin-top: -0.5em;
+}
+
+/* Plots */
+.plot { 
+    margin-bottom: 30px; 
+    text-align: center; 
+    padding: 15px; 
+    border: 1px solid #eee; 
+    border-radius: 5px; 
+    background-color: #fdfefe; 
+}
+
+.plot img {
+    width: 100%; 
+    height: auto; 
+    max-width: 100%;
+}
+
+/* Footer */
+.footer { 
+    margin-top: auto; 
+    font-size: 0.8rem; 
+    color: #666; 
+    border-top: 1px solid #ccc; 
+    padding-top: 0.5rem; 
+}
+
+/* Footer for summary report */
+.container .footer {
+    margin-top: 2em; 
+    font-size: 0.9em; 
+    color: #666; 
+    border-top: 1px solid #ccc; 
+    padding-top: 0.7em; 
+    text-align: right; 
+}

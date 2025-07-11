@@ -91,10 +91,10 @@ rule predemux_generate_report:
         mito_csvs = expand(rules.predemux_gather_qc_metrics.output.mito_csv, capture=captures.index),
         umi_csvs = expand(rules.predemux_gather_qc_metrics.output.umi_csv, capture=captures.index)
     output:
-        html = report_dir/"predemux/predemux_report.html",
-        plot_genes = report_dir/"predemux/img/plot_genes.png",
-        plot_mito = report_dir/"predemux/img/plot_mito.png",
-        plot_umi = report_dir/"predemux/img/plot_umi.png"
+        html = report_dir/"cellranger/predemux/predemux_report.html",
+        plot_genes = report_dir/"cellranger/predemux/img/plot_genes.png",
+        plot_mito = report_dir/"cellranger/predemux/img/plot_mito.png",
+        plot_umi = report_dir/"cellranger/predemux/img/plot_umi.png"
     log:
         log_dir/"predemux/predemux_report.log"
     params:

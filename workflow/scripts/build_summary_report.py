@@ -9,6 +9,8 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 import os
 import datetime
 import sys
+import shutil
+import pathlib
 
 # redirect into Snakemake log
 log = open(snakemake.log[0], "w")
@@ -94,6 +96,12 @@ print("Successfully rendered HTML template")
 os.makedirs(os.path.dirname(output_report_path), exist_ok=True)
 with open(output_report_path, "w") as f:
     f.write(html_out)
+
+# Copy the CSS file to the same directory as the summary report
+css_source = pathlib.Path(__file__).parent / "chromium_reports.css"
+css_dest = pathlib.Path(output_report_path).parent / "chromium_reports.css"
+shutil.copy(css_source, css_dest)
+print(f"Copied CSS file to {css_dest}")
 
 print(f"Report generated successfully: {output_report_path}")
 

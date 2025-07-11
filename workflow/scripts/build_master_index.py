@@ -43,7 +43,14 @@ for idx in [snakemake.input.cell_types_index, snakemake.input.summary_index]:
     p = pathlib.Path(idx)
     if p.exists():
         href = os.path.relpath(p, pathlib.Path(snakemake.output.master_index).parent)
-        entries.append((p.stem, href))
+        # Convert filename to friendly label
+        if p.stem == "cell_types_index":
+            label = "Cell Types"
+        elif p.stem == "summary_index":
+            label = "Web Summaries"
+        else:
+            label = p.stem
+        entries.append((label, href))
     else:
         print(f"Warning: missing {p}")
 
@@ -87,5 +94,11 @@ master_out = pathlib.Path(snakemake.output.master_index)
 master_out.parent.mkdir(parents=True, exist_ok=True)
 master_out.write_text(out_html)
 print(f"Wrote {master_out} with {len(entries)} entries")
+
+# Copy the CSS file to the same directory as the master index
+css_source = pathlib.Path(__file__).parent / "chromium_reports.css"
+css_dest = master_out.parent / "chromium_reports.css"
+shutil.copy(css_source, css_dest)
+print(f"Copied CSS file to {css_dest}")
 
 log.close()
