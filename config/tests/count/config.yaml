@@ -13,7 +13,7 @@ deps:
 ref:
   # Reference transcriptome for gene expression
   gene-expression: "resources/transcriptomes/refdata-gex-GRCh38-2020-A"
-  logo: "resources/swarbricklablogo.png"
+  html: "resources/report"
 
 # -- Outputs -- #
 # Files and directories produced by the workflow
