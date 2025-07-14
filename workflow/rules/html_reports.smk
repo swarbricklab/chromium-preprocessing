@@ -4,7 +4,7 @@ rule generate_web_indexes:
 	input:
 		captures=config["deps"]["captures"]
 	output:
-		cell_types_index=report_dir/"web/captures/cell_types/cell_types_index.html" if config['params']['extras']['annotate'] else None,
+		cell_types_index=report_dir/"web/captures/cell_types/cell_types_index.html" if config['params']['extras']['annotate'] else [],
 		summary_index=report_dir/"web/captures/summary/summary_index.html"
 	log:
 		log_dir/"cellranger_reports/generate_web_indexes.log"

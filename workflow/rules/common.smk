@@ -8,6 +8,7 @@ def find_assays(libraries):
     mapping = {
         "Gene Expression": "gene-expression",
         "VDJ-T": "vdj",
+        "VDJ-B": "vdj",
         "Antibody Capture": "feature"
     }
     for assay in assays:
