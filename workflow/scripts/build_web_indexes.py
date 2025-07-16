@@ -20,13 +20,14 @@ with open(snakemake.input.captures) as f:
     capture_ids = [row["capture"] for row in reader]
 
 # parent folder for both cell_types/ and summary/
-captures_dir = pathlib.Path(snakemake.output.cell_types_index).parent
+# Use summary_index to determine the parent directory since it's always present
+captures_dir = pathlib.Path(snakemake.output.summary_index).parent.parent
 
 # Determine which indexes to build based on config
 indexes_to_build = []
 
 # Only include "cell_types" if annotate is true
-if snakemake.output.cell_types_index:
+if snakemake.output.cell_types_index:  # This will be empty list when false
     indexes_to_build.append(("cell_types", snakemake.output.cell_types_index))
 else:
     # Create empty placeholder so Snakemake output requirement is satisfied
