@@ -72,6 +72,16 @@ section_configs = {
             ('Number of reads from cells associated with this sample', False)
         ]
     },
+    'VDJ B': {
+        'metrics': [
+            ('Cells with productive TRA contig', True),
+            ('Cells with productive TRB contig', True),
+            ('Cells with productive V-B spanning pair', True),
+            ('Fraction reads in cells', True),
+            ('Median TRA UMIs per Cell', False),
+            ('Median TRB UMIs per Cell', False)
+        ]
+    },
     'VDJ T': {
         'metrics': [
             ('Cells with productive TRA contig', True),

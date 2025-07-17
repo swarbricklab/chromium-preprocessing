@@ -25,7 +25,7 @@ ref:
   # Reference for VDJ-T
   vdj: "resources/vdj/refdata-cellranger-vdj-GRCh38-alts-ensembl-7.1.0"
   # Logo for reports (must be DVC checked out)
-  logo: "modules/chromium-preprocessing/resources/swarbricklablogo.png"
+  logo: "resources/swarbricklablogo.png"
 
 # -- Outputs -- #
 # Files and directories produced by the workflow

@@ -63,6 +63,7 @@ def prepare_data_for_plotting(df, data_format, library_type=None, grouped_by=Non
             values='Metric Value', 
             aggfunc='first'
         ).reset_index()
+        pivot_df.columns.name = None  # Remove the 'Metric Name' label from columns
     else:
         pivot_df = filtered_df.copy()
     
