@@ -48,18 +48,18 @@ rule generate_summary_report:
 
 rule generate_master_index:
     input:
-        logo=config["ref"]["logo"],
+        logo=config['ref']['html'] + '/swarbricklablogo.png',
         summary_report=rules.generate_summary_report.output.summary_report,
         predemux_report=rules.predemux_generate_report.output.html if config['params']['extras']['predemux'] else "",
         cell_types_index=rules.generate_web_indexes.output.cell_types_index if config['params']['extras']['annotate'] else "",
         summary_index=rules.generate_web_indexes.output.summary_index
     output:
-        logo=report_dir/"cellranger/img/swarbricklablogo.png",
-        master_index=report_dir/"cellranger/master_index.html"
+        logo=report_dir/'cellranger/img/swarbricklablogo.png',
+        master_index=report_dir/'cellranger/master_index.html'
     params:
         predemux=config['params']['extras']['predemux']
     log:
-        log_dir/"cellranger_reports/generate_master_indexes.log"
+        log_dir/'cellranger_reports/generate_master_indexes.log'
     conda:
         "../envs/html_reports.yaml"
     script:

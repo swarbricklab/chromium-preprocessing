@@ -7,11 +7,11 @@ import sys, os, pathlib, html, datetime, csv, shutil
 log = open(snakemake.log[0], "w")
 sys.stdout = sys.stderr = log
 
-# load the shared template
-script_dir    = pathlib.Path(__file__).parent
-template_path = script_dir / "base_template.html"
+# Load the shared template
+html_dir = pathlib.Path(snakemake.config['ref']['html'])
+template_path = html_dir / "base_template.html"
 if not template_path.exists():
-    sys.exit(f"ERROR: missing base_template.html in {script_dir}")
+    sys.exit(f"ERROR: missing base_template.html in {html_dir}")
 TEMPLATE = template_path.read_text()
 
 # determine the “captures”.html via snakemake.input.captures --> captures.csv under the column capture

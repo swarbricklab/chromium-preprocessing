@@ -42,8 +42,10 @@ else:
     ge_df = None
 
 # --- Jinja2 HTML template setup ---
+# Update template path to use config['ref']['html']
+html_dir = pathlib.Path(snakemake.config['ref']['html'])
 env = Environment(
-    loader=FileSystemLoader(script_dir),
+    loader=FileSystemLoader(html_dir),
     autoescape=select_autoescape(['html'])
 )
 template = env.get_template("summary_template.html")
