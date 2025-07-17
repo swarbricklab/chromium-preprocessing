@@ -36,7 +36,7 @@ modules:
 # Non-path parameters for tuning the behaviour of the workflow
 params:
   extras:
-    aggr: true
+    aggr: false
     annotate: true
     predemux: true
   gene-expression:
