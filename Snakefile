@@ -9,6 +9,7 @@ validate(libraries,"workflow/schemas/libraries.json")
 
 out_dir=Path(config['outs']['results'])
 report_dir=Path(config['outs']['reports'])
+html_dir=Path(config['ref']['html'])
 log_dir=Path(config['outs']['logs'])
 
 include: 'workflow/rules/preflight.smk'
