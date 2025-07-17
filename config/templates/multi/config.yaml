@@ -45,7 +45,7 @@ params:
   # Enable/disable additional processing
   extras:
     # Aggregate captures with 'cellranger aggr'
-    aggr: true
+    aggr: false
     # Cell-type annotation with 'cellranger annotate'
     annotate: false
     # HTO demux
