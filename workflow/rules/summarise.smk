@@ -46,8 +46,8 @@ rule cr_summarise:
             csvjoin --no-inference -c {params.join_col} temp_stacked.csv {input.captures_config} \
                 > temp_joined.csv
             
-            # Rename columns to capitalize Capture and Pool
-            sed '1s/capture/Capture/g; 1s/pool/Pool/g; 1s/sample/Sample/g' temp_joined.csv > {output.group_summary}
+            # Capitalize all column headers
+            sed '1s/\\b\\w/\\U&/g' temp_joined.csv > {output.group_summary}
             
             # Clean up temp files
             rm temp_stacked.csv temp_joined.csv
