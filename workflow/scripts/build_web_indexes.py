@@ -3,38 +3,47 @@
 
 import sys, os, pathlib, html, datetime, csv, shutil
 
+# Inputs
+captures_path = snakemake.input.captures
+template_path = snakemake.input.template
+css_source    = snakemake.input.css
+
+# Outputs
+cell_types_index = snakemake.output.cell_types_index
+summary_index    = snakemake.output.summary_index
+css_dest         = snakemake.output.css
+
 # redirect stdout/stderr into the Snakemake log
 log = open(snakemake.log[0], "w")
 sys.stdout = sys.stderr = log
 
+# Copy the CSS file to the same directory as the web indexes
+shutil.copy(css_source, css_dest)
+print(f"Copied CSS file to {css_dest}")
+
 # Load the shared template
-html_dir = pathlib.Path(snakemake.config['ref']['html'])
-template_path = html_dir / "base_template.html"
-if not template_path.exists():
-    sys.exit(f"ERROR: missing base_template.html in {html_dir}")
-TEMPLATE = template_path.read_text()
+TEMPLATE = pathlib.Path(template_path).read_text()
 
 # determine the “captures”.html via snakemake.input.captures --> captures.csv under the column capture
-with open(snakemake.input.captures) as f:
+with open(captures_path) as f:
     reader = csv.DictReader(f)
     capture_ids = [row["capture"] for row in reader]
 
 # parent folder for both cell_types/ and summary/
-captures_dir = pathlib.Path(snakemake.output.cell_types_index).parent
+captures_dir = pathlib.Path(cell_types_index).parent
 
 # Determine which indexes to build based on config
 indexes_to_build = []
 
 # Only include "cell_types" if annotate is true
 if snakemake.params.annotate:
-    indexes_to_build.append(("cell_types", snakemake.output.cell_types_index))
+    indexes_to_build.append(("cell_types", cell_types_index))
 
 # Always include "summary"
-indexes_to_build.append(("summary", snakemake.output.summary_index))
+indexes_to_build.append(("summary", summary_index))
 
 for name, out_index in indexes_to_build:
     title = f"Cellranger {name}"
-    # we no longer glob — we iterate over capture_ids
     items = []
     for cid in capture_ids:
         # each html is named {capture_id}.html under captures/ subfolder
@@ -65,11 +74,5 @@ for name, out_index in indexes_to_build:
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(page)
     print(f"Wrote {out_path} with {len(capture_ids)} entries")
-
-    # Copy the CSS file to the same directory as the web indexes
-    css_source = pathlib.Path(__file__).parent / "chromium_reports.css"
-    css_dest = out_path.parent / "chromium_reports.css"
-    shutil.copy(css_source, css_dest)
-    print(f"Copied CSS file to {css_dest}")
 
 log.close()

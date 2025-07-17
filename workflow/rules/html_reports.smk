@@ -2,10 +2,13 @@
 # Use a `capture` column in the config sample sheet
 rule generate_web_indexes:
     input:
-        captures=config["deps"]["captures"]
+        captures=config["deps"]["captures"],
+        template=html_dir/"base_template.html",
+        css=html_dir/"chromium_reports.css"
     output:
         cell_types_index=report_dir/"cellranger/cell_types/cell_types_index.html",
-        summary_index=report_dir/"cellranger/web_summaries/summary_index.html"
+        summary_index=report_dir/"cellranger/web_summaries/summary_index.html",
+        css = report_dir/"cellranger/css/chromium_reports.css"
     params:
         annotate=config['params']['extras']['annotate']
     log:
