@@ -1,26 +1,25 @@
 #!/usr/bin/env python3
 # Produce a master_index.html that embeds indexes generated in `build_web_indexes.py` plus predemux_report.html
 
-import sys, os, pathlib, html, datetime, base64, shutil
+import sys, os, html, datetime, base64, shutil
+from pathlib import Path
 
 # redirect into Snakemake log
 log = open(snakemake.log[0], "w")
 sys.stdout = sys.stderr = log
 
+template_path = snakemake.input.template
+
 # Update template path to use config['ref']['html']
-html_dir = pathlib.Path(snakemake.config['ref']['html'])
-template_path = html_dir / "base_template.html"
-if not template_path.exists():
-    sys.exit(f"ERROR: missing base_template.html in {html_dir}")
-TEMPLATE = template_path.read_text()
+TEMPLATE = Path(template_path).read_text()
 
 # prepare master entries
 entries = []
 
 # Always add the summary report as the first entry with a house icon
 # Get the relative path to the summary report
-summary_report_path = pathlib.Path(snakemake.input.summary_report)
-summary_href = os.path.relpath(summary_report_path, pathlib.Path(snakemake.output.master_index).parent)
+summary_report_path = Path(snakemake.input.summary_report)
+summary_href = os.path.relpath(summary_report_path, Path(snakemake.output.master_index).parent)
 home_link_html = (
     f'<a class="home-link" href="{summary_href}" target="viewer">'
     '<i class="bi bi-house"></i> Summary</a>'
@@ -28,10 +27,10 @@ home_link_html = (
 
 # 1) standalone predemux report, only if enabled in config
 if snakemake.params.predemux:
-    pred = pathlib.Path(snakemake.input.predemux_report)
+    pred = Path(snakemake.input.predemux_report)
     if pred.exists():
         # path relative to master_index.html’s dir
-        href = os.path.relpath(pred, pathlib.Path(snakemake.output.master_index).parent)
+        href = os.path.relpath(pred, Path(snakemake.output.master_index).parent)
         entries.append(("predemux_report", href))
     else:
         print(f"Warning: missing {pred}")
@@ -40,9 +39,9 @@ else:
 
 # 2) the two sub-indexes
 for idx in [snakemake.input.cell_types_index, snakemake.input.summary_index]:
-    p = pathlib.Path(idx)
+    p = Path(idx)
     if p.exists():
-        href = os.path.relpath(p, pathlib.Path(snakemake.output.master_index).parent)
+        href = os.path.relpath(p, Path(snakemake.output.master_index).parent)
         # Convert filename to friendly label
         if p.stem == "cell_types_index":
             label = "Cell Types"
@@ -63,7 +62,7 @@ items_html = "\n".join(
 
 # only master index gets the logo, and the logo has been converted base64 format and enbeded here so no need to keep a separate .png
 shutil.copy(snakemake.input.logo, snakemake.output.logo)
-logo_rel_path = os.path.relpath(snakemake.output.logo, pathlib.Path(snakemake.output.master_index).parent)
+logo_rel_path = os.path.relpath(snakemake.output.logo, Path(snakemake.output.master_index).parent)
 logo_html = (
 	'<div class="logo">'
 	f'<img src="{logo_rel_path}"' 
@@ -90,15 +89,9 @@ except Exception as e:
     sys.exit(1)
 
 # write
-master_out = pathlib.Path(snakemake.output.master_index)
+master_out = Path(snakemake.output.master_index)
 master_out.parent.mkdir(parents=True, exist_ok=True)
 master_out.write_text(out_html)
 print(f"Wrote {master_out} with {len(entries)} entries")
-
-# Copy the CSS file to the same directory as the master index
-css_source = pathlib.Path(__file__).parent / "chromium_reports.css"
-css_dest = master_out.parent / "chromium_reports.css"
-shutil.copy(css_source, css_dest)
-print(f"Copied CSS file to {css_dest}")
 
 log.close()

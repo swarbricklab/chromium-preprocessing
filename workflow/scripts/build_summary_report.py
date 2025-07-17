@@ -22,24 +22,19 @@ print("Successfully imported summary_utils")
 # --- Config ---
 # Get paths from Snakemake
 ge_summary_path = snakemake.input.combined_csv
+template_path = snakemake.input.template
 output_report_path = snakemake.output.summary_report
-script_dir = os.path.dirname(os.path.abspath(__file__))
 print(f"Input CSV: {ge_summary_path}")
 print(f"Output report: {output_report_path}")
-print(f"Script directory: {script_dir}")
 
 # --- Load data ---
-print(f"Checking if file exists: {ge_summary_path}")
-if os.path.exists(ge_summary_path):
-    print("File exists, loading data...")
-    ge_df = pd.read_csv(ge_summary_path)
-    print(f"Loaded data from {ge_summary_path}, shape: {ge_df.shape}")
-    print(f"Columns: {list(ge_df.columns)}")
-    print(f"First few rows:")
-    print(ge_df.head())
-else:
-    print(f"Warning: Input file does not exist: {ge_summary_path}")
-    ge_df = None
+
+print("Loading summary data...")
+ge_df = pd.read_csv(ge_summary_path)
+print(f"Loaded data from {ge_summary_path}, shape: {ge_df.shape}")
+print(f"Columns: {list(ge_df.columns)}")
+print(f"First few rows:")
+print(ge_df.head())
 
 # --- Jinja2 HTML template setup ---
 # Update template path to use config['ref']['html']
@@ -98,12 +93,6 @@ print("Successfully rendered HTML template")
 os.makedirs(os.path.dirname(output_report_path), exist_ok=True)
 with open(output_report_path, "w") as f:
     f.write(html_out)
-
-# Copy the CSS file to the same directory as the summary report
-css_source = pathlib.Path(__file__).parent / "chromium_reports.css"
-css_dest = pathlib.Path(output_report_path).parent / "chromium_reports.css"
-shutil.copy(css_source, css_dest)
-print(f"Copied CSS file to {css_dest}")
 
 print(f"Report generated successfully: {output_report_path}")
 

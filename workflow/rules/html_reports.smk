@@ -1,14 +1,23 @@
+# Rule to move CSS files from resources to the report directory
+rule copy_css:
+    input:
+        css=html_dir/"chromium_reports.css"
+    output:
+        css=report_dir/"cellranger/css/chromium_reports.css"
+    shell:
+        """
+        cp {input.css} {output.css}
+        """
+
 # Rule to generate index for all the .html reports
 # Use a `capture` column in the config sample sheet
 rule generate_web_indexes:
     input:
         captures=config["deps"]["captures"],
-        template=html_dir/"base_template.html",
-        css=html_dir/"chromium_reports.css"
+        template=html_dir/"base_template.html"
     output:
         cell_types_index=report_dir/"cellranger/cell_types/cell_types_index.html",
-        summary_index=report_dir/"cellranger/web_summaries/summary_index.html",
-        css = report_dir/"cellranger/css/chromium_reports.css"
+        summary_index=report_dir/"cellranger/web_summaries/summary_index.html"
     params:
         annotate=config['params']['extras']['annotate']
     log:
@@ -37,6 +46,7 @@ rule combine_metrics:
 
 rule generate_summary_report:
     input:
+        template=html_dir/"summary_template.html",
         combined_csv=rules.combine_metrics.output.combined_csv,
         cell_types_index=rules.generate_web_indexes.output.cell_types_index,
         summary_index=rules.generate_web_indexes.output.summary_index
@@ -51,10 +61,11 @@ rule generate_summary_report:
 
 rule generate_master_index:
     input:
-        logo=config['ref']['html'] + '/swarbricklablogo.png',
+        logo=html_dir/'swarbricklablogo.png',
+        template=html_dir/"base_template.html",
         summary_report=rules.generate_summary_report.output.summary_report,
-        predemux_report=rules.predemux_generate_report.output.html if config['params']['extras']['predemux'] else "",
-        cell_types_index=rules.generate_web_indexes.output.cell_types_index if config['params']['extras']['annotate'] else "",
+        predemux_report=rules.predemux_generate_report.output.html if config['params']['extras']['predemux'] else [],
+        cell_types_index=rules.generate_web_indexes.output.cell_types_index if config['params']['extras']['annotate'] else [],
         summary_index=rules.generate_web_indexes.output.summary_index
     output:
         logo=report_dir/'cellranger/img/swarbricklablogo.png',

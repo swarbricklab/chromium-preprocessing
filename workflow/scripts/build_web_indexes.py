@@ -6,20 +6,14 @@ import sys, os, pathlib, html, datetime, csv, shutil
 # Inputs
 captures_path = snakemake.input.captures
 template_path = snakemake.input.template
-css_source    = snakemake.input.css
 
 # Outputs
 cell_types_index = snakemake.output.cell_types_index
 summary_index    = snakemake.output.summary_index
-css_dest         = snakemake.output.css
 
 # redirect stdout/stderr into the Snakemake log
 log = open(snakemake.log[0], "w")
 sys.stdout = sys.stderr = log
-
-# Copy the CSS file to the same directory as the web indexes
-shutil.copy(css_source, css_dest)
-print(f"Copied CSS file to {css_dest}")
 
 # Load the shared template
 TEMPLATE = pathlib.Path(template_path).read_text()
