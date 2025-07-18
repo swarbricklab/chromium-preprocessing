@@ -36,38 +36,57 @@ def clean_percentage_column(series):
 
 # 2. Data preparation
 
-def prepare_data_for_plotting(df, data_format, library_type=None, grouped_by=None, category=None):
+def prepare_data_for_plotting(df, index_cols, library_type=None, grouped_by=None, category=None):
     """
-    Filter and prepare data for plotting based on library type and grouping.
-    Returns a dataframe with columns suitable for plotting.
+    Prepare and filter data for plotting.
+    Converts from long format (Metric Name/Value) to wide format for easy plotting.
+    
+    Parameters:
+    - df: DataFrame in long format with Metric Name and Metric Value columns
+    - index_cols: List of column names to use as index in pivot (e.g., ['Sample', 'Capture'] or ['Capture', 'Pool'])
+    - library_type: Filter by Library Type (for multi mode)
+    - grouped_by: Filter by Grouped By value (can be None, empty string, or specific value)
+    - category: Filter by Category
+    
+    Returns:
+    - pivot_df: DataFrame in wide format with metrics as columns
     """
+    print(f"Preparing data for plotting. Library type: {library_type}, Grouped by: {grouped_by}, Category: {category}")
+    print(f"Input data shape: {df.shape}")
+    print(f"Using index columns: {index_cols}")
+    
     filtered_df = df.copy()
     
-    if library_type:
-        filtered_df = filtered_df[filtered_df['Library Type'] == library_type]
+    # Check if data is in long format (multi mode) or wide format (count mode)
+    is_long_format = 'Metric Name' in filtered_df.columns and 'Metric Value' in filtered_df.columns
     
-    if grouped_by is not None:  # Can be empty string
-        if grouped_by == "":
-            filtered_df = filtered_df[filtered_df['Grouped By'].isna() | (filtered_df['Grouped By'] == "")]
-        else:
-            filtered_df = filtered_df[filtered_df['Grouped By'] == grouped_by]
-    
-    if category:
-        filtered_df = filtered_df[filtered_df['Category'] == category]
-    
-    # Pivot to get metrics as columns
-    if data_format == 'multi':
+    if is_long_format:
+        # Multi mode data - apply filters
+        if library_type:
+            filtered_df = filtered_df[filtered_df['Library Type'] == library_type]
+        
+        if grouped_by is not None:  # Can be empty string
+            if grouped_by == "" or pd.isna(grouped_by):
+                filtered_df = filtered_df[filtered_df['Grouped By'].isna() | (filtered_df['Grouped By'] == "")]
+            else:
+                filtered_df = filtered_df[filtered_df['Grouped By'] == grouped_by]
+        
+        if category:
+            filtered_df = filtered_df[filtered_df['Category'] == category]
+        
+        # Pivot to get metrics as columns
         pivot_df = filtered_df.pivot_table(
-            index=['Capture', 'Pool'], 
+            index=index_cols,
             columns='Metric Name', 
             values='Metric Value', 
             aggfunc='first'
         ).reset_index()
         pivot_df.columns.name = None  # Remove the 'Metric Name' label from columns
     else:
+        # Count mode data - already in wide format, no filtering needed
         pivot_df = filtered_df.copy()
     
-    # Add replicate information (from capture name)
+    # Add replicate information (from capture name) if Capture column exists
     if 'Capture' in pivot_df.columns:
         pivot_df['Replicate'] = pivot_df['Capture'].str.extract(r'.*_(\w)$').fillna('1')
     
@@ -176,26 +195,33 @@ def df_to_html(df):
 
 # 5. High-level section builder
 
-def create_section_plots(df, data_format, library_type, section_config, category='Cells'):
+def create_section_plots(df, index_cols, library_type, section_config, x_col, hue_col, category='Cells', grouped_by=None):
     """Create plots for a specific library type section and return plots + HTML table."""
     plots = {}
     # Prepare data subset
-    plot_df = prepare_data_for_plotting(df, data_format, library_type=library_type, category=category, grouped_by="")
+    plot_df = prepare_data_for_plotting(df, index_cols, library_type=library_type, category=category, grouped_by=grouped_by)
+    
     if plot_df.empty:
-        print(f"Warning: No data found for {library_type} - {category}")
+        print(f"Warning: No data found for {library_type} - {category} - {grouped_by}")
         return plots, None
     print(f"Creating plots for {library_type} with {len(plot_df)} rows")
+    print(f"Using x_col: {x_col}, hue_col: {hue_col}")
+    
     # Generate each metric plot
     for metric_name, is_percent in section_config['metrics']:
         if metric_name in plot_df.columns:
             print(f"Generating plot for: {metric_name}")
-            is_stacked = 'cell' in metric_name.lower() and not is_percent
+            # Only stack cell count metrics (both multi and count mode names)
+            is_stacked = metric_name in ['Cells', 'Estimated Number Of Cells']
             key = metric_name.replace(" ", "_").replace("%","pct").lower()
-            plots[key] = metric_plot(plot_df, 'Pool', metric_name, 'Capture', metric_name,
+            plots[key] = metric_plot(plot_df, x_col, metric_name, hue_col, metric_name,
                                      y_percent=is_percent, stacked=is_stacked)
         else:
             print(f"Warning: Metric '{metric_name}' not found in data")
-    # Build HTML table
-    table_cols = ['Capture', 'Pool'] + [m for m, _ in section_config['metrics'] if m in plot_df.columns]
+    
+    # Build HTML table - use the actual column names that exist
+    available_cols = [col for col in [hue_col, x_col] if col in plot_df.columns]
+    metric_cols = [m for m, _ in section_config['metrics'] if m in plot_df.columns]
+    table_cols = available_cols + metric_cols
     table_html = df_to_html(plot_df[table_cols]) if table_cols else df_to_html(plot_df)
     return plots, table_html
