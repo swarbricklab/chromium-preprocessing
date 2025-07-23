@@ -80,12 +80,15 @@ else:
             "cellranger/9.0.1"
         shell:
             """
+            log_file=$PWD/{log}
+            h5=$PWD/{input.h5}
+            loupe=$PWD/{input.loupe}
             cd $(dirname {output.ann_dir})
             cellranger annotate \
                 --id {wildcards.capture} \
-                --matrix {input.h5} \
-                --cloupe {input.loupe} \
-                > {log} 2>&1
+                --matrix $h5 \
+                --cloupe $loupe \
+                > $log_file 2>&1
             """
 
     rule restructure_annotations:
