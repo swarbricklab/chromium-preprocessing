@@ -63,6 +63,7 @@ set-resources:
     cellranger_multi: 
         threads: "1"
         mem: "2GB"
+        runtime: "16h"
         # Resources used by cellranger to dispatch jobs in cluster mode
         override: ?os.getenv("WORKFLOW_ROOT")+"/profiles/workflow/override.json"
         mempercore: 8 #GB
@@ -88,9 +89,9 @@ set-resources:
         threads: "1"
         mem: "4GB"
         queue: "copyq"
-        runtime: "1h"
+        runtime: "2h"
     annotate_capture:
         threads: "1"
         mem: "4GB"
         queue: "copyq"
-        runtime: "1h"
+        runtime: "2h"
