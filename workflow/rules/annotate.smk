@@ -16,7 +16,7 @@ rule cloud_auth:
 
 # Annotate by sample if hto demux is enabled but by capture otherwise
 
-if config['params']['extras']['hto']:
+if config['params']['extras']['hto'] or config['params']['extras']['ocm']:
     # Annotate by sample
     rule annotate_sample:
         """

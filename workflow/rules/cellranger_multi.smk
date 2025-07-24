@@ -34,6 +34,13 @@ rule select_libraries:
                 samples=samples.rename(columns={'sample': 'sample_id', 'hashtag': 'hashtag_ids'})
                 samples.to_csv(csv, index=False)
                 csv.write("\n")
+            # write '[samples]' block if OCM demux enabled
+            if config['params']['extras']['ocm']:
+                csv.write("[samples]\n")
+                ocm=captures.loc[captures['capture'] == wildcards.capture, ['ocm_barcode_ids','sample']]
+                ocm=ocm.rename(columns={'sample': 'sample_id', 'ocm_barcode_ids': 'ocm_barcode_ids'})
+                ocm.to_csv(csv, index=False)
+                csv.write("\n")
  
 
 # Create INI section of multi config

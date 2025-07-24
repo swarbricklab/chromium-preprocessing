@@ -65,7 +65,7 @@ def annotate_targets():
     """
     The following targets are enabled if 'params.extras.annotate' is 'true'
     """
-    if config['params']['extras']['hto']:
+    if config['params']['extras']['hto'] or config['params']['extras']['ocm']:
         # Annotating by sample
         return expand(
             list(rules.restructure_annotations.output),
@@ -109,10 +109,10 @@ def aggr_vdj_targets():
         vdj_assay=vdj_assays
     )
 
-# --- hto ---
-def hto_targets():
+# --- hto and ocm ---
+def hto_ocm_targets():
     """
-    The following targets are enabled if 'params.extra.hto' is 'true'
+    The following targets are enabled if 'params.extra.hto' or 'params.extra.ocm' is 'true'
     """
     multi_targets = expand(
         list(itertools.chain(

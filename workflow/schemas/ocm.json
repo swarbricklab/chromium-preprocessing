@@ -1,0 +1,23 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "capture": { 
+        "type": "string",
+        "description": "Capture identifier"
+      },
+      "pool": { 
+        "type": "string",
+        "description": "Pool identifier"
+      },
+      "sample": { 
+        "type": "string",
+        "description": "Sample identifier"
+      },
+      "ocm_barcode_ids": { 
+        "type": "string",
+        "description": "ocm_barcode_ids used to tag sample. Must match 'id' column in 'ref.feature'. TODO: allow multiple"
+      }
+    },
+    "required": ["capture", "sample", "ocm_barcode_ids"]
+  }
