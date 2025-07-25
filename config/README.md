@@ -66,8 +66,9 @@ The following sub-blocks can be specified:
 - [feature](#feature)
 - [vdj](#vdj)
 - [aggr](#aggr)
-- [annotate](#annotate) (not yet supported)
-- [hto](#hto) (not yet supported)
+- [annotate](#annotate)
+- [hto](#hto)
+- [ocm](#ocm)
 
 A summary of each sub-block is given below.
 See the comments in the templates for details of each item.
@@ -76,8 +77,9 @@ See the comments in the templates for details of each item.
 
 The `extras` sub-block defines which of the following optional `cellranger` features should be used.
 - [aggr](#aggr): use `cellranger aggr` to aggregate split pools
-- [annotate](#annotate): use 10X Cloud for automated cell-type annotations (not yet supported)
-- [hto](#hto): use hashtag oligos for HTO demux (not yet supported)
+- [annotate](#annotate): use 10X Cloud for automated cell-type annotations
+- [hto](#hto): use hashtag oligos for HTO demux
+- [ocm](#ocm):  on-chip multiplexing (OCM)
 
 The detailed specifications for each "extra" option are made in separate blocks for each option.
 See the links above for details.
@@ -140,11 +142,15 @@ For "split captures" (derived from the same pool) batch effect should be minimal
 
 ##### annotate
 
-Not yet supported
+TODO
 
 ##### hto
 
-Not yet supported
+TODO
+
+##### ocm
+
+TODO
 
 ## Samplesheets
 
@@ -161,7 +167,8 @@ The "captures" samplesheet describes elements of the experimental design by defi
 Create a CSV file with the following columns:
 - [captures](#capture) (required)
 - [pool](#pool)(required only if aggr is enabled)
-- [sample](#sample) (required only if hto demux is enabled)
+- [sample](#sample) (required only if hto or ocm demux is enabled)
+- [ocm_barcode_ids]($ocm_barcode_ids) (required only if ocm demux is enabled)
 
 Additional columns may be freely added.
 The column order is arbitrary.
@@ -207,6 +214,10 @@ The other captures will not be aggregated.
 #### sample
 
 The `sample` column is a placeholder for HTO demux, which is not yet supported.
+
+#### ocm_barcode_ids
+
+The `ocm_barcode_ids` column identifies corresponding FASTQ files, and the technical replicates are by different OCM barcodes (OB1, OB2, OB3, OB4).
 
 ## Libraries (`libraries.csv`)
 
