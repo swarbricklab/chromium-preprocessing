@@ -28,7 +28,7 @@ if not preflight_check():
 # and validates config schemas according to these selections
 # A list of final targets is built depending on these choices.
 
-targets = []
+targets = [report_dir/"cellranger/master_index.html"]
 
 if assays == ['gene-expression']:
     # When only gene-expression libraries are present use 'cellranger count.
@@ -70,11 +70,20 @@ if config['params']['extras']['aggr']:
     validate(config,"workflow/schemas/aggr.json")
     validate(captures, "workflow/schemas/aggr_captures.json")
 
+# Optionally run the 'pre-demux' filtering workflow
+if config['params']['extras']['predemux']:
+    print("Running pre-demux cell filtering")
+    include: 'workflow/rules/predemux.smk'
+    targets.extend(predemux_targets())
+    validate(config, "workflow/schemas/predemux.json")
+
 # Optionally use 'cellranger annotate' to assign cell type labels
 if config['params']['extras']['annotate']:
     print("Running cellranger annotate")
     include: 'workflow/rules/annotate.smk'
     targets.extend(annotate_targets())
+
+include: 'workflow/rules/html_reports.smk'
 
 wildcard_constraints:
     capture = "[^/]+"
@@ -82,5 +91,3 @@ wildcard_constraints:
 rule all:
     input:
         targets
-
-

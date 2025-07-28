@@ -23,10 +23,11 @@ This config files are used in conjunction with the [run_tests.sh](../run_test.sh
 
 ### Config content
 
-The config file is divided into four blocks, as follows:
+The config file is divided into five blocks, as follows:
 - deps
 - refs
 - outs
+- modules
 - params
 
 The function of each block is described below.
@@ -53,6 +54,11 @@ References for other assays (modalities) such as feature barcodes and VDJ are on
 The `outs` block defines paths to the outputs produced by this workflow:
 - results: the root directory for all result data
 - logs: the root directory for log files
+
+#### modules
+
+The `modules` block defines software module versions used when running the workflow with environment modules:
+- cellranger: the version of cellranger to load (e.g., "9.0.1")
 
 #### params
 

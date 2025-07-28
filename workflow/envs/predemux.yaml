@@ -1,0 +1,24 @@
+# environment.yaml for the predemux filtering workflow
+name: predemux
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  # --- R Dependencies ---
+  - r-base >=4.2 
+  - r-argparser 
+  - r-seurat =5.2 
+  - r-seuratobject 
+  - r-dplyr
+  - r-readr
+  - r-tibble
+  - bioconda::bioconductor-dropletutils 
+  - r-matrix 
+  - r-hdf5r 
+
+  # --- Python Dependencies ---
+  - python >=3.8 
+  - pandas 
+  - numpy
+  - matplotlib 

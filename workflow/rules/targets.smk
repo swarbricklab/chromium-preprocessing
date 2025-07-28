@@ -180,3 +180,16 @@ def hto_ocm_targets():
             )
 
     return multi_targets + sample_targets
+  
+# --- predemux ---
+def predemux_targets():
+    """
+    The following targets are enabled if 'params.extras.predemux' is 'true'
+    """
+    predemux_targets = [rules.predemux_generate_report.output]
+
+    predemux_targets.extend(
+        expand(list(rules.copy_original_features.output), capture=captures.index)
+    )
+
+    return predemux_targets

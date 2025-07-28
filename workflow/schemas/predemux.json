@@ -1,0 +1,72 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Configuration schema for predemux cell filtering parameters.",
+    "type": "object",
+    "properties": {
+      "params": {
+        "type": "object",
+        "description": "Top-level parameters object for the workflow.",
+        "properties": {
+          "predemux": {
+            "type": "object",
+            "description": "Options for 'predemux' cell filtering.",
+            "properties": {
+              "min-gene-count": {
+                "description": "Minimum number of genes detected per cell. -1 disables the filter.",
+                "type": "integer",
+                "oneOf": [
+                  {
+                    "const": -1
+                  },
+                  {
+                    "minimum": 0
+                  }
+                ]
+              },
+              "min-umi-count": {
+                "description": "Minimum number of UMI counts per cell. -1 disables the filter.",
+                "type": "integer",
+                "oneOf": [
+                  {
+                    "const": -1
+                  },
+                  {
+                    "minimum": 0
+                  }
+                ]
+              },
+              "max-mito": {
+                "description": "Maximum percentage of mitochondrial UMI counts per cell. -1 disables the filter.",
+                "type": "integer",
+                "oneOf": [
+                  {
+                    "const": -1
+                  },
+                  {
+                    "minimum": 0,
+                    "maximum": 100,
+                    "description": "Inclusive integer between 0 and 100."
+                  }
+                ]
+              },
+              "mito-pattern": {
+                "description": "Regular expression pattern used to identify mitochondrial genes.",
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "min-gene-count",
+              "min-umi-count",
+              "max-mito",
+              "mito-pattern"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": ["predemux"],
+        "additionalProperties": true
+      }
+    },
+    "additionalProperties": true
+  }

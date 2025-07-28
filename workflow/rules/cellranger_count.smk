@@ -10,7 +10,7 @@ rule cellranger_count:
     params:
         count_options=get_options('gene-expression')
     envmodules:
-        "cellranger/9.0.1",
+        f"cellranger/{config['modules']['cellranger']}",
         "qsub/ext"
     log:
         "logs/chromium-preprocessing/cellranger_count/{capture}.log"

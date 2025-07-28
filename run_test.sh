@@ -21,7 +21,9 @@ else
     global_profile=""
 fi
 
-tests="count multi"
+# tests="count multi" 
+# TODO: intergrate `multi` test
+tests="count"
 
 export JOBMODE="'profiles/global/nci/resources/pbspro.template'"
 

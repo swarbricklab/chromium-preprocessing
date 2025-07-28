@@ -6,8 +6,8 @@
 # Files and directories required for the workflow, including raw data, config data and reference data
 deps:
   captures: "config/tests/multi/captures.csv"
-  reports: "test/results/cellranger/count_test/reports"
   libraries: "config/tests/multi/libraries.csv"
+  fastqs: "test/data"
 
 # Reference dependencies
 ref:
@@ -17,13 +17,20 @@ ref:
   feature: "config/feature_barcode_reference.csv"
   # Reference for VDJ-T
   vdj: "resources/vdj/refdata-cellranger-vdj-GRCh38-alts-ensembl-7.1.0"
+  # Logo for reports (must be DVC checked out)
+  logo: "resources/swarbricklablogo.png"
 
 # -- Outputs -- #
 # Files and directories produced by the workflow
 outs:
   results: "test/results/cellranger/multi_test"
-  reports: "test/results/cellranger/count_test/reports"
+  reports: "test/results/cellranger/multi_test/reports"
   logs: "logs/chromium-preprocessing"
+
+# -- Module versions --#
+# Software module versions (when using environment modules)
+modules:
+  cellranger: "9.0.1"
 
 # -- Parameters --#
 # Non-path parameters for tuning the behaviour of the workflow
@@ -32,9 +39,17 @@ params:
     aggr: true
     annotate: true
     hto: false
+    predemux: false
   gene-expression:
     create-bam: true
     no-secondary: false
   aggr:
     normalize: "none"
     no-secondary: false
+  predemux:
+    # Setting a filter below to -1 will disable (skip) it
+    # Values cannot be empty
+    min-gene-count: 300 # Integer value
+    min-umi-count: 500 # Integer value
+    max-mito: -1 # Integer percentage (0 - 100 inclusive))
+    mito-pattern: "^MT-" # String value (for mice: "^mt-")
