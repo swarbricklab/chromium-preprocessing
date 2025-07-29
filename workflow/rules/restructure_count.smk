@@ -51,18 +51,27 @@ rule restructure_counts:
         """
 
 # Restructure h5 data
+rule restructure_raw_h5:
+    input:
+        tmp=rules.cellranger_count.output.cr_dir
+    output:
+        h5=out_dir/"h5/captures/{capture}/raw_feature_bc_matrix.h5"
+    shell:
+        """
+        cp -v {input.tmp}/outs/raw_feature_bc_matrix.h5 {output.h5}
+        """
+
+# Restructure h5 data
 rule restructure_h5:
     input:
         tmp=rules.cellranger_count.output.cr_dir
     output:
-        filtered_mol=out_dir/"h5/captures/{capture}/molecule_info.h5",
-        raw=out_dir/"h5/captures/{capture}/raw_feature_bc_matrix.h5",
-        filtered_mat=out_dir/"h5/captures/{capture}/filtered_feature_bc_matrix.h5"
+        mol=out_dir/"h5/captures/{capture}/molecule_info.h5",
+        mat=out_dir/"h5/captures/{capture}/filtered_feature_bc_matrix.h5"
     shell:
         """
-        cp -v {input.tmp}/outs/molecule_info.h5 {output.filtered_mol}
-        cp -v {input.tmp}/outs/raw_feature_bc_matrix.h5 {output.raw}
-        cp -v {input.tmp}/outs/filtered_feature_bc_matrix.h5 {output.filtered_mat}
+        cp -v {input.tmp}/outs/molecule_info.h5 {output.mol}
+        cp -v {input.tmp}/outs/filtered_feature_bc_matrix.h5 {output.mat}
         """
 
 # Restructure analysis results
@@ -81,8 +90,8 @@ rule restructure_loupe:
     input:
         tmp=rules.cellranger_count.output.cr_dir
     output:
-        filtered=out_dir/"loupe/count/captures/filtered/{capture}.cloupe"
+        cloupe=out_dir/"loupe/count/captures/filtered/{capture}.cloupe"
     shell:
         """
-        cp -v {input.tmp}/outs/cloupe.cloupe {output.filtered}
+        cp -v {input.tmp}/outs/cloupe.cloupe {output.cloupe}
         """

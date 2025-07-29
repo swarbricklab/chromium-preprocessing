@@ -1,4 +1,4 @@
-# This rule file contains rules that restructure the "outs" from 'cellranger count'
+# This rule file contains rules that restructure the "outs" from 'cellranger multi'
 # By grouping related outputs across captures, the dataset becomes easier to navigate.
 # Restructuring also allows users to selectively pull only the data of interest, reducing download times
 # The new structure also makes it possible to specify dependencies more precisely, speeding up data validation.
@@ -65,24 +65,35 @@ rule restructure_counts:
         """
 
 # Restructure and rename h5 files
-rule restructure_h5:
+rule restructure_raw_h5:
     input:
         tmp=rules.cellranger_multi.output.cr_dir
     output:
         raw_mat=out_dir/"h5/captures/{capture}/raw_feature_bc_matrix.h5",
-        raw_mol=out_dir/"h5/captures/{capture}/raw_molecule_info.h5",
-        filtered_mat=out_dir/"h5/captures/{capture}/feature_bc_matrix.h5",
-        filtered_mol=out_dir/"h5/captures/{capture}/molecule_info.h5"
+        raw_mol=out_dir/"h5/captures/{capture}/raw_molecule_info.h5"
     shell:
         """
         # Source directories
         out_dir={input.tmp}/outs/multi/count
-        sample_dir={input.tmp}/outs/per_sample_outs/{wildcards.capture}/count
         # h5
         cp -v $out_dir/raw_feature_bc_matrix.h5 {output.raw_mat}
         cp -v $out_dir/raw_molecule_info.h5 {output.raw_mol}
-        cp -v $sample_dir/sample_filtered_feature_bc_matrix.h5 {output.filtered_mat}
-        cp -v $sample_dir/sample_molecule_info.h5 {output.filtered_mol}
+        """
+
+# Restructure and rename h5 files
+rule restructure_h5:
+    input:
+        tmp=rules.cellranger_multi.output.cr_dir
+    output:
+        mat=out_dir/"h5/captures/{capture}/feature_bc_matrix.h5",
+        mol=out_dir/"h5/captures/{capture}/molecule_info.h5"
+    shell:
+        """
+        # Source directories
+        sample_dir={input.tmp}/outs/per_sample_outs/{wildcards.capture}/count
+        # h5
+        cp -v $sample_dir/sample_filtered_feature_bc_matrix.h5 {output.mat}
+        cp -v $sample_dir/sample_molecule_info.h5 {output.mol}
         """
 
 # Restructure non-VDJ loupe files
@@ -91,11 +102,11 @@ rule restructure_loupe:
         tmp=rules.cellranger_multi.output.cr_dir
     output:
         raw=out_dir/"loupe/count/raw/{capture}.cloupe",
-        filtered=out_dir/"loupe/count/filtered/{capture}.cloupe"
+        cloupe=out_dir/"loupe/count/filtered/{capture}.cloupe"
     shell:
         """
         cp -v {input.tmp}/outs/multi/count/raw_cloupe.cloupe {output.raw}
-        cp -v {input.tmp}/outs/per_sample_outs/{wildcards.capture}/count/sample_cloupe.cloupe {output.filtered}
+        cp -v {input.tmp}/outs/per_sample_outs/{wildcards.capture}/count/sample_cloupe.cloupe {output.cloupe}
         """
 
 rule restructure_vdj_fa:
