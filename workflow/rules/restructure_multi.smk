@@ -9,7 +9,7 @@ rule restructure_summary:
         tmp=rules.cellranger_multi.output.cr_dir
     output:
         metrics=out_dir/"summary/metrics/{capture}.csv",
-        web=report_dir/"web/captures/summary/{capture}.html"
+        web=report_dir/"cellranger/web_summaries/captures/summary/{capture}.html"
     shell:
         """
         sample_dir={input.tmp}/outs/per_sample_outs/{wildcards.capture}
