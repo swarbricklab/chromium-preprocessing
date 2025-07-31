@@ -48,7 +48,7 @@ rule restructure_annotations:
         types=out_dir/"annotation/{capture}/cell_types.csv",
         de=out_dir/"annotation/{capture}/cell_annotation_differential_expression.csv",
         json=out_dir/"annotation/{capture}/cell_annotation_results.json.gz",
-        web=report_dir/"web/captures/cell_types/{capture}.html"
+        web=report_dir/"cellranger/cell_types/captures/{capture}.html"
     shell:
         """
         outs={input.cr_dir}/outs
