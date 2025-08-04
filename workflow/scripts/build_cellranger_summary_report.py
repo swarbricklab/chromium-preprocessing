@@ -10,6 +10,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 import os
 import datetime
 import sys
+import shutil
 
 # redirect into Snakemake log
 log = open(snakemake.log[0], "w")
@@ -21,11 +22,13 @@ print("Successfully imported summary_utils")
 # --- Config ---
 # Get paths from Snakemake
 summary_csv_path = snakemake.input.combined_csv
+summary_template_path = snakemake.input.summary_template
+css_file_path = snakemake.input.css_file
 output_report_path = snakemake.output.cellranger_summary_report
-script_dir = os.path.dirname(os.path.abspath(__file__))
+template_dir = os.path.dirname(summary_template_path)
 print(f"Input CSV: {summary_csv_path}")
 print(f"Output report: {output_report_path}")
-print(f"Script directory: {script_dir}")
+print(f"Template directory: {template_dir}")
 
 # --- Load and analyze data ---
 print(f"Checking if file exists: {summary_csv_path}")
@@ -70,7 +73,7 @@ print(f"Plot columns - x (groups): {plot_x_col}, hue (individuals): {plot_hue_co
 
 # --- Jinja2 HTML template setup ---
 env = Environment(
-    loader=FileSystemLoader(script_dir),
+    loader=FileSystemLoader(template_dir),
     autoescape=select_autoescape(['html'])
 )
 template = env.get_template("summary_template.html")
