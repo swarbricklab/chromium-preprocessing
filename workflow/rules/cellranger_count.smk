@@ -16,7 +16,7 @@ rule cellranger_count:
         "logs/chromium-preprocessing/cellranger_count/{capture}.log"
     shell:
         """
-        # Snakemake creates output directory but cellranger complains if directory alrady exists!
+        # Snakemake creates output directory but cellranger complains if directory already exists!
         [ -d {output.cr_dir} ] && [ -z "$(ls -A {output.cr_dir})" ] && rm -rf {output.cr_dir}
 
         cellranger count \

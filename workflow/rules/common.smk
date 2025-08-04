@@ -7,6 +7,7 @@ def find_assays(libraries):
     assays=libraries['feature_types'].unique()
     mapping = {
         "Gene Expression": "gene-expression",
+        "VDJ-B": "vdj",
         "VDJ-T": "vdj",
         "VDJ-B": "vdj",
         "Antibody Capture": "feature"
@@ -87,14 +88,6 @@ def get_pb_in_pool(wildcards):
         capture=capture_list,
         vdj_assay=wildcards.vdj_assay
     )
-
-# Return a list of valid pools
-# Valid pools do not have the same value as the capture in the same row
-# Valid pools cannot be 'NA', 'None' or the empty string
-def get_pool_list():
-    null_pool_indicators = ['', 'NA', 'None']
-    valid_pools = captures.loc[(captures['pool'] != captures.index) | (captures['pool'].isin(null_pool_indicators))]
-    return valid_pools['pool'].unique().tolist()
 
 # Returns individual source bam files to be merged as part of aggr
 def get_source_bams(wildcards):

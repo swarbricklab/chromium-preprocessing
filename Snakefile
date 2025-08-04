@@ -46,9 +46,20 @@ else:
     # Use 'cellranger multi' if more than one assay present
     print("Running cellranger multi")
     include: 'workflow/rules/cellranger_multi.smk'
-    include: 'workflow/rules/restructure_multi.smk'
-    validate(config,"workflow/schemas/multi.json")
-    targets.extend(multi_targets())
+    if config['params']['extras']['hto'] or config['params']['extras']['ocm']:
+        samples=pd.read_csv(config['deps']['captures']).set_index('sample', drop=False)
+        if config['params']['extras']['hto']:
+            print("Running HTO demux")
+            validate(captures,"workflow/schemas/hto.json")
+        else:
+            print("Running OCM demux")
+            validate(captures,"workflow/schemas/ocm.json")
+        include: 'workflow/rules/restructure_hto_ocm.smk'
+        targets.extend(hto_ocm_targets())
+    else:
+        include: 'workflow/rules/restructure_multi.smk'
+        validate(config,"workflow/schemas/multi.json")
+        targets.extend(multi_targets())
 # Optionally use 'cellranger aggr' to aggregate split pools
 if config['params']['extras']['aggr']:
     print("Running cellranger aggr")

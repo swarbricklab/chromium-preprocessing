@@ -16,12 +16,31 @@ rule select_libraries:
     run:
         import pandas as pd
         import os
-        df = pd.read_csv(input.csv)
-        filtered_df = df[df["fastq_id"] == wildcards.capture].copy()
-        filtered_df["fastqs"] = filtered_df["fastqs"].apply(
-            lambda x: os.path.join(os.getcwd(), x)
-        )
-        filtered_df.to_csv(output.csv, index=False)
+        with open(output.csv, "w") as csv:
+            # Write [libraries] block based on 'libraries.csv'
+            csv.write("[libraries]\n")
+            df = pd.read_csv(input.csv)
+            filtered_df = df[df["fastq_id"] == wildcards.capture].copy()
+            filtered_df["fastqs"] = filtered_df["fastqs"].apply(
+                lambda x: os.path.join(os.getcwd(), x)
+            )
+            filtered_df.to_csv(csv, index=False)
+            csv.write("\n")
+
+            # write '[samples]' block if HTO demux enabled
+            if config['params']['extras']['hto']:
+                csv.write("[samples]\n")
+                samples=captures.loc[captures['capture'] == wildcards.capture, ['hashtag','sample']]
+                samples=samples.rename(columns={'sample': 'sample_id', 'hashtag': 'hashtag_ids'})
+                samples.to_csv(csv, index=False)
+                csv.write("\n")
+            # write '[samples]' block if OCM demux enabled
+            if config['params']['extras']['ocm']:
+                csv.write("[samples]\n")
+                ocm=captures.loc[captures['capture'] == wildcards.capture, ['ocm_barcode_ids','sample']]
+                ocm=ocm.rename(columns={'sample': 'sample_id', 'ocm_barcode_ids': 'ocm_barcode_ids'})
+                ocm.to_csv(csv, index=False)
+                csv.write("\n")
  
 
 # Create INI section of multi config
@@ -30,18 +49,18 @@ rule create_ini:
         ini=temp(out_dir/"csv/config.ini")
     run:
         import os
-        with open(output.ini, "w") as f:
+        with open(output.ini, "w") as ini:
             for assay, ref_path in config["ref"].items():
                 # Compare to list of assays found in libraries.csv
                 if assay in assays:
                     # Convert to absolute path because cellranger multi can't handle relative paths
                     abs_path = os.path.abspath(ref_path)
-                    f.write("[{}]\n".format(assay))
-                    f.write("reference,{}\n".format(abs_path))
+                    ini.write("[{}]\n".format(assay))
+                    ini.write("reference,{}\n".format(abs_path))
                     if assay in config["params"].keys():
                         for key, value in config["params"][assay].items():
-                            f.write("{},{}\n".format(key,value))
-                    f.write("\n")
+                            ini.write("{},{}\n".format(key,value))
+                    ini.write("\n")
 
 # Combine INI section with libraries section
 rule combine_dynamic_config:
@@ -52,9 +71,7 @@ rule combine_dynamic_config:
         conf=temp(out_dir/"csv/{capture}/multi_config.csv")
     shell:
         """
-        cat {input.ini} > {output.conf}
-        echo "[libraries]" >> {output.conf}
-        cat {input.csv} >> {output.conf}
+        cat {input.ini} {input.csv} > {output.conf}
         """
 
 # Run cellranger multi with dynamically generated config
@@ -70,17 +87,25 @@ rule cellranger_multi:
         "logs/chromium-preprocessing/cellranger_multi/{capture}.log"
     shell:
         """
-        # Snakemake creates output directory but cellranger complains if directory alrady exists!
-        rm -rf {output.cr_dir}
+        # Snakemake creates output directory but cellranger complains if directory already exists!
+        # Check if directory exist
+        if [ -d {output.cr_dir} ]; then
+            # check if empty
+            if [ -z "$(ls -A {output.cr_dir})" ]; then
+                echo "Deleting empty directory {output.cr_dir}" > {log}
+                rm -rf {output.cr_dir}
+            fi
+        fi
         cellranger multi \
             --output-dir {output.cr_dir} \
             --id {wildcards.capture} \
             --csv {input.conf} \
             --jobmode={resources.jobmode} \
+            --overrides {resources.override} \
             --maxjobs {resources.maxjobs} \
             --jobinterval {resources.jobinterval} \
             --mempercore {resources.mempercore} \
-            > {log} 2>&1
+            >> {log} 2>&1
         rm -rf {output.cr_dir}/SC_MULTI_CS
         """
 
