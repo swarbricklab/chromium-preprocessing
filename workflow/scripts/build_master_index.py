@@ -7,11 +7,16 @@ import sys, os, pathlib, html, datetime, base64, shutil
 log = open(snakemake.log[0], "w")
 sys.stdout = sys.stderr = log
 
-# load template
-script_dir    = pathlib.Path(__file__).parent
-template_path = script_dir / "base_template.html"
+# load template from Snakemake inputs
+template_path = pathlib.Path(snakemake.input.base_template)
+css_path = pathlib.Path(snakemake.input.css_file)
+logo_source = pathlib.Path(snakemake.input.logo)
 if not template_path.exists():
-    sys.exit(f"ERROR: missing base_template.html in {script_dir}")
+    sys.exit(f"ERROR: missing base_template.html at {template_path}")
+if not css_path.exists():
+    sys.exit(f"ERROR: missing chromium_styles.css at {css_path}")
+if not logo_source.exists():
+    sys.exit(f"ERROR: missing swarbricklablogo.png at {logo_source}")
 TEMPLATE = template_path.read_text()
 
 # prepare master entries
@@ -55,10 +60,10 @@ items_html = "\n".join(
 )
 
 # Copy logo to destination, creating directory if needed
-logo_dest = pathlib.Path(snakemake.output.master_index).parent.parent / "resources" / "swarbricklablogo.png"
+logo_dest = pathlib.Path(snakemake.output.master_index).parent.parent / "resources" / "report" / "swarbricklablogo.png"
 logo_dest.parent.mkdir(parents=True, exist_ok=True)
 if not logo_dest.exists():
-    shutil.copy(snakemake.input.logo, logo_dest)
+    shutil.copy(logo_source, logo_dest)
 logo_rel_path = os.path.relpath(logo_dest, pathlib.Path(snakemake.output.master_index).parent)
 logo_html = (
     '<div class="logo">'
@@ -89,6 +94,39 @@ except Exception as e:
 master_out = pathlib.Path(snakemake.output.master_index)
 master_out.parent.mkdir(parents=True, exist_ok=True)
 master_out.write_text(out_html)
+
+# Copy CSS file to all relevant output directories
+css_destinations = []
+
+# CSS for master index directory
+css_destinations.append(master_out.parent / "chromium_styles.css")
+
+# CSS for summary report directory (if it exists)
+if hasattr(snakemake.input, 'cellranger_summary_report'):
+    summary_path = pathlib.Path(snakemake.input.cellranger_summary_report)
+    css_destinations.append(summary_path.parent / "chromium_styles.css")
+
+# CSS for web indexes directories (if they exist)
+if hasattr(snakemake.input, 'summary_index'):
+    summary_index_path = pathlib.Path(snakemake.input.summary_index)
+    css_destinations.append(summary_index_path.parent / "chromium_styles.css")
+
+if hasattr(snakemake.input, 'cell_types_index') and snakemake.input.cell_types_index:
+    cell_types_index_path = pathlib.Path(snakemake.input.cell_types_index)
+    css_destinations.append(cell_types_index_path.parent / "chromium_styles.css")
+
+# Copy CSS to all destinations
+for css_dest in set(css_destinations):  # Use set to avoid duplicates
+    try:
+        css_dest.parent.mkdir(parents=True, exist_ok=True)
+        # If file exists, make it writable first
+        if css_dest.exists():
+            css_dest.chmod(0o644)
+        shutil.copy2(css_path, css_dest)
+        print(f"Copied CSS file to {css_dest}")
+    except Exception as e:
+        print(f"Warning: Could not copy CSS file to {css_dest}: {e}")
+
 print(f"Wrote {master_out} with {len(entries)} entries")
 
 log.close()
