@@ -14,10 +14,15 @@
         "libraries": {
           "type": "string",
           "description": "Path to the libraries CSV file."
+        },
+        "fastqs": {
+          "type": "string",
+          "description": "Optional path to the directory containing FASTQ files."
         }
       },
       "required": [
         "captures",
+        "fastqs",
         "libraries"
       ]
     },
