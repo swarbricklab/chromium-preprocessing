@@ -38,14 +38,32 @@ rule select_libraries:
 
 # Create INI section of multi config
 rule create_ini:
+    input:
+        csv=config['deps']['libraries']
     output:
-        ini=temp(out_dir/"csv/config.ini")
+        ini=temp(out_dir/"csv/{capture}/config.ini")
     run:
         import os
+        import pandas as pd
+
+        # Read libraries and filter for this specific capture
+        df = pd.read_csv(input.csv)
+        capture_libraries = df[df["fastq_id"] == wildcards.capture]
+
+        # Find assays present in this specific capture
+        capture_assays = capture_libraries['feature_types'].unique()
+        mapping = {
+            "Gene Expression": "gene-expression",
+            "VDJ-B": "vdj",
+            "VDJ-T": "vdj",
+            "Antibody Capture": "feature"
+        }
+        capture_assay_types = [mapping.get(assay, assay) for assay in capture_assays]
+
         with open(output.ini, "w") as ini:
             for assay, ref_path in config["ref"].items():
-                # Compare to list of assays found in libraries.csv
-                if assay in assays:
+                # Only include assays that are present in THIS capture
+                if assay in capture_assay_types:
                     # Convert to absolute path because cellranger multi can't handle relative paths
                     abs_path = os.path.abspath(ref_path)
                     ini.write("[{}]\n".format(assay))
