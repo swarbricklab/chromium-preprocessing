@@ -175,7 +175,7 @@ def hto_ocm_targets():
                         list(rules.restructure_vdj_loupe.output),
                         list(rules.restructure_sample_vdj_bams.output)
                     )),
-                    zip, capture=captures['capture'], sample=captures['sample'], vdj_assay=assay
+                    zip, capture=captures['capture'], sample=captures['sample'], vdj_assay=[assay] * len(captures)
                 )
             )
 
