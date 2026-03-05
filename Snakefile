@@ -30,8 +30,8 @@ if not preflight_check():
 
 targets = [report_dir/"cellranger/master_index.html"]
 
-if assays == ['gene-expression']:
-    # When only gene-expression libraries are present use 'cellranger count.
+if assays == ['gene-expression'] and not config['params']['extras'].get('hto', False) and not config['params']['extras'].get('ocm', False):
+    # When only gene-expression libraries are present and no HTO/OCM demux, use 'cellranger count'
     print("Running cellranger count")
     include: 'workflow/rules/cellranger_count.smk'
     include: 'workflow/rules/restructure_count.smk'
