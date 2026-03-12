@@ -39,7 +39,12 @@ else:
     print("Skipping predemux_report: predemux disabled in config")
 
 # 2) the two sub-indexes
-for idx in [snakemake.input.cell_types_index, snakemake.input.summary_index]:
+sub_indexes = [snakemake.input.summary_index]
+# Only include cell_types_index if annotate is enabled (non-empty input)
+if snakemake.input.cell_types_index:
+    sub_indexes.insert(0, snakemake.input.cell_types_index)
+
+for idx in sub_indexes:
     p = pathlib.Path(idx)
     if p.exists():
         href = os.path.relpath(p, pathlib.Path(snakemake.output.master_index).parent)

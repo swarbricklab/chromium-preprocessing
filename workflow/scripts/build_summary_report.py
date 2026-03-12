@@ -53,6 +53,42 @@ tables = {}
 
 if ge_df is not None:
     print("Generating plots and tables...")
+
+    # Detect long-format (cellranger multi) vs wide-format (cellranger count)
+    if 'Metric Name' in ge_df.columns and 'Metric Value' in ge_df.columns:
+        print("Detected long-format CSV (cellranger multi), pivoting to wide format...")
+        # Filter to Cells category, Gene Expression only, and no sub-grouping
+        cell_metrics = ge_df[
+            (ge_df['Category'] == 'Cells') &
+            (ge_df['Library Type'] == 'Gene Expression') &
+            (ge_df['Grouped By'].isna() | (ge_df['Grouped By'] == ''))
+        ].copy()
+        # Map long-format metric names to wide-format column names
+        metric_name_map = {
+            'Cells': 'Estimated Number of Cells',
+            'Confidently mapped to genome': 'Reads Mapped Confidently to Genome',
+            'Median UMI counts per cell': 'Median UMI Counts per Cell',
+            'Median genes per cell': 'Median Genes per Cell',
+            'Mean reads per cell': 'Mean Reads per Cell',
+            'Total genes detected': 'Total Genes Detected',
+        }
+        cell_metrics['Metric Name'] = cell_metrics['Metric Name'].map(metric_name_map)
+        cell_metrics = cell_metrics.dropna(subset=['Metric Name'])
+        # Pivot to wide format
+        id_cols = [c for c in ['Sample', 'Capture', 'Pool'] if c in cell_metrics.columns]
+        ge_df = cell_metrics.pivot_table(
+            index=id_cols, columns='Metric Name', values='Metric Value', aggfunc='first'
+        ).reset_index()
+        ge_df.columns.name = None
+        print(f"Pivoted data shape: {ge_df.shape}")
+        print(f"Pivoted columns: {list(ge_df.columns)}")
+
+    # Use 'Pool' as x-axis grouping if available, otherwise fall back to 'Capture'
+    has_pool = 'Pool' in ge_df.columns
+    x_col = 'Pool' if has_pool else 'Capture'
+    hue_col = 'Capture' if has_pool else 'Sample'
+    print(f"Using '{x_col}' as x-axis grouping column, '{hue_col}' as hue")
+
     # Gene Expression plots
     gex_cols_to_plot = [
         ('Estimated Number of Cells', False),
@@ -68,12 +104,12 @@ if ge_df is not None:
         # Use stacked bar chart for "Estimated Number of Cells", grouped for others
         is_stacked = (col == 'Estimated Number of Cells')
         plots['gex'][col.replace(" ", "_").lower()] = metric_plot(
-            ge_df, 'Pool', col, 'Capture', col, 
+            ge_df, x_col, col, hue_col, col, 
             y_percent=is_percent, stacked=is_stacked
         )
 
     # Generate table
-    table_cols = ['Capture', 'Pool'] + [col for col, _ in gex_cols_to_plot]
+    table_cols = [x_col] + ([hue_col] if hue_col != x_col else []) + [col for col, _ in gex_cols_to_plot]
     tables['ge_table'] = df_to_html(ge_df[table_cols])
     print("Successfully generated all plots and tables")
 else:
