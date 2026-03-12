@@ -28,6 +28,12 @@ indexes_to_build = []
 # Only include "cell_types" if annotate is true
 if snakemake.params.annotate:
     indexes_to_build.append(("cell_types", snakemake.output.cell_types_index))
+else:
+    # Create empty placeholder so Snakemake output requirement is satisfied
+    out_path = pathlib.Path(snakemake.output.cell_types_index)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text("")
+    print(f"Annotation disabled, wrote empty {out_path}")
 
 # Always include "summary"
 indexes_to_build.append(("summary", snakemake.output.summary_index))
