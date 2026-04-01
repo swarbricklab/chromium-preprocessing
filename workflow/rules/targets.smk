@@ -57,7 +57,7 @@ def multi_targets():
             )),
             capture=captures.index, vdj_assay=vdj_assays
         )
-    multi_targets.extend(vdj_targets)
+        multi_targets.extend(vdj_targets)
     return multi_targets
 
 # --- anotate ---
