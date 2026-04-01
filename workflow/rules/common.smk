@@ -63,7 +63,7 @@ def get_options(section):
                 if value == "true":
                     # Rename if necessary
                     if parameter in rename_map.keys():
-                        parameter = rename_map['parameter']
+                        parameter = rename_map[parameter]
                     options=options+" --"+parameter
                 else:
                     pass
