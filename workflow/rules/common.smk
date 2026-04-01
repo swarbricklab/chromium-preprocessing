@@ -9,7 +9,6 @@ def find_assays(libraries):
         "Gene Expression": "gene-expression",
         "VDJ-B": "vdj",
         "VDJ-T": "vdj",
-        "VDJ-B": "vdj",
         "Antibody Capture": "feature"
     }
     for assay in assays:

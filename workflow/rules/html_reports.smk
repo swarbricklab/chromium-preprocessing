@@ -23,7 +23,7 @@ rule generate_summary_report:
 	output:
 		cellranger_summary_report=report_dir/"cellranger/cellranger_summary_report.html"
 	params:
-		mode=config["mode"]
+		mode=mode
 	log:
 		log_dir/"cellranger_reports/generate_summary_report.log"
 	conda:
