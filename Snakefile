@@ -21,6 +21,12 @@ assays = find_assays(libraries)
 if 'vdj' in assays:
     vdj_assays = find_vdj_assays(libraries)
 
+# Derive the pipeline mode from assays and config
+if assays == ['gene-expression'] and not config['params']['extras'].get('hto', False) and not config['params']['extras'].get('ocm', False):
+    mode = "count"
+else:
+    mode = "multi"
+
 if not preflight_check():
     exit()
 

@@ -2,12 +2,12 @@
 # Use a `capture` column in the config sample sheet
 rule generate_web_indexes:
 	input:
-		captures=config["deps"]["captures"]
+		captures=config["deps"]["captures"],
+		base_template=config["ref"]["report_resources"]+"/base_template.html",
+		css_file=config["ref"]["report_resources"]+"/chromium_styles.css"
 	output:
-		cell_types_index=report_dir/"web/captures/cell_types_index.html",
-		summary_index=report_dir/"web/captures/summary_index.html"
-	params:
-		annotate=config['params']['extras']['annotate']
+		cell_types_index=report_dir/"cellranger/cell_types/cell_types_index.html" if config['params']['extras']['annotate'] else [],
+		summary_index=report_dir/"cellranger/web_summaries/summary_index.html"
 	log:
 		log_dir/"cellranger_reports/generate_web_indexes.log"
 	conda:
@@ -18,28 +18,30 @@ rule generate_web_indexes:
 rule generate_summary_report:
 	input:
 		combined_csv=rules.cr_summarise.output.group_summary,
-		cell_types_index=rules.generate_web_indexes.output.cell_types_index,
-		summary_index=rules.generate_web_indexes.output.summary_index
+		summary_template=config["ref"]["report_resources"]+"/summary_template.html",
+		css_file=config["ref"]["report_resources"]+"/chromium_styles.css"
 	output:
-		summary_report=report_dir/"cellranger/summary_report.html"
+		cellranger_summary_report=report_dir/"cellranger/cellranger_summary_report.html"
+	params:
+		mode=mode
 	log:
 		log_dir/"cellranger_reports/generate_summary_report.log"
 	conda:
 		"../envs/html_reports.yaml"
 	script:
-		"../scripts/build_summary_report.py"
+		"../scripts/build_cellranger_summary_report.py"
 
 rule generate_master_index:
 	input:
-		logo=config["ref"]["logo"],
-		summary_report=rules.generate_summary_report.output.summary_report,
+		cellranger_summary_report=rules.generate_summary_report.output.cellranger_summary_report,
+		summary_index=rules.generate_web_indexes.output.summary_index,
 		predemux_report=rules.predemux_generate_report.output.html if config['params']['extras']['predemux'] else [],
 		cell_types_index=rules.generate_web_indexes.output.cell_types_index if config['params']['extras']['annotate'] else [],
-		summary_index=rules.generate_web_indexes.output.summary_index
+		base_template=config["ref"]["report_resources"]+"/base_template.html",
+		css_file=config["ref"]["report_resources"]+"/chromium_styles.css",
+		logo=config["ref"]["report_resources"]+"/swarbricklablogo.png"
 	output:
 		master_index=report_dir/"cellranger/master_index.html"
-	params:
-		predemux=config['params']['extras']['predemux']
 	log:
 		log_dir/"cellranger_reports/generate_master_indexes.log"
 	conda:

@@ -7,11 +7,16 @@ import sys, os, pathlib, html, datetime, base64, shutil
 log = open(snakemake.log[0], "w")
 sys.stdout = sys.stderr = log
 
-# load template
-script_dir    = pathlib.Path(__file__).parent
-template_path = script_dir / "base_template.html"
+# load template from Snakemake inputs
+template_path = pathlib.Path(snakemake.input.base_template)
+css_path = pathlib.Path(snakemake.input.css_file)
+logo_source = pathlib.Path(snakemake.input.logo)
 if not template_path.exists():
-    sys.exit(f"ERROR: missing base_template.html in {script_dir}")
+    sys.exit(f"ERROR: missing base_template.html at {template_path}")
+if not css_path.exists():
+    sys.exit(f"ERROR: missing chromium_styles.css at {css_path}")
+if not logo_source.exists():
+    sys.exit(f"ERROR: missing swarbricklablogo.png at {logo_source}")
 TEMPLATE = template_path.read_text()
 
 # prepare master entries
@@ -19,38 +24,33 @@ entries = []
 
 # Always add the summary report as the first entry with a house icon
 # Get the relative path to the summary report
-summary_report_path = pathlib.Path(snakemake.input.summary_report)
-summary_href = os.path.relpath(summary_report_path, pathlib.Path(snakemake.output.master_index).parent)
+cellranger_summary_report_path = pathlib.Path(snakemake.input.cellranger_summary_report)
+summary_href = os.path.relpath(cellranger_summary_report_path, pathlib.Path(snakemake.output.master_index).parent)
 home_link_html = (
     f'<a class="home-link" href="{summary_href}" target="viewer">'
     '<i class="bi bi-house"></i> Summary</a>'
 )
 
-# 1) standalone predemux report, only if enabled in config
-if snakemake.params.predemux:
-    pred = pathlib.Path(snakemake.input.predemux_report)
-    if pred.exists():
-        # path relative to master_index.html’s dir
-        href = os.path.relpath(pred, pathlib.Path(snakemake.output.master_index).parent)
-        entries.append(("predemux_report", href))
-    else:
-        print(f"Warning: missing {pred}")
+# Standalone predemux report, only if enabled in input
+pred_report = getattr(snakemake.input, "predemux_report", None)
+if pred_report:
+    pred = pathlib.Path(pred_report)
+    href = os.path.relpath(pred, pathlib.Path(snakemake.output.master_index).parent)
+    entries.append(("predemux_report", href))
 else:
-    print("Skipping predemux_report: predemux disabled in config")
+    print("Skipping predemux_report: not enabled or missing in input")
 
-# 2) the two sub-indexes
-sub_indexes = [snakemake.input.summary_index]
-# Only include cell_types_index if annotate is enabled (non-empty input)
-if snakemake.input.cell_types_index:
-    sub_indexes.insert(0, snakemake.input.cell_types_index)
+# Add optional cell_types_index if present
+cell_types_index = getattr(snakemake.input, "cell_types_index", None)
+if cell_types_index:
+    p = pathlib.Path(cell_types_index)
+    href = os.path.relpath(p, pathlib.Path(snakemake.output.master_index).parent)
+    entries.append((p.stem, href))
 
-for idx in sub_indexes:
-    p = pathlib.Path(idx)
-    if p.exists():
-        href = os.path.relpath(p, pathlib.Path(snakemake.output.master_index).parent)
-        entries.append((p.stem, href))
-    else:
-        print(f"Warning: missing {p}")
+# summary_index is assumed always present
+p = pathlib.Path(snakemake.input.summary_index)
+href = os.path.relpath(p, pathlib.Path(snakemake.output.master_index).parent)
+entries.append((p.stem, href))
 
 # build <li>
 items_html = "\n".join(
@@ -60,10 +60,10 @@ items_html = "\n".join(
 )
 
 # Copy logo to destination, creating directory if needed
-logo_dest = pathlib.Path(snakemake.output.master_index).parent.parent / "resources" / "swarbricklablogo.png"
+logo_dest = pathlib.Path(snakemake.output.master_index).parent.parent / "resources" / "report" / "swarbricklablogo.png"
 logo_dest.parent.mkdir(parents=True, exist_ok=True)
 if not logo_dest.exists():
-    shutil.copy(snakemake.input.logo, logo_dest)
+    shutil.copy(logo_source, logo_dest)
 logo_rel_path = os.path.relpath(logo_dest, pathlib.Path(snakemake.output.master_index).parent)
 logo_html = (
     '<div class="logo">'
@@ -94,6 +94,39 @@ except Exception as e:
 master_out = pathlib.Path(snakemake.output.master_index)
 master_out.parent.mkdir(parents=True, exist_ok=True)
 master_out.write_text(out_html)
+
+# Copy CSS file to all relevant output directories
+css_destinations = []
+
+# CSS for master index directory
+css_destinations.append(master_out.parent / "chromium_styles.css")
+
+# CSS for summary report directory (if it exists)
+if hasattr(snakemake.input, 'cellranger_summary_report'):
+    summary_path = pathlib.Path(snakemake.input.cellranger_summary_report)
+    css_destinations.append(summary_path.parent / "chromium_styles.css")
+
+# CSS for web indexes directories (if they exist)
+if hasattr(snakemake.input, 'summary_index'):
+    summary_index_path = pathlib.Path(snakemake.input.summary_index)
+    css_destinations.append(summary_index_path.parent / "chromium_styles.css")
+
+if hasattr(snakemake.input, 'cell_types_index') and snakemake.input.cell_types_index:
+    cell_types_index_path = pathlib.Path(snakemake.input.cell_types_index)
+    css_destinations.append(cell_types_index_path.parent / "chromium_styles.css")
+
+# Copy CSS to all destinations
+for css_dest in set(css_destinations):  # Use set to avoid duplicates
+    try:
+        css_dest.parent.mkdir(parents=True, exist_ok=True)
+        # If file exists, make it writable first
+        if css_dest.exists():
+            css_dest.chmod(0o644)
+        shutil.copy2(css_path, css_dest)
+        print(f"Copied CSS file to {css_dest}")
+    except Exception as e:
+        print(f"Warning: Could not copy CSS file to {css_dest}: {e}")
+
 print(f"Wrote {master_out} with {len(entries)} entries")
 
 log.close()

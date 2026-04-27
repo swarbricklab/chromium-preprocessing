@@ -19,8 +19,8 @@ ref:
   feature: "config/feature_barcode_reference.csv"
   # Reference for VDJ-T
   vdj: "resources/vdj/refdata-cellranger-vdj-GRCh38-alts-ensembl-7.1.0"
-  # Logo for reports (must be DVC checked out)
-  logo: "modules/chromium-preprocessing/resources/swarbricklablogo.png"
+  # Report templates, CSS, and logo directory
+  report_resources: "resources/report"
 
 # -- Outputs -- #
 # Files and directories produced by the workflow
@@ -40,7 +40,7 @@ params:
   # Enable/disable additional processing
   extras:
     # Aggregate captures with 'cellranger aggr'
-    aggr: true
+    aggr: false
     # Cell-type annotation with 'cellranger annotate'
     annotate: false
     # HTO demux

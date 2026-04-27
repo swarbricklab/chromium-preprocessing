@@ -15,8 +15,8 @@ deps:
 ref:
   # Reference transcriptome for gene expression
   gene-expression: "resources/transcriptomes/refdata-gex-GRCh38-2020-A"
-  # Logo for reports (must be DVC checked out)
-  logo: "modules/chromium-preprocessing/resources/swarbricklablogo.png"
+  # Report templates, CSS, and logo directory
+  report_resources: "resources/report"
 
 # -- Outputs -- #
 # Files and directories produced by the workflow
@@ -36,7 +36,7 @@ params:
   # Enable/disable additional processing
   extras:
     # Aggregate captures with 'cellranger aggr'
-    aggr: true
+    aggr: false
     # Cell-type annotation with 'cellranger annotate'
     annotate: false
     # Extra cell filtering of cellranger outputs prior to SNP demux

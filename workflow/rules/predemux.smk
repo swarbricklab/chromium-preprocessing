@@ -45,8 +45,8 @@ rule predemux_filter_seurat:
         # For compatability with features.tsv.gz replacement, we specify exact files
         # rather than the directory function and output directory, 
         # and remove the features.tsv.gz file from the output
-        barcodes = out_dir/"count/predemux/{capture}/barcodes.tsv.gz",
-        matrix = out_dir/"count/predemux/{capture}/matrix.mtx.gz",
+        barcodes = out_dir/mode/"predemux/{capture}/barcodes.tsv.gz",
+        matrix = out_dir/mode/"predemux/{capture}/matrix.mtx.gz",
         filter_metrics = temp(out_dir/"predemux/qc/discarded_metrics/{capture}.csv")
     log:
         log_dir/"predemux/pdmx_filter/{capture}.log"
@@ -91,10 +91,10 @@ rule predemux_generate_report:
         mito_csvs = expand(rules.predemux_gather_qc_metrics.output.mito_csv, capture=captures.index),
         umi_csvs = expand(rules.predemux_gather_qc_metrics.output.umi_csv, capture=captures.index)
     output:
-        html = report_dir/"predemux/predemux_report.html",
-        plot_genes = report_dir/"predemux/img/plot_genes.png",
-        plot_mito = report_dir/"predemux/img/plot_mito.png",
-        plot_umi = report_dir/"predemux/img/plot_umi.png"
+        html = report_dir/"cellranger/predemux/predemux_report.html",
+        plot_genes = report_dir/"cellranger/predemux/img/plot_genes.png",
+        plot_mito = report_dir/"cellranger/predemux/img/plot_mito.png",
+        plot_umi = report_dir/"cellranger/predemux/img/plot_umi.png"
     log:
         log_dir/"predemux/predemux_report.log"
     params:
@@ -117,7 +117,7 @@ rule copy_original_features:
         features = rules.restructure_counts.output.filtered_feat,
         predemux_outs = rules.predemux_filter_seurat.output
     output:
-        out_dir/"count/predemux/{capture}/features.tsv.gz"
+        out_dir/mode/"predemux/{capture}/features.tsv.gz"
     log:
         log_dir/"predemux/copy_features/{capture}.log"
     shell:
