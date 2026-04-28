@@ -1,0 +1,29 @@
+name: DVC Remote Check
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  dvc-check:
+    if: ${{ github.event.pull_request.head.repo.fork == false }}
+    runs-on: [self-hosted, qxub-runner]
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Install latest dvc_tools
+        run: pip install --upgrade git+https://github.com/swarbricklab/dvc_tools.git
+
+      - name: Check DVC remote
+        uses: swarbricklab/ci/dvc-remote-check@main
+        with:
+          dvc-remote: gadi-chromium-processing
+          pr-number: ${{ github.event.pull_request.number }}
+          github-token: ${{ github.token }}
