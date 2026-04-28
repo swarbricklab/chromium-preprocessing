@@ -24,6 +24,6 @@ jobs:
       - name: Check DVC remote
         uses: swarbricklab/ci/dvc-remote-check@main
         with:
-          dvc-remote: metadata
+          dvc-remote: gadi-chromium-processing
           pr-number: ${{ github.event.pull_request.number }}
           github-token: ${{ github.token }}
