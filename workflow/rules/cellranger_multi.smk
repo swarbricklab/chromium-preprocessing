@@ -28,14 +28,14 @@ rule select_libraries:
             csv.write("\n")
 
             # write '[samples]' block if HTO demux enabled
-            if config['params']['extras']['hto']:
+            if config['params']['extras'].get('hto', False):
                 csv.write("[samples]\n")
                 samples=captures.loc[captures['capture'] == wildcards.capture, ['hashtag','sample']]
                 samples=samples.rename(columns={'sample': 'sample_id', 'hashtag': 'hashtag_ids'})
                 samples.to_csv(csv, index=False)
                 csv.write("\n")
             # write '[samples]' block if OCM demux enabled
-            if config['params']['extras']['ocm']:
+            if config['params']['extras'].get('ocm', False):
                 csv.write("[samples]\n")
                 ocm=captures.loc[captures['capture'] == wildcards.capture, ['ocm_barcode_ids','sample']]
                 ocm=ocm.rename(columns={'sample': 'sample_id', 'ocm_barcode_ids': 'ocm_barcode_ids'})

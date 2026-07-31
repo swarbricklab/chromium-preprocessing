@@ -19,7 +19,7 @@ rule predemux_convert_to_seurat:
     input:
         # Input does not depend on whether 'count' or 'multi' was run.
         # since both use the rule `restructure_h5`
-        filtered_mat = rules.restructure_h5.output.filtered_mat
+        filtered_mat = rules.restructure_h5.output.mat
     output:
         rds = temp(out_dir/"predemux/rds/{capture}.rds")
     log:
