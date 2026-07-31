@@ -65,7 +65,7 @@ def annotate_targets():
     """
     The following targets are enabled if 'params.extras.annotate' is 'true'
     """
-    if config['params']['extras']['hto'] or config['params']['extras']['ocm']:
+    if config['params']['extras'].get('hto', False) or config['params']['extras'].get('ocm', False):
         # Annotating by sample
         return expand(
             list(rules.restructure_annotations.output),
