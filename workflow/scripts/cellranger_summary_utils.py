@@ -134,6 +134,13 @@ def metric_plot(df, x, y, hue, title, y_percent=False, stacked=False):
         pivot_df.plot(kind='bar', stacked=True, ax=ax, rot=90)
         ax.legend(bbox_to_anchor=(1.05, 0.5), loc='center left', title=hue)
     else:
+        # Normalise the grouping column so captures with no pool assignment
+        # (NaN) survive as an empty-string bucket. Without this, sorted()
+        # over `.unique()` raises `TypeError: '<' not supported between
+        # instances of 'str' and 'float'`; filling only inside the sort
+        # would also silently drop those rows in the later
+        # `plot_df[plot_df[x] == pool]` filter since NaN != "".
+        plot_df[x] = plot_df[x].fillna("")
         pools = sorted(plot_df[x].unique())
         pool_data = {}
         for pool in pools:
