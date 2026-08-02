@@ -85,11 +85,7 @@ def prepare_data_for_plotting(df, index_cols, library_type=None, grouped_by=None
     else:
         # Count mode data - already in wide format, no filtering needed
         pivot_df = filtered_df.copy()
-    
-    # Add replicate information (from capture name) if Capture column exists
-    if 'Capture' in pivot_df.columns:
-        pivot_df['Replicate'] = pivot_df['Capture'].str.extract(r'.*_(\w)$').fillna('1')
-    
+
     return pivot_df
 
 

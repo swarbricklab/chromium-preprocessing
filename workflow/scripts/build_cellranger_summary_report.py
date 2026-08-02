@@ -166,14 +166,12 @@ else:
     # For count mode, ensure required columns exist
     ge_df = df.copy()
     
-    # Add Pool and Replicate if missing
+    # Add Pool if missing
     if 'Pool' not in ge_df.columns and 'Capture' in ge_df.columns:
         # Extract pool from capture name or use a default
         ge_df['Pool'] = ge_df['Capture'].str.extract(r'(\w+)_').fillna('default_pool')
-    
-    if 'Replicate' not in ge_df.columns and 'Capture' in ge_df.columns:
-        ge_df['Replicate'] = ge_df['Capture'].str.extract(r'.*_(\w)$').fillna('1')
-    
+
+
     # Get all numeric columns (excluding index columns)
     metric_columns = [col for col in ge_df.columns if col not in index_cols]
     print(f"  Found {len(metric_columns)} metrics: {list(metric_columns)[:5]}{'...' if len(metric_columns) > 5 else ''}")
