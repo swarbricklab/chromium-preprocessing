@@ -259,14 +259,12 @@ tryCatch({
             }
             write_10x(mat = empty_counts, path = output_dir)
         } else {
-            # Extract counts for writing
-            # ERROR NOTE: Error during filtering for PRADO_10c_mini: GetAssayData doesn't work for multiple layers in v5 assay.
-            # The seurat object structure for multi is, for reference:
-            # An object of class Seurat 
-            # 36873 features across 3215 samples within 1 assay 
-            # Active assay: RNA (36873 features, 0 variable features)
-            # 2 layers present: counts.Gene Expression, counts.Antibody Capture
-            counts_to_write <- GetAssayData(seurat_filtered, layer = "counts") # Assumes default assay and "counts" layer
+            # Extract counts for writing.
+            # pdmx_convert_seurat.R ensures the input RDS carries a
+            # single-layer counts assay (in multi mode, only the Gene
+            # Expression matrix is loaded), so the plain layer = "counts"
+            # lookup is valid for both count and multi modes.
+            counts_to_write <- GetAssayData(seurat_filtered, layer = "counts")
             write_10x(mat = counts_to_write, path = output_dir)
         }
         message("Filtered Cell Ranger files successfully written.")
