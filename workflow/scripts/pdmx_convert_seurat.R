@@ -88,12 +88,34 @@ tryCatch({
         stop("Read10X_h5 did not return a valid matrix or list of matrices. Check input H5 file.", call.=FALSE) # Updated error
     }
 
+    # In multi mode (CITE / VDJ / etc.), Read10X_h5 returns a *list* of
+    # matrices keyed by library type. Passing the list straight through to
+    # CreateSeuratObject would leave the RNA assay with multiple counts
+    # layers ("counts.Gene Expression", "counts.Antibody Capture", ...),
+    # and downstream `GetAssayData(obj, layer = "counts")` calls in
+    # pdmx_filter.R / pdmx_metrics.R fail with:
+    #     "GetAssayData doesn't work for multiple layers in v5 assay."
+    # Predemux is a GE-based cell-filtering step (min genes, min UMI,
+    # max mito %), so keep only the Gene Expression matrix.
+    if (is.list(counts_matrix)) {
+        if (!"Gene Expression" %in% names(counts_matrix)) {
+            stop(
+                "Read10X_h5 returned a list of matrices but no 'Gene Expression' ",
+                "entry — predemux needs a Gene Expression assay to filter on. ",
+                "Available entries: ", paste(names(counts_matrix), collapse = ", "),
+                call. = FALSE
+            )
+        }
+        message(sprintf(
+            "Multi-assay h5 detected (entries: %s); selecting 'Gene Expression' for predemux.",
+            paste(names(counts_matrix), collapse = ", ")
+        ))
+        counts_matrix <- counts_matrix[["Gene Expression"]]
+    }
+
     # Create Seurat object
     message("Creating Seurat object...")
-    # CreateSeuratObject expects a matrix. With multi, it will likely be a list of matrices
-    # To add multi compatability, I think we'd have to check if counts_matrix is a list
-    # and then find the matrix corresponding to gene expression??
-    seurat_object <- CreateSeuratObject(counts = counts_matrix) 
+    seurat_object <- CreateSeuratObject(counts = counts_matrix)
     message(sprintf("Seurat object created with %d genes and %d cells.", nrow(seurat_object), ncol(seurat_object)))
 
     # Calculate and add mitochondrial percentage
