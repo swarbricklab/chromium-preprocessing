@@ -113,6 +113,92 @@ To run this workflow, you will need to edit the following files within `config/c
 
 Refer to the [configuration guide](config/README.md) for a detailed explanation and see the templates and test config linked above for examples.
 
+## Re-running with additional captures
+
+Adding captures to `captures.csv` / `libraries.csv` and re-running is *mostly*
+incremental, but not entirely, and the exceptions are worth knowing before you start.
+
+**Cell Ranger is correctly scoped.** `cellranger_count` runs only for captures whose
+outputs are missing, so adding two captures to a 148-capture dataset costs two
+Cell Ranger runs, not 150. The same holds for `annotate_capture` and the
+`restructure_*` rules.
+
+**The predemux chain is not.** `predemux_convert_to_seurat`, `predemux_filter_seurat`
+and `predemux_gather_qc_metrics` write `temp()` outputs, and `predemux_generate_report`
+aggregates them across every capture in the sheet. Once a run completes those
+intermediates are deleted, so rebuilding that one report requires re-running all three
+rules for *every* capture — plus `copy_original_features`, which cascades off the
+regenerated filter outputs.
+
+A worked example, adding 2 captures to a 148-capture dataset:
+
+```
+cellranger_count                2      <- the expensive rule, correctly scoped
+annotate_capture                2
+restructure_* (8 rules)         2 each
+predemux_convert_to_seurat    150      <- temp() outputs, all rebuilt
+predemux_filter_seurat        150
+predemux_gather_qc_metrics    150
+copy_original_features        150
+                              ---
+total                         626
+```
+
+This is usually acceptable. Measured from PBS accounting, the 148 redundant runs are
+~44 s, ~60 s, ~18 s and ~7 s each respectively — about **49 SU in total** — and they sit
+off the critical path, because they depend on `restructure_h5` outputs that already
+exist. They run alongside Cell Ranger rather than delaying it. The critical path is
+`cellranger_count` (~112 min) then `annotate_capture` (~23 min).
+
+Check the plan before starting:
+
+```bash
+./modules/chromium-preprocessing/run_mod.sh -n --reason
+```
+
+### Do not reach for `--touch`
+
+The reasons snakemake gives are `Missing output files`, not stale timestamps — the
+`temp()` intermediates are genuinely gone. `--touch` cannot help with that: it only
+marks existing files as current, and produces an identical 626-job plan. It is a no-op
+here, not a shortcut.
+
+### Under DVC
+
+Datasets embedding this module usually wrap it in a DVC stage. DVC removes a stage's
+outputs *before* re-running it, which deletes the Cell Ranger results for every capture
+— turning a two-capture addition into a full rebuild of all 150.
+
+`persist: true` on the stage outputs prevents that deletion:
+
+```yaml
+outs:
+  - data/cellranger/count:
+      persist: true
+```
+
+**Check your `cache.type` before doing this on a stage that holds BAMs.** `persist` does
+not skip the pre-run removal; in `Stage.remove_outs()` it substitutes `unprotect` for
+`remove`, and unprotecting a symlinked or hardlinked file byte-copies it back into the
+workspace. With `cache.type = hardlink,symlink` that is a full copy of every file in the
+stage's outputs, charged before any compute starts.
+
+On a stage with 4.9 TB of outputs — 4.7 TB of it BAMs — this was an estimated **8 hours
+of copying to avoid a 2 hour rebuild**, and would have duplicated 4.9 TB that the links
+existed to share. With the default `cache.type=copy` there is no link to break and the
+concern does not apply.
+
+Where the unprotect pass costs more than the rebuild, run the workflow directly and
+register the outputs afterwards:
+
+```bash
+./modules/chromium-preprocessing/run_mod.sh    # snakemake decides what to skip
+dvc commit <stage>                             # record outputs DVC did not produce
+```
+
+The trade is that the stage is no longer reproducible purely through `dvc repro`. Worth
+recording in the dataset repo when you make it.
+
 ## Tests
 
 This module includes test data and a test script that verifies that the module can process this test data into the expected results.
