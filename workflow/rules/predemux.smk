@@ -122,3 +122,35 @@ rule copy_original_features:
         log_dir/"predemux/copy_features/{capture}.log"
     shell:
         "cp -v {input.features} {output}"
+
+rule predemux_sex_calls:
+    """
+    Per-barcode sex typing (chrY-unique panel + XIST) off the KEPT predemux
+    filtered matrix. Emits sex_calls.csv (one row per barcode) with a continuous
+    signed `sex_score`, raw chrY/XIST counts, and an explicit
+    male|female|ambiguous|low_quality call. Consumed downstream by demux
+    (spike-in handling / QC) and mkobj (obs). Because it reads the persistent
+    matrix — not the temp() rds — re-tuning thresholds re-runs only this rule.
+    Requires features.tsv.gz (via copy_original_features) so gene symbols resolve.
+    Sex thresholds are optional config (params.predemux.sex.*); the .get()
+    fallbacks below keep it working for configs that omit the block.
+    """
+    input:
+        barcodes = rules.predemux_filter_seurat.output.barcodes,
+        matrix = rules.predemux_filter_seurat.output.matrix,
+        features = rules.copy_original_features.output,
+    output:
+        sex_calls = out_dir/mode/"predemux/{capture}/sex_calls.csv"
+    log:
+        log_dir/"predemux/pdmx_sex/{capture}.log"
+    params:
+        min_umi = config['params']['predemux'].get('sex', {}).get('min-umi', 200),
+        min_genes = config['params']['predemux'].get('sex', {}).get('min-genes', 100),
+        chry_min_cp10k = config['params']['predemux'].get('sex', {}).get('chrY-min-cp10k', 1.0),
+        xist_min_cp10k = config['params']['predemux'].get('sex', {}).get('xist-min-cp10k', 1.0),
+        chry_markers = config['params']['predemux'].get('sex', {}).get('chrY-markers', "RPS4Y1,DDX3Y,UTY,USP9Y,EIF1AY,KDM5D"),
+        xist_gene = config['params']['predemux'].get('sex', {}).get('xist-gene', "XIST"),
+    conda:
+        "../envs/predemux_sex.yaml"
+    script:
+        "../scripts/pdmx_sex.R"

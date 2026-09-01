@@ -56,4 +56,12 @@ params:
     min-umi-count: 500 # Integer value
     max-mito: -1 # Integer percentage (0 - 100 inclusive))
     mito-pattern: "^MT-" # String value (for mice: "^mt-")
+    # Exercise per-barcode sex typing in the test run
+    sex:
+      min-umi: 200
+      min-genes: 100
+      chrY-min-cp10k: 1.0
+      xist-min-cp10k: 1.0
+      chrY-markers: "RPS4Y1,DDX3Y,UTY,USP9Y,EIF1AY,KDM5D"
+      xist-gene: "XIST"
     

@@ -192,4 +192,14 @@ def predemux_targets():
         expand(list(rules.copy_original_features.output), capture=captures.index)
     )
 
+    # Per-barcode sex calls (chrY panel + XIST), one CSV per capture.
+    # Count mode only: in multi mode the predemux matrix is GEX-only while its
+    # features.tsv.gz still carries the Antibody Capture rows (and the matrices
+    # are degenerate), so mkobj already ignores multi/predemux in favour of
+    # count/filtered. Sex typing follows the same treatment.
+    if mode == "count":
+        predemux_targets.extend(
+            expand(rules.predemux_sex_calls.output.sex_calls, capture=captures.index)
+        )
+
     return predemux_targets
