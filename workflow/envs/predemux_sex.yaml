@@ -1,0 +1,29 @@
+# environment.yaml for the predemux per-barcode sex-typing rule
+#
+# Deliberately SEPARATE from predemux.yaml. The sex rule reads the already
+# written (kept, non-temp) filtered 10x matrix — it does not need Seurat,
+# DropletUtils or hdf5r — so this env is small and fast to solve. Keeping it
+# distinct also means the existing predemux rules (convert / filter / metrics /
+# report) keep pointing at an unchanged predemux.yaml, so snakemake's
+# `software-env` rerun trigger does NOT mark them for a rebuild when sex-typing
+# is added.
+#
+# NOTE on speckle::classifySex: issue #126 suggested it, but classifySex is not
+# in the Bioconductor/bioconda `speckle` package (it lives only in the
+# GitHub-only Oshlack/speckle & phipsonlab/cellXY repos) and returns only a bare
+# Male/Female/NA label with no score or confidence. pdmx_sex.R instead computes
+# the sex call directly from XIST + the chrY-unique panel, which is conda-native
+# and emits the full continuous schema requested in the issue. speckle is kept
+# as the documented design reference, not a dependency.
+name: predemux_sex
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - r-base >=4.2
+  - r-argparser
+  - r-matrix
+  - r-dplyr
+  - r-readr
+  - r-tibble

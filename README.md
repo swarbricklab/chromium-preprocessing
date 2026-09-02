@@ -199,6 +199,57 @@ dvc commit <stage>                             # record outputs DVC did not prod
 The trade is that the stage is no longer reproducible purely through `dvc repro`. Worth
 recording in the dataset repo when you make it.
 
+## Per-barcode sex typing
+
+When `params.extras.predemux` is on, `predemux_sex_calls` writes
+`predemux/<capture>/sex_calls.csv` — one row per filtered barcode — from the
+chrY-unique panel (`RPS4Y1, DDX3Y, UTY, USP9Y, EIF1AY, KDM5D`) and `XIST`. Sex is an
+axis orthogonal to genotype clustering, so the call helps diagnose a male PBMC
+spike-in that souporcell/freemuxlet miss when its cell fraction is tiny, and QCs
+every demux run.
+
+`sex_call` has five classes, deliberately keeping *conflict* and *no evidence*
+distinct (they mean opposite things):
+
+| class | meaning |
+|-------|---------|
+| `male` | chrY panel detected, XIST not |
+| `female` | XIST detected, chrY panel not |
+| `ambiguous` | **both** detected — conflict / likely cross-sex doublet |
+| `no_signal` | callable depth but **neither** detected (XIST/chrY dropout) |
+| `low_quality` | too shallow to sex-type (below the min UMI / gene depth) |
+
+`no_signal` is usually the largest non-female class and is a *capture* limit, not a
+tuning knob: XIST is a single lncRNA and the chrY panel is small, so shallow cells
+often carry no sex-informative molecules at all (thresholds can't recover what was
+never captured). `ambiguous` is the small, informative doublet-conflict class. For a
+per-donor sex verdict, aggregate the confident `male`/`female` calls over a demux
+group rather than reading per-cell classes directly.
+
+Columns: `barcode, capture_id, chrY_counts, chrY_score, xist_counts, xist_score,
+n_umi, n_genes, sex_score, sex_call, confidence`. `chrY_score`/`xist_score` are
+`log1p(CP10K)` module scores; `sex_score = chrY_score - xist_score` (>0 male-leaning,
+<0 female-leaning); `confidence` is the margin `|sex_score|`. The raw counts and
+continuous scores are kept so thresholds can be re-tuned per use — strict for spike-in
+removal, lenient for QC.
+
+Thresholds are optional config under `params.predemux.sex.*` (see the
+[template](config/templates/count/config.yaml)); omitting the block uses built-in
+defaults. The reference must hard-mask the chrY PAR (as `refdata-gex-GRCh38-2020-A`
+does) so PAR reads map to chrX and the chrY panel stays clean.
+
+The rule reads the **persistent** filtered matrix (not the `temp()` rds) via its own
+lightweight [`predemux_sex.yaml`](workflow/envs/predemux_sex.yaml) env, so adding or
+re-tuning sex typing re-runs only `predemux_sex_calls` — no Cell Ranger, no Seurat
+rebuild, and the other predemux rules are untouched.
+
+> **Note on `speckle::classifySex`.** Issue #126 suggested it, but `classifySex` is not
+> in the Bioconductor/bioconda `speckle` package (it lives only in the GitHub-only
+> `Oshlack/speckle` / `phipsonlab/cellXY` repos) and returns only a bare `Male/Female/NA`
+> label with no score or confidence. The call is therefore computed directly from
+> XIST + the chrY panel, which is conda-native and emits the full continuous schema
+> above; speckle is kept as the design reference, not a dependency.
+
 ## Tests
 
 This module includes test data and a test script that verifies that the module can process this test data into the expected results.

@@ -53,6 +53,43 @@
                 "description": "Regular expression pattern used to identify mitochondrial genes.",
                 "type": "string",
                 "minLength": 1
+              },
+              "sex": {
+                "description": "Optional per-barcode sex-typing thresholds (chrY panel + XIST). Omit to use built-in defaults.",
+                "type": "object",
+                "properties": {
+                  "min-umi": {
+                    "description": "Cells with fewer UMIs are called 'low_quality' (too shallow to sex-type).",
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "min-genes": {
+                    "description": "Cells with fewer detected genes are called 'low_quality'.",
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "chrY-min-cp10k": {
+                    "description": "chrY panel CP10K at/above which chrY is considered present.",
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "xist-min-cp10k": {
+                    "description": "XIST CP10K at/above which XIST is considered present.",
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "chrY-markers": {
+                    "description": "Comma-separated chrY-unique gene symbols.",
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "xist-gene": {
+                    "description": "Gene symbol used as the female (X-inactivation) marker.",
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "additionalProperties": false
               }
             },
             "required": [
