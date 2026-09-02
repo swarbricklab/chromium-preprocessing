@@ -202,11 +202,29 @@ recording in the dataset repo when you make it.
 ## Per-barcode sex typing
 
 When `params.extras.predemux` is on, `predemux_sex_calls` writes
-`predemux/<capture>/sex_calls.csv` — one row per filtered barcode — classifying each
-as `male | female | ambiguous | low_quality` from the chrY-unique panel
-(`RPS4Y1, DDX3Y, UTY, USP9Y, EIF1AY, KDM5D`) and `XIST`. Sex is an axis orthogonal to
-genotype clustering, so the call helps diagnose a male PBMC spike-in that
-souporcell/freemuxlet miss when its cell fraction is tiny, and QCs every demux run.
+`predemux/<capture>/sex_calls.csv` — one row per filtered barcode — from the
+chrY-unique panel (`RPS4Y1, DDX3Y, UTY, USP9Y, EIF1AY, KDM5D`) and `XIST`. Sex is an
+axis orthogonal to genotype clustering, so the call helps diagnose a male PBMC
+spike-in that souporcell/freemuxlet miss when its cell fraction is tiny, and QCs
+every demux run.
+
+`sex_call` has five classes, deliberately keeping *conflict* and *no evidence*
+distinct (they mean opposite things):
+
+| class | meaning |
+|-------|---------|
+| `male` | chrY panel detected, XIST not |
+| `female` | XIST detected, chrY panel not |
+| `ambiguous` | **both** detected — conflict / likely cross-sex doublet |
+| `no_signal` | callable depth but **neither** detected (XIST/chrY dropout) |
+| `low_quality` | too shallow to sex-type (below the min UMI / gene depth) |
+
+`no_signal` is usually the largest non-female class and is a *capture* limit, not a
+tuning knob: XIST is a single lncRNA and the chrY panel is small, so shallow cells
+often carry no sex-informative molecules at all (thresholds can't recover what was
+never captured). `ambiguous` is the small, informative doublet-conflict class. For a
+per-donor sex verdict, aggregate the confident `male`/`female` calls over a demux
+group rather than reading per-cell classes directly.
 
 Columns: `barcode, capture_id, chrY_counts, chrY_score, xist_counts, xist_score,
 n_umi, n_genes, sex_score, sex_call, confidence`. `chrY_score`/`xist_score` are

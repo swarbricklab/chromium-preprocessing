@@ -2,7 +2,11 @@
 # Predemux Script 5: Per-barcode sex typing (chrY panel + XIST)
 #
 # Emits one row per (filtered) barcode classifying it as
-#   male | female | ambiguous | low_quality
+#   male       chrY panel detected, XIST not
+#   female     XIST detected, chrY panel not
+#   ambiguous  BOTH detected -> conflict / likely cross-sex doublet
+#   no_signal  callable depth but NEITHER detected (XIST/chrY dropout)
+#   low_quality too shallow to sex-type (below min UMI / gene depth)
 # from chrY-unique gene expression and XIST, plus the continuous, signed
 # `sex_score` and the raw counts so thresholds can be re-tuned downstream
 # (strict for spike-in removal, lenient for QC) without re-running anything
@@ -244,14 +248,21 @@ tryCatch({
     sex_score   <- chrY_score - xist_score
 
     # --- Classify ---
+    # Five classes, keeping "conflict" and "no evidence" distinct — they mean
+    # opposite things: `ambiguous` is a genuine both-signals conflict (a likely
+    # cross-sex doublet), whereas `no_signal` is a callable-depth cell that
+    # simply captured neither XIST nor any chrY marker (single-lncRNA / small
+    # panel dropout, ~no threshold can rescue it). Collapsing them hides the
+    # small, informative conflict class behind a large dropout class.
     callable  <- (n_umi_vec >= min_umi) & (n_genes_vec >= min_genes)
     male_ev   <- chrY_cp10k >= chry_min_cp10k
     female_ev <- xist_cp10k >= xist_min_cp10k
 
-    sex_call <- rep("ambiguous", n_cells)          # both-present or neither-present
-    sex_call[!callable] <- "low_quality"
+    sex_call <- rep("no_signal", n_cells)                       # callable, neither detected
     sex_call[callable &  male_ev & !female_ev] <- "male"
     sex_call[callable & !male_ev &  female_ev] <- "female"
+    sex_call[callable &  male_ev &  female_ev] <- "ambiguous"   # both -> conflict/doublet
+    sex_call[!callable] <- "low_quality"                        # too shallow to sex-type
 
     confidence <- abs(sex_score)
     confidence[!callable] <- NA_real_
@@ -272,10 +283,11 @@ tryCatch({
 
     write_csv(out, output_csv)
 
-    tab <- table(factor(sex_call, levels = c("male", "female", "ambiguous", "low_quality")))
-    message(sprintf("Sex calls for %s: male=%d, female=%d, ambiguous=%d, low_quality=%d (of %d cells)",
+    tab <- table(factor(sex_call,
+                        levels = c("male", "female", "ambiguous", "no_signal", "low_quality")))
+    message(sprintf("Sex calls for %s: male=%d, female=%d, ambiguous=%d, no_signal=%d, low_quality=%d (of %d cells)",
                     capture_id, tab[["male"]], tab[["female"]], tab[["ambiguous"]],
-                    tab[["low_quality"]], n_cells))
+                    tab[["no_signal"]], tab[["low_quality"]], n_cells))
     message(sprintf("Saved sex calls to: %s", output_csv))
     message(sprintf("Successfully completed sex typing for capture: %s", capture_id))
   }
