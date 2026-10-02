@@ -1,3 +1,10 @@
+# These rules render small HTML reports; run them on the controller rather than
+# queuing a compute job for each.
+localrules:
+    generate_web_indexes,
+    generate_summary_report,
+    generate_master_index,
+
 # Rule to generate index for all the .html reports
 # Use a `capture` column in the config sample sheet
 rule generate_web_indexes:

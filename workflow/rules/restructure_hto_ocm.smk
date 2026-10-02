@@ -3,6 +3,13 @@
 # Restructuring also allows users to selectively pull only the data of interest, reducing download times
 # The new structure also makes it possible to specify dependencies more precisely, speeding up data validation.
 
+# These copy small metadata (summary csv/html, multiplexing analysis); run them
+# on the controller rather than queuing a compute job. The bulk data copies
+# (BAMs, h5, loupe, count matrices) remain compute jobs.
+localrules:
+    restructure_multiplexing_analysis,
+    restructure_summary,
+
 rule restructure_multiplexing_analysis:
     input: 
         tmp=rules.cellranger_multi.output.cr_dir

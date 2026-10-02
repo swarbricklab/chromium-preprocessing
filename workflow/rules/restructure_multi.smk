@@ -3,6 +3,11 @@
 # Restructuring also allows users to selectively pull only the data of interest, reducing download times
 # The new structure also makes it possible to specify dependencies more precisely, speeding up data validation.
 
+# Small metadata copy; run on the controller rather than queuing a compute job.
+# The bulk data copies (BAMs, h5, loupe, count matrices) remain compute jobs.
+localrules:
+    restructure_summary,
+
 # Restructure summary data
 rule restructure_summary:
     input:
