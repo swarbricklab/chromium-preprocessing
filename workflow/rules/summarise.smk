@@ -1,5 +1,9 @@
 # This rule file includes for reorganising and summarising the output from multi or count
 
+# A quick csv stack/join; run on the controller rather than queuing a compute job.
+localrules:
+    cr_summarise,
+
 # Helper functions to resolve per-capture vs per-sample metrics paths
 def _is_demux():
     return config['params']['extras'].get('hto', False) or config['params']['extras'].get('ocm', False)

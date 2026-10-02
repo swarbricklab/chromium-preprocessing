@@ -4,6 +4,13 @@
 # Rather than hand-craft a CSV file for each individual capture, this workflow creates a
 # CSV file for each capture dynamically, based on the global configuration
 
+# These rules just assemble small text config files; run them on the controller
+# rather than queuing a compute job for each.
+localrules:
+    select_libraries,
+    create_ini,
+    combine_dynamic_config,
+
 
 # Create CSV section of multi config
 # Select rows where 'fastq_id' matches {capture}
