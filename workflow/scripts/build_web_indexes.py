@@ -28,15 +28,11 @@ captures_dir = pathlib.Path(snakemake.output.summary_index).parent.parent
 # Determine which indexes to build based on config
 indexes_to_build = []
 
-# Only include "cell_types" if annotate is true
-if snakemake.output.cell_types_index:  # This will be empty list when false
+# Only include "cell_types" if annotate is enabled.
+# When disabled, the rule's cell_types_index output is an empty list (there is no
+# output file to create), so there is nothing to do here.
+if snakemake.output.cell_types_index:
     indexes_to_build.append(("cell_types", snakemake.output.cell_types_index))
-else:
-    # Create empty placeholder so Snakemake output requirement is satisfied
-    out_path = pathlib.Path(snakemake.output.cell_types_index)
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text("")
-    print(f"Annotation disabled, wrote empty {out_path}")
 
 # Always include "summary"
 indexes_to_build.append(("summary", snakemake.output.summary_index))

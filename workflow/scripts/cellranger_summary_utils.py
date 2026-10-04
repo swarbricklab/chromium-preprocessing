@@ -19,17 +19,34 @@ from io import BytesIO
 # 1. Low-level data cleaning helpers
 
 def clean_numeric_column(series):
-    """Clean numeric columns by removing commas and converting to float."""
+    """Clean numeric (count) columns to float.
+
+    Handles Cell Ranger's string metric formats: plain "12,799", and the
+    count-with-fraction form "12799 (77.0%)" used in multi/OCM summaries, where
+    the leading number is the count we want to plot.
+    """
     if series.dtype == 'object':  # String data
-        return series.str.replace(',', '').astype(float)
+        # Take the leading numeric token (before any space/parenthesis),
+        # dropping thousands separators.
+        extracted = (series.astype(str)
+                           .str.replace(',', '', regex=False)
+                           .str.extract(r'^\s*([-+]?\d*\.?\d+)')[0])
+        return extracted.astype(float)
     else:
         return series.astype(float)
 
 
 def clean_percentage_column(series):
-    """Clean percentage columns by removing % and converting to float (0-1 scale)."""
-    if series.dtype == 'object':  # String data like "98.2%"
-        return series.str.replace('%', '').astype(float) / 100
+    """Clean percentage columns to float on a 0-1 scale.
+
+    Handles plain "98.2%" and the count-with-fraction form "12799 (77.0%)"
+    (multi/OCM), where the percentage is the number immediately before '%'.
+    """
+    if series.dtype == 'object':  # String data like "98.2%" or "12799 (77.0%)"
+        extracted = (series.astype(str)
+                           .str.replace(',', '', regex=False)
+                           .str.extract(r'([-+]?\d*\.?\d+)\s*%')[0])
+        return extracted.astype(float) / 100
     else:
         return series.astype(float)
 
