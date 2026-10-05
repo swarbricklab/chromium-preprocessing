@@ -1,0 +1,13 @@
+md5: 9a16736067a08224112e3917c01fbce6
+frozen: true
+deps:
+- checksum: '"756a4eb76dccb0a7f9d909ace754c6ee-1365"'
+  size: 11448662640
+  hash: md5
+  path: 
+    https://cf.10xgenomics.com/supp/cell-exp/refdata-gex-GRCh38-2020-A.tar.gz
+outs:
+- md5: dfd654de39bff23917471e7fcc7a00cd
+  size: 11448662640
+  hash: md5
+  path: refdata-gex-GRCh38-2020-A.tar.gz

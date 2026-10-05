@@ -69,32 +69,56 @@ For example: `data/sc/fastqs`
 Importing data in this way will create `.dvc` files to track the import.
 These `.dvc` files should be tracked via git in the dataset repository.
 
-### Resources
+### Reference data
 
-In the context of this workflow, resoures include reference transcriptomes and probe sets.
-These resources should also be dvc-tracked as part of the dataset repo.
+This workflow needs two 10x Genomics references for human poly-A captures:
 
-There are three ways of adding these resources:
-1. [import](https://dvc.org/doc/command-reference/import) the resource from the [references](https://github.com/swarbricklab/references) registry (see the `10X/` folder in particular)
-2. copy the resources from the workfow repo (this repo) to the dataset repo
-3. add the resources directly to the dataset
+- `resources/transcriptomes/refdata-gex-GRCh38-2020-A` — Cell Ranger GEX reference
+- `resources/vdj/refdata-cellranger-vdj-GRCh38-alts-ensembl-7.1.0` — Cell Ranger V(D)J reference
 
-Here 1) is the preferred option.
-If you cannot locate the resources that you need in the [references](https://github.com/swarbricklab/references) registry then [create an issue](https://github.com/swarbricklab/references/issues/new) to have it added as it is very likely that others will need it too.
+Both are **public** and tracked via `dvc import-url` straight from 10x's own download
+URLs (see `resources/**/*.tar.gz.dvc`), so they can be fetched without access to any
+private registry. The references are distributed by 10x under 10x's own license;
+`dvc update` re-fetches the tarballs **directly from 10x**, so each user obtains them
+from the source (this repo does not re-host them).
 
-Option 2) may be convenient if you are working with human cells and poly-A captures. 
-In this case, copy the entire content of the `resources/` directory in order to include `.gitignore` files correctly.
-Use `rsync` rather than `cp` to avoid clobbering any existing files in the `resources/` directory of the dataset repo.
-Finally, be sure to `dvc pull` the actual data prior to running the workflow.
+Fetch the tarballs, then unpack them into the paths the config/rules expect:
+
+```bash
+# If you have access to the project's DVC remote:
+dvc pull
+# Or, without remote access, re-download straight from the public 10x URLs:
+dvc update resources/transcriptomes/refdata-gex-GRCh38-2020-A.tar.gz.dvc \
+           resources/vdj/refdata-cellranger-vdj-GRCh38-alts-ensembl-7.1.0.tar.gz.dvc
+
+./prep.sh    # unpack the archives into place; the tarballs can then be deleted
 ```
-rsync -av --ignore-existing modules/chromium-preprocessing/resources resources/
-dvc pull -R resources
-```
-Run this command from the top of the dataset repo, assuming that this workflow repo has been installed as a git submodule at `modules/chromium-preprocessing/`.
-Adjust the path if necessary.
 
-Option 3 should only be a last resort. 
-Beter to add the resources to the [references](https://github.com/swarbricklab/references) registry to make life easier for others.
+Run `prep.sh` from the top of the repo (standalone) or of the super-project that mounts
+this workflow as a module — the same place you run `run_mod.sh` / `run_test.sh`.
+
+### Adding other resources (module mode)
+
+For project-specific resources beyond the two bundled references (e.g. a different
+transcriptome or a custom probe set), dvc-track them as part of the dataset repo. The
+options, in order of preference:
+
+1. [import](https://dvc.org/doc/command-reference/import) the resource from the
+   [references](https://github.com/swarbricklab/references) registry (see the `10X/`
+   folder in particular). If you cannot locate the resource you need there,
+   [create an issue](https://github.com/swarbricklab/references/issues/new) to have it
+   added — others likely need it too.
+2. copy the resources from this repo to the dataset repo. Copy the entire `resources/`
+   directory so the `.gitignore` files come across correctly; use `rsync` rather than
+   `cp` to avoid clobbering existing files, then fetch the data:
+   ```
+   rsync -av --ignore-existing modules/chromium-preprocessing/resources resources/
+   dvc pull -R resources
+   ```
+   Run this from the top of the dataset repo, assuming this workflow is installed as a
+   git submodule at `modules/chromium-preprocessing/` (adjust the path if necessary).
+3. add the resources directly to the dataset (last resort — prefer adding them to the
+   [references](https://github.com/swarbricklab/references) registry so others benefit).
 
 ## Config
 
