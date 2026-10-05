@@ -1,0 +1,13 @@
+md5: 4bedafbbaf4969a8cdddb6f7df880b41
+frozen: true
+deps:
+- checksum: '"65b5b033723b07fc1bb5375e5645761c"'
+  size: 3370702
+  hash: md5
+  path: 
+    https://cf.10xgenomics.com/supp/cell-vdj/refdata-cellranger-vdj-GRCh38-alts-ensembl-7.1.0.tar.gz
+outs:
+- md5: 65b5b033723b07fc1bb5375e5645761c
+  size: 3370702
+  hash: md5
+  path: refdata-cellranger-vdj-GRCh38-alts-ensembl-7.1.0.tar.gz
