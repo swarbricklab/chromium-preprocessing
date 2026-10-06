@@ -2,12 +2,40 @@
 
 ## Overview
 
-Pre-processing for raw Chromium data, including GE (gene expression), FB (CITE) and VDJ, as well as basic QC.
+A [Snakemake](https://snakemake.readthedocs.io/) workflow that pre-processes raw 10x
+Genomics **Chromium** single-cell data by running **Cell Ranger** and tidying its outputs
+into a consistent, analysis-ready layout with QC reports. It handles gene expression (GE),
+feature barcoding (FB / CITE / HTO), and V(D)J assays, and can optionally aggregate pools,
+pre-filter cells for demultiplexing, and annotate cell types.
+
+Depending on the assays present it runs in one of two modes (see [Modes](#modes) and the
+[rule graphs](#rule-graphs)): **count** (`cellranger count`, GE only) or **multi**
+(`cellranger multi`, for FB/VDJ or HTO/OCM demultiplexing).
+
+### Inputs
+
+- **FASTQs** from one or more 10x Chromium captures (GE, and optionally FB and/or VDJ),
+  DVC-tracked (see [Data preparation](#data-preparation)).
+- **References** — a Cell Ranger GEX transcriptome and, for VDJ, a V(D)J reference
+  (public 10x references, see [Reference data](#reference-data)).
+- **Config** — `config.yaml`, `captures.csv`, `libraries.csv` (see [Config](#config)).
+
+### Outputs
+
+Per capture, a tidied Cell Ranger result tree under the configured results dir:
+count matrices (`count/{filtered,raw}`), `h5`, `bam`, `loupe`, `cr_analysis`,
+per-capture `summary/metrics`, optional `annotation` (cell types) and `predemux` outputs,
+and a set of HTML QC reports indexed by a `master_index.html`.
+
+### Contents
+
 - [Rule graphs](#rule-graphs)
+- [Tools](#tools)
 - [Modes](#modes)
 - [Data preparation](#data-preparation)
 - [Config](#config)
 - [Tests](#tests)
+- [Status](#status)
 
 ## Rule graphs
 
@@ -20,6 +48,35 @@ The workflow runs in one of two modes depending on the assays present (see [Mode
 ### multi mode (feature barcode / VDJ, or HTO/OCM demux)
 
 ![multi rule graph](docs/rulegraph_multi.svg)
+
+## Tools
+
+The workflow uses three provisioning mechanisms, selected per rule. Runs enable all three
+(`--use-singularity --use-conda --use-envmodules`, already set in the bundled profiles):
+
+| Tool | Used for | How it's provided | Version |
+|------|----------|-------------------|---------|
+| **Cell Ranger** | `count` / `multi` / `aggr` / `annotate` | **environment module** (`module load cellranger/<version>`) | `9.0.1` (set in config `modules.cellranger`) |
+| PBS submission helper | Cell Ranger cluster jobmode | environment module (`qsub/ext`) | site-provided |
+| Apptainer/Singularity | container runtime | environment module (`module load singularity`) | site-provided |
+| samtools | BAM merge in `cellranger_aggr` | container (`quay.io/biocontainers/samtools`) | `0.1.19` |
+| csvkit | summary table assembly (`cr_summarise`) | conda (`workflow/envs/csvkit.yaml`) | `1.5.0` |
+| R + Seurat / DropletUtils | predemux cell filtering & per-barcode sex typing | conda (`predemux.yaml`, `predemux_sex.yaml`) | R ≥ 4.2, Seurat 5.2 |
+| Python + pandas / matplotlib / jinja2 | HTML reports, aggr CSV glue | conda (`html_reports.yaml`, `generate_aggr_csv.yaml`) | — |
+
+Notes:
+
+- **Cell Ranger is proprietary 10x Genomics software and is not bundled.** It must be
+  installed separately and made available as an environment module named
+  `cellranger/<version>` matching `modules.cellranger` in your config. It is used under 10x's
+  own license.
+- The **environment-module** mechanism (Cell Ranger, `qsub/ext`, singularity) is NCI-specific;
+  on another site, provide equivalent modules or adapt the profiles under `profiles/`.
+- **samtools is pinned to a very old 0.1.19** for the `cellranger_aggr` BAM merge. This pin
+  predates the current maintainers; treat it as load-bearing until shown otherwise and
+  re-validate the merge output before bumping it.
+- Everything that *can* be sourced from public conda/containers is, so only Cell Ranger needs
+  a manual install.
 
 ## Modes
 
@@ -39,7 +96,16 @@ This is how the workflow is applied to real-world data.
 
 To use this workflow in "module mode", first [create a dataset repo](https://github.com/swarbricklab/data_management/blob/main/SOP/dataset_creation.md) to host all of the data relevant to the project, as well as all of the code used to process that data (which may include other modules and/or scripts in addition to this workflow).
 
-TODO: Add notes for how to install any workflow as a submodule; link to those notes here
+Then add this workflow as a git submodule under `modules/` and check it out recursively
+(it carries a nested submodule for the shared PBS profiles):
+
+```bash
+git submodule add git@github.com:swarbricklab/chromium-preprocessing.git modules/chromium-preprocessing
+git submodule update --init --recursive
+```
+
+The module is driven from the top of the dataset repo via `run_mod.sh` (see [Config](#config)
+for which files to copy across).
 
 Be sure to [prepare the data](#data-preparation) and [configure the workflow](#config) to process that data. 
 
@@ -331,3 +397,14 @@ Job logs are produced by the PBS Pro job scheduler when rules are submitted as j
 
 Rule logs capture key outputs for each rule, redirected to a log file. 
 Thes logs are stored under `logs/chromium-preprocessing` in a subdirectory based on the rule name.
+
+## Status
+
+Original Swarbrick Lab work, preparing for a citable **v1.0.0** release. The reference data
+is public (see [Reference data](#reference-data)), the tooling is public except for the
+proprietary Cell Ranger dependency (see [Tools](#tools)), and the bundled test fixture lets
+the workflow be run end-to-end. Planned pre-1.0 and post-1.0 work is tracked in the
+[issue tracker](https://github.com/swarbricklab/chromium-preprocessing/issues).
+
+- **License:** MIT — see [`LICENSE`](LICENSE).
+- **Citation:** see [`CITATION.cff`](CITATION.cff).
