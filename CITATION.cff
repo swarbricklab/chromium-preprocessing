@@ -1,0 +1,61 @@
+# Author list/order and the release date are placeholders to confirm before the
+# v1.0.0 release (see issue #138). The Zenodo concept DOI is added under
+# `identifiers:` once the GitHub release mints it.
+cff-version: 1.2.0
+message: "If you use this workflow, please cite it using the metadata below."
+version: "1.0.0"
+date-released: "2026-10-06"
+title: "chromium-preprocessing: a Snakemake workflow for 10x Chromium single-cell preprocessing"
+abstract: >-
+  A Snakemake workflow that pre-processes raw 10x Genomics Chromium single-cell
+  data — gene expression, feature barcoding (CITE/HTO), and V(D)J — by running
+  Cell Ranger (count / multi / aggr), restructuring and annotating the outputs,
+  optionally pre-filtering cells for demultiplexing, and generating HTML QC
+  reports. It runs standalone or as a git submodule within a DVC-tracked dataset.
+type: software
+authors:
+  - given-names: John
+    family-names: Reeves
+    affiliation: "Garvan Institute of Medical Research"
+    alias: johnyaku
+    orcid: "https://orcid.org/0000-0001-7368-7489"
+  - given-names: Victor
+    family-names: Liu
+    affiliation: "Garvan Institute of Medical Research"
+    alias: vliu378
+    orcid: "https://orcid.org/0009-0008-7628-7825"
+  - given-names: Daniel
+    family-names: Roden
+    affiliation: "Garvan Institute of Medical Research"
+    alias: dlroden
+    orcid: "https://orcid.org/0000-0003-2393-5805"
+  - given-names: James
+    family-names: Douglas
+    affiliation: "Garvan Institute of Medical Research"
+    alias: jd-garv
+    orcid: "https://orcid.org/0009-0004-2559-026X"
+  - given-names: Alexander
+    family-names: Swarbrick
+    affiliation: "Garvan Institute of Medical Research"
+    orcid: "https://orcid.org/0000-0002-3051-5676"
+repository-code: "https://github.com/swarbricklab/chromium-preprocessing"
+url: "https://github.com/swarbricklab/chromium-preprocessing"
+license: MIT
+keywords:
+  - single-cell
+  - 10x Genomics
+  - Chromium
+  - Cell Ranger
+  - scRNA-seq
+  - CITE-seq
+  - VDJ
+  - Snakemake
+references:
+  - type: software
+    title: "Cell Ranger"
+    authors:
+      - name: "10x Genomics"
+    url: "https://www.10xgenomics.com/support/software/cell-ranger"
+    notes: >-
+      Proprietary 10x Genomics software this workflow drives (count / multi / aggr /
+      annotate); must be installed separately and is used under 10x's license.

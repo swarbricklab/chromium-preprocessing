@@ -3,10 +3,23 @@
 ## Overview
 
 Pre-processing for raw Chromium data, including GE (gene expression), FB (CITE) and VDJ, as well as basic QC.
+- [Rule graphs](#rule-graphs)
 - [Modes](#modes)
 - [Data preparation](#data-preparation)
 - [Config](#config)
 - [Tests](#tests)
+
+## Rule graphs
+
+The workflow runs in one of two modes depending on the assays present (see [Modes](#modes)).
+
+### count mode (gene expression only)
+
+![count rule graph](docs/rulegraph_count.svg)
+
+### multi mode (feature barcode / VDJ, or HTO/OCM demux)
+
+![multi rule graph](docs/rulegraph_multi.svg)
 
 ## Modes
 
