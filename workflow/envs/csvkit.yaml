@@ -1,0 +1,5 @@
+name: csvkit
+channels:
+  - conda-forge
+dependencies:
+  - csvkit =1.5.0
