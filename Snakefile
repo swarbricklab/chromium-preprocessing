@@ -11,6 +11,14 @@ out_dir=Path(config['outs']['results'])
 report_dir=Path(config['outs']['reports'])
 log_dir=Path(config['outs']['logs'])
 
+# Optional feature flags. Normalise them once here so a config that simply omits
+# a flag is treated as "off" rather than raising KeyError. New optional features
+# (e.g. ocm) can then be added without breaking configs written before they
+# existed. Keep this list in sync with the flags consumed across the rules.
+_extras = config.setdefault('params', {}).setdefault('extras', {})
+for _flag in ('hto', 'ocm', 'aggr', 'predemux', 'annotate'):
+    _extras.setdefault(_flag, False)
+
 include: 'workflow/rules/preflight.smk'
 include: 'workflow/rules/common.smk'
 include: 'workflow/rules/targets.smk'
