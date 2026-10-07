@@ -369,14 +369,31 @@ As well as [template config](config/templates/), this repo includes [test config
 
 ### Test script
 
-The [run_test.sh](run_test.sh) script runs test on the [test data](#test-data) above.
-This script assumes that 
-1. the test data is available (pulled via DVC)
-2. a conda environment called `snakemake_7.32.4` is available
+The [run_test.sh](run_test.sh) script runs both tests and verifies the output against the
+golden. It assumes:
+1. the test data is available (`dvc pull -R test/data/`)
+2. the golden is materialised (`dvc checkout test/results.dvc`)
+3. a conda environment called `snakemake_7.32.4` is available
 
-The script runs the workflow by calling `snakemake` with the appropriate [config](#test-config) and profile.
-The script then compares the results with the expected results in `test_data/results/` by doing a selective `diff` (TODO).
-Any differences will be reported (TODO).
+```bash
+./run_test.sh                  # run count + multi, compare to the golden
+./run_test.sh --update-golden  # run + compare, but keep the fresh output to bless a new golden
+./run_test.sh -n               # dry-run (passthrough to snakemake; no comparison)
+```
+
+A real run stashes the committed golden, re-runs the workflow from scratch, then
+content-compares the fresh output against the golden with
+[`workflow/scripts/compare_to_golden.py`](workflow/scripts/compare_to_golden.py), exiting
+non-zero if any meaningful output differs. The committed golden is restored afterwards
+(unless `--update-golden` is given).
+
+Cell Ranger output is **not bit-reproducible**: Loupe viewer files (`.cloupe`/`.vloupe`),
+HTML reports, BAMs and a few other artefacts embed timestamps/UUIDs or nondeterministic
+assembly and vary between otherwise-identical runs. The comparison therefore checks every
+file **except** those (which are checked for presence only), comparing `.gz` outputs by
+decompressed content. This was calibrated empirically by running the test twice and diffing:
+the count matrices, per-cell/summary CSVs, `.h5` matrices and VDJ references were all
+byte-identical across runs (see issue #137).
 
 ### Test results
 
@@ -384,8 +401,9 @@ There are (at least) two scenarios when it can be helpful to run the [test scrip
 1. practicing how to run the workflow
 2. testing whether improvements to the workflow have broken existing functionality
 
-In the latter case, it is possible that the improvements result in additional or different test results.
-If this happens, then update `test/results.dvc` to capture the results that should be expected with the latest version of the workflow.
+In the latter case, improvements may legitimately change the results. When that is intended,
+re-run with `--update-golden`, then `dvc add test/results && dvc push` and commit the updated
+`test/results.dvc` to record the new expected output.
 
 ## Logs
 

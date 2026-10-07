@@ -1,0 +1,126 @@
+#!/usr/bin/env python3
+"""Content-compare a produced Cell Ranger result tree against the golden.
+
+Cell Ranger output is NOT bit-reproducible: Loupe viewer files, HTML reports, BAMs
+and a few other artefacts embed timestamps / UUIDs / nondeterministic assembly and
+differ between otherwise-identical runs. This was established empirically by running
+the test twice and diffing (see issue #137): across two runs, every scientifically
+meaningful output — count matrices, per-cell/summary CSVs, .h5 matrices, VDJ
+references — was byte-identical, while only the files in IGNORE below varied.
+
+So this is a *deny-list* comparison: every file is compared byte-for-byte
+(decompressing .gz first, so gzip's embedded mtime is not a false difference)
+EXCEPT files matching IGNORE, which are only checked for presence, not content.
+
+Exit 0 if the produced tree matches the golden (ignoring IGNORE content); exit 1
+with a report otherwise.
+
+Usage: compare_to_golden.py <produced_dir> <golden_dir> [--label NAME]
+"""
+import argparse, gzip, hashlib, os, sys
+
+# Files whose *content* legitimately varies run-to-run (checked for presence only).
+# Matched by basename suffix, except the exact-name and dir cases below.
+IGNORE_SUFFIXES = (
+    ".cloupe", ".vloupe",   # Loupe viewer files (embedded UUIDs/timestamps)
+    ".html",                # rendered reports (timestamps)
+    ".bam", ".bai",         # alignments (@PG lines; VDJ assembly is nondeterministic)
+    ".png",                 # plots
+    ".pb",                  # protobuf blobs
+    ".check",               # sentinel files (e.g. cloud auth)
+    ".mri.tgz",             # cellranger pipestance diagnostic bundle
+)
+IGNORE_NAMES = (".snakemake_timestamp",)
+IGNORE_DIR_PARTS = ("logs",)   # anything under a logs/ directory
+
+
+def is_ignored(rel):
+    base = os.path.basename(rel)
+    if base in IGNORE_NAMES:
+        return True
+    if any(base.endswith(s) for s in IGNORE_SUFFIXES):
+        return True
+    parts = rel.split(os.sep)
+    if any(p in IGNORE_DIR_PARTS for p in parts):
+        return True
+    return False
+
+
+def relfiles(root):
+    out = set()
+    for dp, _, fs in os.walk(root):
+        for f in fs:
+            out.add(os.path.relpath(os.path.join(dp, f), root))
+    return out
+
+
+def content_hash(path):
+    h = hashlib.md5()
+    opener = gzip.open if path.endswith(".gz") else open
+    with opener(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("produced")
+    ap.add_argument("golden")
+    ap.add_argument("--label", default="")
+    args = ap.parse_args()
+
+    tag = f"[{args.label}] " if args.label else ""
+    if not os.path.isdir(args.produced):
+        print(f"{tag}FAIL: produced dir not found: {args.produced}")
+        return 1
+    if not os.path.isdir(args.golden):
+        print(f"{tag}FAIL: golden dir not found: {args.golden}")
+        return 1
+
+    prod, gold = relfiles(args.produced), relfiles(args.golden)
+
+    # Structural differences (ignore-listed files don't count as failures, but
+    # a missing/extra *meaningful* output does).
+    only_prod = sorted(f for f in (prod - gold) if not is_ignored(f))
+    only_gold = sorted(f for f in (gold - prod) if not is_ignored(f))
+
+    # Content differences among compared (non-ignored) common files.
+    content_diffs = []
+    for rel in sorted(prod & gold):
+        if is_ignored(rel):
+            continue
+        try:
+            if content_hash(os.path.join(args.produced, rel)) != content_hash(os.path.join(args.golden, rel)):
+                content_diffs.append(rel)
+        except OSError as e:
+            content_diffs.append(f"{rel}  (read error: {e})")
+
+    n_compared = sum(1 for f in (prod & gold) if not is_ignored(f))
+    n_ignored = len(prod & gold) - n_compared
+    ok = not (only_prod or only_gold or content_diffs)
+
+    print(f"{tag}{'PASS' if ok else 'FAIL'}: compared {n_compared} files "
+          f"({n_ignored} ignored by content), {len(content_diffs)} differ, "
+          f"{len(only_prod)} extra, {len(only_gold)} missing")
+
+    if only_gold:
+        print(f"{tag}  MISSING from produced (in golden, not produced):")
+        for f in only_gold[:40]:
+            print(f"{tag}    - {f}")
+    if only_prod:
+        print(f"{tag}  EXTRA in produced (not in golden):")
+        for f in only_prod[:40]:
+            print(f"{tag}    + {f}")
+    if content_diffs:
+        print(f"{tag}  CONTENT differs from golden:")
+        for f in content_diffs[:40]:
+            print(f"{tag}    ~ {f}")
+        if len(content_diffs) > 40:
+            print(f"{tag}    ... and {len(content_diffs) - 40} more")
+
+    return 0 if ok else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())
