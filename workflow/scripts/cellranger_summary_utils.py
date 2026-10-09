@@ -8,12 +8,28 @@ Functions are ordered by their level of abstraction:
   4. HTML conversion helper
   5. High-level section builder
 """
+import os
+import datetime
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 import base64
 from io import BytesIO
+
+
+def report_timestamp():
+    """ISO-8601 timestamp for report headers.
+
+    Honors SOURCE_DATE_EPOCH (the reproducible-builds convention): when set, the
+    reports are stamped with that fixed time so repeated runs are byte-identical
+    (used by run_test.sh for the golden comparison). Otherwise the current local
+    time is used.
+    """
+    epoch = os.environ.get("SOURCE_DATE_EPOCH")
+    if epoch:
+        return datetime.datetime.utcfromtimestamp(int(epoch)).isoformat(timespec="seconds")
+    return datetime.datetime.now().isoformat(timespec="seconds")
 
 
 # 1. Low-level data cleaning helpers

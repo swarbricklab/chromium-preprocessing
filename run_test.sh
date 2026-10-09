@@ -44,6 +44,12 @@ fi
 tests="count multi"
 export JOBMODE="'profiles/global/nci/resources/pbspro.template'"
 
+# Pin report timestamps so our HTML reports are byte-identical across runs and can be
+# compared against the golden (reproducible-builds convention; see
+# workflow/scripts/cellranger_summary_utils.py:report_timestamp). The golden was
+# generated with this same value. 1704067200 = 2024-01-01T00:00:00Z.
+export SOURCE_DATE_EPOCH=1704067200
+
 run_snakemake() {
     local cfg="$1"; shift
     snakemake $global_profile $workflow_profile \

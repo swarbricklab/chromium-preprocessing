@@ -2,6 +2,7 @@
 # Produce a master_index.html that embeds indexes generated in `build_web_indexes.py` plus predemux_report.html
 
 import sys, os, pathlib, html, datetime, base64, shutil
+from cellranger_summary_utils import report_timestamp
 
 # redirect into Snakemake log
 log = open(snakemake.log[0], "w")
@@ -80,7 +81,7 @@ try:
         page_title=html.escape(page_title),
         home_link=home_link_html,  # home icon HTML
         items=items_html,
-        timestamp=datetime.datetime.now().isoformat(timespec="seconds"),
+        timestamp=report_timestamp(),
         iframe_src=summary_href
     )
 except Exception as e:

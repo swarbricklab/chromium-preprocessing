@@ -16,7 +16,7 @@ import shutil
 log = open(snakemake.log[0], "w")
 sys.stdout = sys.stderr = log
 
-from cellranger_summary_utils import metric_plot, df_to_html, prepare_data_for_plotting, create_section_plots
+from cellranger_summary_utils import metric_plot, df_to_html, prepare_data_for_plotting, create_section_plots, report_timestamp
 print("Successfully imported summary_utils")
 
 # --- Config ---
@@ -213,7 +213,7 @@ template_vars = {
     "sections": sections,
     "data_format": data_format,
     "has_data": any(s['has_data'] for s in sections),
-    "timestamp": datetime.datetime.now().isoformat(timespec="seconds")
+    "timestamp": report_timestamp()
 }
 
 html_out = template.render(**template_vars)
