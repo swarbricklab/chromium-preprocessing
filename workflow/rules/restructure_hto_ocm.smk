@@ -208,13 +208,19 @@ rule restructure_raw_vdj_bams:
     output:
         bam=out_dir/"bam/vdj/{vdj_assay}/captures/{capture}/all_contig.bam",
         bai=out_dir/"bam/vdj/{vdj_assay}/captures/{capture}/all_contig.bam.bai",
+    container:
+        "docker://quay.io/biocontainers/samtools:1.22--h96c455f_0"
     shell:
+        # Normalise to a deterministic BAM (see restructure_multi.smk:restructure_vdj_bams
+        # and issue #137): canonical single-thread sort (--no-PG), strip @PG, re-index.
         """
-        # Source directories
         multi={input.tmp}/outs/multi
-        # Bams
-        cp -v $multi/{wildcards.vdj_assay}/all_contig.bam {output.bam}
-        cp -v $multi/{wildcards.vdj_assay}/all_contig.bam.bai {output.bai}
+        src=$multi/{wildcards.vdj_assay}/all_contig.bam
+        samtools sort -@ 1 --no-PG "$src" -o {output.bam}.presort.bam
+        samtools view -H {output.bam}.presort.bam | grep -v '^@PG' > {output.bam}.hdr.sam
+        samtools reheader --no-PG {output.bam}.hdr.sam {output.bam}.presort.bam > {output.bam}
+        samtools index {output.bam}
+        rm -f {output.bam}.presort.bam {output.bam}.hdr.sam
         """
 
 rule restructure_sample_vdj_bams:
@@ -223,13 +229,19 @@ rule restructure_sample_vdj_bams:
     output:
         bam=out_dir/"bam/vdj/{vdj_assay}/captures/{capture}/{sample}/consensus.bam",
         bai=out_dir/"bam/vdj/{vdj_assay}/captures/{capture}/{sample}/consensus.bam.bai"
+    container:
+        "docker://quay.io/biocontainers/samtools:1.22--h96c455f_0"
     shell:
+        # Normalise to a deterministic BAM (see restructure_multi.smk:restructure_vdj_bams
+        # and issue #137): canonical single-thread sort (--no-PG), strip @PG, re-index.
         """
-        # Source directories
         per_sample={input.tmp}/outs/per_sample_outs/{wildcards.sample}
-        # Bams
-        cp -v $per_sample/{wildcards.vdj_assay}/consensus.bam {output.bam}
-        cp -v $per_sample/{wildcards.vdj_assay}/consensus.bam.bai {output.bai}
+        src=$per_sample/{wildcards.vdj_assay}/consensus.bam
+        samtools sort -@ 1 --no-PG "$src" -o {output.bam}.presort.bam
+        samtools view -H {output.bam}.presort.bam | grep -v '^@PG' > {output.bam}.hdr.sam
+        samtools reheader --no-PG {output.bam}.hdr.sam {output.bam}.presort.bam > {output.bam}
+        samtools index {output.bam}
+        rm -f {output.bam}.presort.bam {output.bam}.hdr.sam
         """
 
 rule restructure_multi_vdj_annotations:

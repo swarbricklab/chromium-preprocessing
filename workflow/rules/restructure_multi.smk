@@ -154,16 +154,30 @@ rule restructure_vdj_bams:
         raw_bai=out_dir/"bam/vdj/{vdj_assay}/captures/{capture}/all_contig.bam.bai",
         filtered_bam=out_dir/"bam/vdj/{vdj_assay}/captures/{capture}/consensus.bam",
         filtered_bai=out_dir/"bam/vdj/{vdj_assay}/captures/{capture}/consensus.bam.bai"
+    container:
+        "docker://quay.io/biocontainers/samtools:1.22--h96c455f_0"
     shell:
+        # Cell Ranger's VDJ contig BAMs assemble the same contigs/reads each run but are
+        # emitted in a run-varying record order, and their @PG carries a run-unique martian
+        # path. Normalise to a deterministic BAM so reruns are byte-identical and can be
+        # compared against the golden (see issue #137): canonical single-thread coordinate
+        # sort (--no-PG), strip the @PG header lines, and re-index. The contig set (@SQ) and
+        # read content are unchanged.
         """
-        # Source directories
         multi={input.tmp}/outs/multi
         per_sample={input.tmp}/outs/per_sample_outs/{wildcards.capture}
-        # Bams
-        cp -v $multi/{wildcards.vdj_assay}/all_contig.bam {output.raw_bam}
-        cp -v $multi/{wildcards.vdj_assay}/all_contig.bam.bai {output.raw_bai}
-        cp -v $per_sample/{wildcards.vdj_assay}/consensus.bam {output.filtered_bam}
-        cp -v $per_sample/{wildcards.vdj_assay}/consensus.bam.bai {output.filtered_bai}
+
+        normalise() {{
+            src="$1"; dst="$2"
+            samtools sort -@ 1 --no-PG "$src" -o "$dst.presort.bam"
+            samtools view -H "$dst.presort.bam" | grep -v '^@PG' > "$dst.hdr.sam"
+            samtools reheader --no-PG "$dst.hdr.sam" "$dst.presort.bam" > "$dst"
+            samtools index "$dst"
+            rm -f "$dst.presort.bam" "$dst.hdr.sam"
+        }}
+
+        normalise $multi/{wildcards.vdj_assay}/all_contig.bam {output.raw_bam}
+        normalise $per_sample/{wildcards.vdj_assay}/consensus.bam {output.filtered_bam}
         """
 
 rule restructure_vdj_annotations:
