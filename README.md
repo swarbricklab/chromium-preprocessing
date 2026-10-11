@@ -387,19 +387,26 @@ content-compares the fresh output against the golden with
 non-zero if any meaningful output differs. The committed golden is restored afterwards
 (unless `--update-golden` is given).
 
-Cell Ranger output is **not bit-reproducible**: Loupe viewer files (`.cloupe`/`.vloupe`),
-Cell Ranger's own `web_summary` pages, BAMs and a few other artefacts embed timestamps/UUIDs
-or nondeterministic assembly and vary between otherwise-identical runs. The comparison
-therefore checks every file **except** those (which are checked for presence only), comparing
-`.gz` outputs by decompressed content. This was calibrated empirically by running the test
-twice and diffing: the count matrices, per-cell/summary CSVs, `.h5` matrices and VDJ
-references were all byte-identical across runs (see issue #137).
+Cell Ranger output is **not bit-reproducible** out of the box: Loupe viewer files
+(`.cloupe`/`.vloupe`), Cell Ranger's own `web_summary` pages, and a few other artefacts embed
+timestamps/UUIDs and vary between otherwise-identical runs. The comparison checks every file
+**except** those (which are checked for presence only), comparing `.gz` outputs by
+decompressed content. This was calibrated empirically by running the test twice and diffing:
+the count matrices, per-cell/summary CSVs, `.h5` matrices and VDJ references were all
+byte-identical across runs (see issue #137).
 
-This workflow's **own** HTML reports *are* compared: their only run-varying field was an
-injected wall-clock timestamp, now pinned via `SOURCE_DATE_EPOCH` (the reproducible-builds
-convention — see `workflow/scripts/cellranger_summary_utils.py`), which `run_test.sh` sets so
-the reports are byte-stable. Only Cell Ranger's own `web_summaries/captures/*.html` (10x's
-format) remain ignored.
+Two sources of nondeterminism were *removed* rather than ignored, so the comparison covers
+them too:
+
+- **Reports.** This workflow's own HTML reports injected a wall-clock timestamp; it is now
+  pinned via `SOURCE_DATE_EPOCH` (the reproducible-builds convention — see
+  `workflow/scripts/cellranger_summary_utils.py`), which `run_test.sh` sets, so the reports
+  are byte-stable and compared. Only Cell Ranger's own `web_summaries/captures/*.html` (10x's
+  format) remain ignored.
+- **VDJ BAMs.** Cell Ranger assembles the same contigs/reads each run but emits them in a
+  run-varying record order with a run-unique `@PG` path. The `restructure_vdj_bams` rules
+  normalise them (canonical sort `--no-PG`, strip `@PG`, re-index), so the BAMs — count and
+  VDJ alike — are byte-stable and compared. The contig set and read content are unchanged.
 
 ### Test results
 
