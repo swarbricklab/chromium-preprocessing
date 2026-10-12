@@ -61,6 +61,9 @@ if config['params']['extras'].get('hto', False) or config['params']['extras'].ge
             cp -r $outs/cell_annotation_differential_expression.csv {output.de}
             cp -r $outs/cell_annotation_results.json.gz {output.json}
             cp -r $outs/web_summary_cell_types.html {output.web}
+            # Strip the embedded absolute workspace paths so the cell-types web summary is
+            # deterministic and portable (see issue #137).
+            sed -i "s|$(pwd)/||g" {output.web}
             """
 else:
     # Annotate by capture
@@ -109,4 +112,7 @@ else:
             cp -r $outs/cell_annotation_differential_expression.csv {output.de}
             cp -r $outs/cell_annotation_results.json.gz {output.json}
             cp -r $outs/web_summary_cell_types.html {output.web}
+            # Strip the embedded absolute workspace paths so the cell-types web summary is
+            # deterministic and portable (see issue #137).
+            sed -i "s|$(pwd)/||g" {output.web}
             """

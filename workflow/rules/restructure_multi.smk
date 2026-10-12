@@ -20,6 +20,9 @@ rule restructure_summary:
         sample_dir={input.tmp}/outs/per_sample_outs/{wildcards.capture}
         cp -v $sample_dir/metrics_summary.csv {output.metrics}
         cp -v $sample_dir/web_summary.html {output.web}
+        # Strip the embedded absolute workspace paths so web_summary.html is deterministic
+        # and portable (see issue #137).
+        sed -i "s|$(pwd)/||g" {output.web}
         """
 
 # Restructure bam files
