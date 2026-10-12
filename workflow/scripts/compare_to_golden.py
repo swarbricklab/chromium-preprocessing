@@ -39,10 +39,17 @@ IGNORE_SUFFIXES = (
 # (sort --no-PG + strip @PG + re-index), so both are byte-stable (see issue #137).
 IGNORE_NAMES = (".snakemake_timestamp",)
 IGNORE_DIR_PARTS = ("logs",)   # anything under a logs/ directory
-# Cell Ranger's own web summaries (web_summary.html / web_summary_cell_types.html) have no
-# timestamp; their only run/environment-varying content was embedded absolute input paths,
-# which the restructure rules now strip, so they are deterministic and compared (issue #137).
-IGNORE_PATH_SUBSTRINGS = ()
+# Cell Ranger's own web summaries (web_summary.html / web_summary_cell_types.html). The
+# restructure rules strip the embedded absolute input paths (so the files are portable), but
+# these pages also embed Cell Ranger's secondary-analysis output — the differential-expression
+# table (gene order + floating-point p-values / log-fold-changes) and the cell-type table row
+# order — which is numerically/ordering-nondeterministic run-to-run and cannot be stripped.
+# So they are checked for presence only. The deterministic scientific outputs they summarise
+# (matrices, metrics CSVs, .h5, VDJ, BAMs) are all content-compared. See issue #137.
+IGNORE_PATH_SUBSTRINGS = (
+    os.path.join("web_summaries", "captures") + os.sep,
+    os.path.join("cell_types", "captures") + os.sep,
+)
 
 
 def is_ignored(rel):

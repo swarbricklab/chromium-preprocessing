@@ -388,23 +388,28 @@ non-zero if any meaningful output differs. The committed golden is restored afte
 (unless `--update-golden` is given).
 
 Cell Ranger output is **not bit-reproducible** out of the box: Loupe viewer files
-(`.cloupe`/`.vloupe`) and a few other binary artefacts embed UUIDs and vary between
-otherwise-identical runs. The comparison checks every file **except** those (which are checked
-for presence only), comparing `.gz` outputs by decompressed content. This was calibrated
-empirically by running the test twice and diffing: the count matrices, per-cell/summary CSVs,
-`.h5` matrices and VDJ references were all byte-identical across runs (see issue #137).
+(`.cloupe`/`.vloupe`) embed UUIDs, and Cell Ranger's own web summaries embed
+numerically-nondeterministic secondary-analysis output (see below). The comparison checks
+every file **except** those (which are checked for presence only), comparing `.gz` outputs by
+decompressed content. This was calibrated empirically by running the test twice and diffing:
+the count matrices, per-cell/summary CSVs, `.h5` matrices and VDJ references were all
+byte-identical across runs (see issue #137).
 
-Three sources of nondeterminism were *removed* rather than ignored, so the comparison covers
+Two sources of nondeterminism were *removed* rather than ignored, so the comparison covers
 them too:
 
 - **Reports.** This workflow's own HTML reports injected a wall-clock timestamp; it is now
   pinned via `SOURCE_DATE_EPOCH` (the reproducible-builds convention — see
   `workflow/scripts/cellranger_summary_utils.py`), which `run_test.sh` sets, so the reports
   are byte-stable and compared.
-- **Cell Ranger web summaries.** `web_summary.html` / `web_summary_cell_types.html` have no
-  timestamp; their only varying content was the absolute input paths Cell Ranger bakes in. The
-  restructure rules strip the workspace-root prefix (`sed "s|$(pwd)/||g"`), making them
-  deterministic *and* portable across checkout locations, so they are compared.
+- **VDJ BAMs** (see below).
+
+Cell Ranger's **own web summaries** (`web_summary.html` / `web_summary_cell_types.html`) stay
+presence-only. They have no timestamp, and the restructure rules strip the absolute input
+paths Cell Ranger bakes in (`sed "s|$(pwd)/||g"`, so the files are portable) — but the pages
+also embed Cell Ranger's differential-expression table (gene order + floating-point
+p-values/log-fold-changes) and cell-type table ordering, which vary run-to-run and can't be
+normalised. The deterministic outputs they summarise are all content-compared regardless.
 - **VDJ BAMs.** Cell Ranger assembles the same contigs/reads each run but emits them in a
   run-varying record order with a run-unique `@PG` path. The `restructure_vdj_bams` rules
   normalise them (canonical sort `--no-PG`, strip `@PG`, re-index), so the BAMs — count and
