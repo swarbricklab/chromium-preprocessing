@@ -401,8 +401,9 @@ them too:
 - **Reports.** This workflow's own HTML reports injected a wall-clock timestamp; it is now
   pinned via `SOURCE_DATE_EPOCH` (the reproducible-builds convention — see
   `workflow/scripts/cellranger_summary_utils.py`), which `run_test.sh` sets, so the reports
-  are byte-stable and compared. Only Cell Ranger's own `web_summaries/captures/*.html` (10x's
-  format) remain ignored.
+  are byte-stable and compared. Cell Ranger's *own* web summaries — `web_summaries/captures/*`
+  and the cell-type annotation summaries `cell_types/captures/*` (copied from
+  `web_summary_cell_types.html`) — stay ignored (10x's format, embedded timestamps).
 - **VDJ BAMs.** Cell Ranger assembles the same contigs/reads each run but emits them in a
   run-varying record order with a run-unique `@PG` path. The `restructure_vdj_bams` rules
   normalise them (canonical sort `--no-PG`, strip `@PG`, re-index), so the BAMs — count and
