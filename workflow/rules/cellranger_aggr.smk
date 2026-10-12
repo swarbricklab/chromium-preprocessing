@@ -158,6 +158,9 @@ rule restructure_aggr_summary:
         """
         out={input.counts}/outs
         cp -v $out/web_summary.html {output.web}
+        # Strip the embedded absolute workspace paths so web_summary.html is deterministic
+        # and portable (see issue #137).
+        sed -i "s|$(pwd)/||g" {output.web}
         cp -v $out/count/cloupe.cloupe {output.loupe}
         cp -v $out/count/filtered_feature_bc_matrix.h5 {output.h5}
         """

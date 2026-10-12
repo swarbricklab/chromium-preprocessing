@@ -19,6 +19,10 @@ rule restructure_summary:
         """
         cp -v {input.tmp}/outs/metrics_summary.csv {output.metrics}
         cp -v {input.tmp}/outs/web_summary.html {output.web}
+        # Cell Ranger bakes the absolute input paths into web_summary.html, which makes it
+        # environment-specific. Strip the workspace-root prefix so it is deterministic and
+        # portable (and thus comparable against the golden -- see issue #137).
+        sed -i "s|$(pwd)/||g" {output.web}
         """
 
 # Restructure bam files
