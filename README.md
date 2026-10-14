@@ -360,8 +360,13 @@ This module includes test data and a test script that verifies that the module c
 ### Test data
 
 The [test](test) folder contains both the raw test data (under [test/data](test/data)) and the expected results (under [test/results](test/results)).
-The input data is real 10X Chromium scRNA-seq data that has been downsampled to make the fastq files much smaller, so that `cellranger` runs much faster.
-This data is tracked via DVC and can be obtained via `dvc pull -R test/data/`.
+
+The input data is **public, de-identified 10x Genomics healthy-donor PBMC data**, deterministically downsampled so that `cellranger` runs on tiny fixtures:
+
+- the **count** test (`tiny_pbmc`, 3 gene-expression captures) is downsampled from [`pbmc_1k_v3`](https://www.10xgenomics.com/datasets/1-k-pbmcs-from-a-healthy-donor-v-3-chemistry-3-standard-3-0-0) (1k PBMCs, 3' v3);
+- the **multi** test (`tiny_pbmc2`, 2 captures × gene expression + antibody capture + VDJ-T) is downsampled from [`vdj_v1_hs_pbmc2`](https://www.10xgenomics.com/datasets/pbmcs-of-a-healthy-donor-5-gex-and-cell-surface-protein-1-standard-3-0-0) (healthy-donor PBMCs, 5' GEX + TotalSeq-C + V(D)J). The antibody panel in [`config/feature_barcode_reference.csv`](config/feature_barcode_reference.csv) is that dataset's published 17-plex TotalSeq-C feature reference.
+
+The fixtures are DVC-tracked (`dvc pull -R test/data/`). They are *derived* artifacts: [`test/make_test_fixtures.sh`](test/make_test_fixtures.sh) reproduces them byte-for-byte from the public source tarballs and documents the exact downsampling, so no private data is required.
 
 ## Test config
 

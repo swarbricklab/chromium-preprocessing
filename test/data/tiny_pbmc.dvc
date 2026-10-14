@@ -1,0 +1,6 @@
+outs:
+- md5: beeebea590818463f4e3274007721ca2.dir
+  size: 758607302
+  nfiles: 9
+  hash: md5
+  path: tiny_pbmc
