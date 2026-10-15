@@ -3,10 +3,17 @@
 # Restructuring also allows users to selectively pull only the data of interest, reducing download times
 # The new structure also makes it possible to specify dependencies more precisely, speeding up data validation.
 
-# Small metadata copy; run on the controller rather than queuing a compute job.
-# The bulk data copies (BAMs, h5, loupe, count matrices) remain compute jobs.
+# Verbatim-copy rules hardlink their outputs (see lc/lcr in common.smk) instead of copying,
+# so they are pure filesystem metadata and run on the controller rather than queuing a PBS
+# job each. Only the count-matrix recompress (restructure_counts, strips gzip timestamps for
+# determinism) and the path-stripping summary stay as compute/cluster rules.
 localrules:
     restructure_summary,
+    restructure_bams,
+    restructure_raw_h5,
+    restructure_h5,
+    restructure_analysis,
+    restructure_loupe,
 
 # Restructure summary data
 rule restructure_summary:
@@ -34,8 +41,8 @@ rule restructure_bams:
         ass_bai=out_dir/"bam/count/captures/{capture}/assigned_alignments.bam.bai"
     shell:
         """
-        cp -v {input.tmp}/outs/possorted_genome_bam.bam {output.ass_bam}
-        cp -v {input.tmp}/outs/possorted_genome_bam.bam.bai {output.ass_bai}
+        lc {input.tmp}/outs/possorted_genome_bam.bam {output.ass_bam}
+        lc {input.tmp}/outs/possorted_genome_bam.bam.bai {output.ass_bai}
         """
 
 # Restructure and recompress count matrices
@@ -67,7 +74,7 @@ rule restructure_raw_h5:
         h5=out_dir/"h5/captures/{capture}/raw_feature_bc_matrix.h5"
     shell:
         """
-        cp -v {input.tmp}/outs/raw_feature_bc_matrix.h5 {output.h5}
+        lc {input.tmp}/outs/raw_feature_bc_matrix.h5 {output.h5}
         """
 
 # Restructure h5 data
@@ -79,8 +86,8 @@ rule restructure_h5:
         mat=out_dir/"h5/captures/{capture}/filtered_feature_bc_matrix.h5"
     shell:
         """
-        cp -v {input.tmp}/outs/molecule_info.h5 {output.mol}
-        cp -v {input.tmp}/outs/filtered_feature_bc_matrix.h5 {output.mat}
+        lc {input.tmp}/outs/molecule_info.h5 {output.mol}
+        lc {input.tmp}/outs/filtered_feature_bc_matrix.h5 {output.mat}
         """
 
 # Restructure analysis results
@@ -91,7 +98,7 @@ rule restructure_analysis:
         dir=directory(out_dir/"cr_analysis/captures/{capture}")
     shell:
         """
-        cp -v -r {input.tmp}/outs/analysis {output.dir}
+        lcr {input.tmp}/outs/analysis {output.dir}
         """
 
 # Restructure loupe files
@@ -102,5 +109,5 @@ rule restructure_loupe:
         cloupe=out_dir/"loupe/count/captures/filtered/{capture}.cloupe"
     shell:
         """
-        cp -v {input.tmp}/outs/cloupe.cloupe {output.cloupe}
+        lc {input.tmp}/outs/cloupe.cloupe {output.cloupe}
         """
