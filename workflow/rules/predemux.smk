@@ -108,10 +108,15 @@ rule predemux_generate_report:
 
 rule copy_original_features:
     """
-    Copy the original features.tsv.gz file from the filtered Cell Ranger output directory
-    to the predemux output directory. This is done to replace the features
-    file in the filtered Cell Ranger output with the original one, overcoming
-    the loss of Ensembl IDs during Seurat conversion.
+    Restore the original features.tsv.gz over the one written by predemux_filter_seurat,
+    recovering the Ensembl IDs that Seurat conversion drops.
+
+    Keep only the **Gene Expression** rows: predemux filters on the GEX assay, so in multi
+    mode the predemux matrix is GEX-only while the original (multimodal) features file also
+    lists Antibody Capture rows — restoring it verbatim makes the feature axis longer than
+    the matrix, so no 10x reader can open the output (see #124). The original 10x features
+    file lists Gene Expression rows first, in the same order as the GEX matrix, so selecting
+    them reconciles the two. In count mode every row is already Gene Expression (no-op).
     """
     input:
         features = rules.restructure_counts.output.filtered_feat,
@@ -121,7 +126,8 @@ rule copy_original_features:
     log:
         log_dir/"predemux/copy_features/{capture}.log"
     shell:
-        "cp -v {input.features} {output}"
+        # NF < 3 keeps any legacy 2-column features file intact; otherwise select GEX rows.
+        "zcat {input.features} | awk -F'\\t' 'NF < 3 || $3 == \"Gene Expression\"' | gzip -n > {output} 2> {log}"
 
 rule predemux_sex_calls:
     """
