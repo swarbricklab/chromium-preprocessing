@@ -146,17 +146,34 @@ For "split captures" (derived from the same pool) batch effect should be minimal
 
 > Note: `cellranger aggr` uses "nosecondary" but this workflow follows `cellranger multi` by using "no-secondary" and converting internally.
 
+The remaining `params.extras` toggles below are booleans (`true`/`false`), not config
+blocks — they switch optional stages on or off rather than carrying CLI options.
+
 ##### annotate
 
-TODO
+Set `params.extras.annotate: true` to annotate cell types via **10x Cloud cell annotation**.
+When enabled, the workflow runs `cellranger cloud auth verify` (rule `cloud_auth`) and then
+annotates each count matrix, producing `annotation/` outputs (cell types + differential
+expression) and a cell-types HTML report. Annotation is done **per sample** when `hto` or `ocm`
+demultiplexing is enabled, and **per capture** otherwise.
+
+> Note: this stage requires the executing user to be authenticated to 10x Cloud beforehand
+> (`cellranger cloud auth login`); it runs over the network, so it is not reproducible offline.
 
 ##### hto
 
-TODO
+Set `params.extras.hto: true` to enable **HTO (hashtag oligo) demultiplexing**. The workflow
+adds a `[samples]` block (mapping `hashtag_ids` → `sample_id`) to the generated `cellranger multi`
+config, so each capture is split into per-sample outputs. Requires `hashtag` and `sample` columns
+in the [captures](#captures-capturescsv) samplesheet. Mutually exclusive with `ocm`.
 
 ##### ocm
 
-TODO
+Set `params.extras.ocm: true` to enable **OCM (On-Chip Multiplexing) demultiplexing**. As with
+`hto`, the workflow adds a `[samples]` block (mapping `ocm_barcode_ids` → `sample_id`) to the
+`cellranger multi` config to split each capture into per-sample outputs. Requires
+`ocm_barcode_ids` and `sample` columns in the [captures](#captures-capturescsv) samplesheet.
+Mutually exclusive with `hto`.
 
 ## Samplesheets
 
