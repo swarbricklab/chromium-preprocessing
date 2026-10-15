@@ -7,7 +7,7 @@
 deps:
   captures: "config/tests/multi/captures.csv"
   libraries: "config/tests/multi/libraries.csv"
-  fastqs: "test/data"
+  fastqs: "test/data/tiny_pbmc2"
 
 # Reference dependencies
 ref:
