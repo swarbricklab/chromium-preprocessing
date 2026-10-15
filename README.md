@@ -120,6 +120,12 @@ This data should be dvc-tracked as part of a dataset that includes all of the da
 
 ### Raw data
 
+> The registry-based import below is the **Garvan-internal** workflow (it relies on private
+> Swarbrick Lab DVC registries and NCI paths). If you are running the workflow **standalone**
+> outside Garvan, you do not need any of this — just place your 10x FASTQs on disk and point
+> `deps.fastqs` / the libraries samplesheet at them (see the bundled [test config](config/tests)
+> and [`prep.sh`](prep.sh) for a worked, fully public example).
+
 The raw data should already be [registered](https://github.com/swarbricklab/data_management) in the appropriate registry.
 If not, make a ticket in the [registries project board](https://github.com/orgs/swarbricklab/projects/5).
 For this workflow, the relevant registry is [chromium](https://github.com/swarbricklab/chromium).
