@@ -4,6 +4,10 @@ cff-version: 1.2.0
 message: "If you use this workflow, please cite it using the metadata below."
 version: "3.0.0"
 date-released: "2026-10-17"
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.23428424"
+    description: "Concept DOI (resolves to the latest version)"
 title: "chromium-preprocessing: a Snakemake workflow for 10x Chromium single-cell preprocessing"
 abstract: >-
   A Snakemake workflow that pre-processes raw 10x Genomics Chromium single-cell

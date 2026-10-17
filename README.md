@@ -1,5 +1,7 @@
 # Chromium Preprocessing
 
+[![DOI](https://zenodo.org/badge/730880699.svg)](https://doi.org/10.5281/zenodo.23428424)
+
 ## Overview
 
 A [Snakemake](https://snakemake.readthedocs.io/) workflow that pre-processes raw 10x
