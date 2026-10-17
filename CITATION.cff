@@ -1,10 +1,9 @@
-# Author list/order and the release date are placeholders to confirm before the
-# v1.0.0 release (see issue #138). The Zenodo concept DOI is added under
-# `identifiers:` once the GitHub release mints it.
+# The Zenodo concept DOI is added under `identifiers:` once the GitHub release mints it
+# (see issue #138).
 cff-version: 1.2.0
 message: "If you use this workflow, please cite it using the metadata below."
-version: "1.0.0"
-date-released: "2026-10-06"
+version: "3.0.0"
+date-released: "2026-10-17"
 title: "chromium-preprocessing: a Snakemake workflow for 10x Chromium single-cell preprocessing"
 abstract: >-
   A Snakemake workflow that pre-processes raw 10x Genomics Chromium single-cell
@@ -22,7 +21,7 @@ authors:
   - given-names: Victor
     family-names: Liu
     affiliation: "Garvan Institute of Medical Research"
-    alias: vliu378
+    alias: VictorrLiu
     orcid: "https://orcid.org/0009-0008-7628-7825"
   - given-names: Daniel
     family-names: Roden
