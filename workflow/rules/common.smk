@@ -1,6 +1,23 @@
 from snakemake.io import expand
+from snakemake.shell import shell
 import pandas as pd
 import itertools
+
+# Global shell helpers for the restructure rules.
+#   lc  = "link or copy": hardlink src -> dst (instant, no data copy, byte-identical to cp),
+#         falling back to cp when src/dst are on different filesystems (EXDEV).
+#   lcr = recursive variant for directory trees (cp -al, falling back to cp -r).
+# Cell Ranger source dirs are temp(); after restructuring, snakemake unlinks them and the
+# hardlinked outputs (same inode) remain. Because a hardlink is byte-identical to a copy,
+# the outputs' md5s are unchanged — no golden change, no DVC-superpipeline churn — while the
+# "copy" becomes pure filesystem metadata, so these rules can run as localrules (no PBS job).
+# Defined as a shell.prefix so every rule's shell has them; they have no side effects where
+# unused. NEVER hardlink a file that is subsequently modified in place (sed -i, samtools) —
+# that would corrupt the still-linked temp inode; those rules keep using cp + their transform.
+shell.prefix(
+    'lc(){{ ln -f "$1" "$2" 2>/dev/null || cp -f "$1" "$2"; }}; '
+    'lcr(){{ rm -rf "$2"; cp -al "$1" "$2" 2>/dev/null || cp -r "$1" "$2"; }}; '
+)
 
 # Determine which assays are present in libraries.csv
 def find_assays(libraries):
