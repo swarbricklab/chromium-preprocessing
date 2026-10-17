@@ -449,10 +449,10 @@ Thes logs are stored under `logs/chromium-preprocessing` in a subdirectory based
 
 ## Status
 
-Original Swarbrick Lab work, preparing for a citable **v1.0.0** release. The reference data
+Original Swarbrick Lab work, released as a citable **v3.0.0** release. The reference data
 is public (see [Reference data](#reference-data)), the tooling is public except for the
 proprietary Cell Ranger dependency (see [Tools](#tools)), and the bundled test fixture lets
-the workflow be run end-to-end. Planned pre-1.0 and post-1.0 work is tracked in the
+the workflow be run end-to-end. Planned further work is tracked in the
 [issue tracker](https://github.com/swarbricklab/chromium-preprocessing/issues).
 
 - **License:** MIT — see [`LICENSE`](LICENSE).
