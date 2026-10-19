@@ -1,0 +1,2 @@
+# Only setup_placeholders.sh is tracked here; the placeholders it creates live
+# under resources/ and test/data/ (covered by the repo .gitignore / DVC).

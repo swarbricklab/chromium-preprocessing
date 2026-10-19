@@ -1,6 +1,8 @@
 import pandas as pd
 from pathlib import Path
-from snakemake.utils import validate
+from snakemake.utils import validate, min_version
+
+min_version("7.32.4")
 
 captures=pd.read_csv(config['deps']['captures']).set_index('capture', drop=False)
 validate(captures, "workflow/schemas/captures.json")
@@ -60,9 +62,9 @@ else:
     # Use 'cellranger multi' if more than one assay present
     print("Running cellranger multi")
     include: 'workflow/rules/cellranger_multi.smk'
-    if config['params']['extras']['hto'] or config['params']['extras']['ocm']:
+    if config['params']['extras'].get('hto') or config['params']['extras'].get('ocm'):
         samples=pd.read_csv(config['deps']['captures']).set_index('sample', drop=False)
-        if config['params']['extras']['hto']:
+        if config['params']['extras'].get('hto'):
             print("Running HTO demux")
             validate(captures,"workflow/schemas/hto.json")
         else:

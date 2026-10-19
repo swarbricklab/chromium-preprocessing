@@ -1,6 +1,10 @@
 # Chromium Preprocessing
 
 [![DOI](https://zenodo.org/badge/730880699.svg)](https://doi.org/10.5281/zenodo.23428424)
+[![CI](https://github.com/swarbricklab/chromium-preprocessing/actions/workflows/ci.yml/badge.svg)](https://github.com/swarbricklab/chromium-preprocessing/actions/workflows/ci.yml)
+[![Snakemake](https://img.shields.io/badge/snakemake-%E2%89%A57.32.4-brightgreen.svg)](https://snakemake.github.io)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![WorkflowHub](https://img.shields.io/badge/WorkflowHub-2346-14b8a6.svg)](https://workflowhub.eu/workflows/2346)
 
 ## Overview
 

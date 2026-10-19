@@ -1,0 +1,71 @@
+name: CI
+
+# Lightweight, data-independent checks on GitHub-hosted runners (and forks),
+# complementing the self-hosted DVC-remote check in dvc-remote-check.yml. They
+# need no FASTQs / references / cellranger, so they run on every push/PR.
+#
+# Note: snakefmt is not run here — the Snakefile uses conditional `include:`
+# statements (inside if/else), which snakefmt/black cannot parse.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+      - uses: actions/checkout@v4
+        # profiles/global (NCI) is a submodule and is not needed here: CI uses
+        # --workflow-profile profiles/workflow (in-repo) + --default-resources.
+
+      - uses: mamba-org/setup-micromamba@v2
+        with:
+          environment-name: ci
+          create-args: >-
+            snakemake=7.32.4
+            mamba
+            yte
+            pandas
+            jsonschema
+          condarc: |
+            channels:
+              - conda-forge
+              - bioconda
+
+      - name: Touch placeholder inputs
+        run: bash .tests/ci/setup_placeholders.sh
+
+      # The workflow profile is YTE-templated and reads $WORKFLOW_ROOT; the
+      # cellranger rules reference {resources.jobmode}, normally supplied by the
+      # NCI global profile, so inject a local default for the dry-run.
+      - name: Dry-run (count) — full DAG + config/schema validation
+        run: |
+          export WORKFLOW_ROOT="$PWD"
+          snakemake -n \
+            --workflow-profile profiles/workflow \
+            --snakefile Snakefile \
+            --configfile config/tests/count/config.yaml \
+            --default-resources "jobmode='local'"
+
+      - name: Dry-run (multi) — full DAG + config/schema validation
+        run: |
+          export WORKFLOW_ROOT="$PWD"
+          snakemake -n \
+            --workflow-profile profiles/workflow \
+            --snakefile Snakefile \
+            --configfile config/tests/multi/config.yaml \
+            --default-resources "jobmode='local'"
+
+      - name: snakemake lint (informational)
+        continue-on-error: true
+        run: |
+          export WORKFLOW_ROOT="$PWD"
+          snakemake --lint \
+            --workflow-profile profiles/workflow \
+            --snakefile Snakefile \
+            --configfile config/tests/count/config.yaml \
+            --default-resources "jobmode='local'"
