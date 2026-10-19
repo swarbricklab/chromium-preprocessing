@@ -27,6 +27,7 @@ jobs:
           environment-name: ci
           create-args: >-
             snakemake=7.32.4
+            mamba
             yte
             pandas
             jsonschema
