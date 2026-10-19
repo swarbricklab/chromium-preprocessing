@@ -1,48 +1,65 @@
 name: CI
 
-# Lightweight, data-independent checks on the self-hosted NCI qxub-runner (same
-# runner as DVC Remote Check), so they don't consume GitHub-hosted Actions
-# minutes. They need no FASTQs / references / cellranger. Gated to non-forks
-# (forks can't use the self-hosted runner).
+# Lightweight, data-independent checks on GitHub-hosted runners (and forks),
+# complementing the self-hosted DVC-remote check in dvc-remote-check.yml. They
+# need no FASTQs / references / cellranger, so they run on every push/PR.
 #
 # Note: snakefmt is not run here — the Snakefile uses conditional `include:`
 # statements (inside if/else), which snakefmt/black cannot parse.
 on:
-  pull_request:
+  push:
     branches: [main]
+  pull_request:
 
 jobs:
   validate:
-    if: ${{ github.event.pull_request.head.repo.fork == false }}
-    runs-on: [self-hosted, qxub-runner]
-    permissions:
-      contents: read
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -el {0}
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
-          fetch-depth: 0
 
-      - name: Dry-run (count + multi) — full DAG + config/schema validation
+      - uses: mamba-org/setup-micromamba@v2
+        with:
+          environment-name: ci
+          create-args: >-
+            snakemake=7.32.4
+            yte
+            pandas
+            jsonschema
+          condarc: |
+            channels:
+              - conda-forge
+              - bioconda
+
+      - name: Touch placeholder inputs
+        run: bash .tests/ci/setup_placeholders.sh
+
+      # The workflow profile is YTE-templated and reads $WORKFLOW_ROOT; the
+      # cellranger rules reference {resources.jobmode}, normally supplied by the
+      # NCI global profile, so inject a local default for the dry-run.
+      - name: Dry-run (count) — full DAG + config/schema validation
         run: |
-          set -euo pipefail
-          source /g/data/a56/conda/miniconda/etc/profile.d/conda.sh
-          conda activate snakemake_7.32.4
-          bash .tests/ci/setup_placeholders.sh
           export WORKFLOW_ROOT="$PWD"
-          for mode in count multi; do
-            snakemake -n \
-              --workflow-profile profiles/workflow \
-              --snakefile Snakefile \
-              --configfile config/tests/$mode/config.yaml \
-              --default-resources "jobmode='local'"
-          done
+          snakemake -n \
+            --workflow-profile profiles/workflow \
+            --snakefile Snakefile \
+            --configfile config/tests/count/config.yaml \
+            --default-resources "jobmode='local'"
+
+      - name: Dry-run (multi) — full DAG + config/schema validation
+        run: |
+          export WORKFLOW_ROOT="$PWD"
+          snakemake -n \
+            --workflow-profile profiles/workflow \
+            --snakefile Snakefile \
+            --configfile config/tests/multi/config.yaml \
+            --default-resources "jobmode='local'"
 
       - name: snakemake lint (informational)
         continue-on-error: true
         run: |
-          source /g/data/a56/conda/miniconda/etc/profile.d/conda.sh
-          conda activate snakemake_7.32.4
           export WORKFLOW_ROOT="$PWD"
           snakemake --lint \
             --workflow-profile profiles/workflow \
