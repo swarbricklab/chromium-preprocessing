@@ -112,7 +112,7 @@ rule merge_bams:
     output:
         bam=out_dir/"bam/count/pools/{pool}/merged.bam"
     container:
-        "docker://quay.io/biocontainers/samtools:0.1.19--h270b39a_9"
+        config["containers"]["samtools_legacy"]
     log:
         "logs/chromium-preprocessing/merge_bams/{pool}.log"
     script:
@@ -124,7 +124,7 @@ rule index_merged_bam:
     output:
         bai=out_dir/"bam/count/pools/{pool}/merged.bam.bai"
     container:
-        "docker://quay.io/biocontainers/samtools:0.1.19--h270b39a_9"
+        config["containers"]["samtools_legacy"]
     log:
         "logs/chromium-preprocessing/index_merged_bam/{pool}.log"
     shell:

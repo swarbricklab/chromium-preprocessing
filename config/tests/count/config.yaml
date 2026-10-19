@@ -24,9 +24,21 @@ outs:
   logs: "logs/chromium-preprocessing"
 
 # -- Module versions --#
-# Software module versions (when using environment modules)
+# Software module versions (when using environment modules). Cell Ranger stays an
+# environment module: in cluster mode it submits its own stages via qsub, which a
+# vanilla Snakemake->singularity rule cannot do.
 modules:
   cellranger: "9.0.1"
+
+# -- Containers --#
+# Per-tool images for the non-cellranger rules (everything that used to be a conda
+# env). cellranger is NOT here (see modules above).
+containers:
+  samtools_legacy: "docker://quay.io/biocontainers/samtools:0.1.19--h270b39a_9"
+  samtools: "docker://quay.io/biocontainers/samtools:1.22--h96c455f_0"
+  csvkit: "docker://ghcr.io/swarbricklab/chromium-preprocessing-csvkit:20261020"
+  predemux: "docker://ghcr.io/swarbricklab/chromium-preprocessing-predemux:20261020"
+  reports: "docker://ghcr.io/swarbricklab/chromium-preprocessing-reports:20261020"
 
 # -- Parameters --#
 # Non-path parameters for tuning the behaviour of the workflow

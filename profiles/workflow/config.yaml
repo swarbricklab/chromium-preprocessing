@@ -7,10 +7,9 @@ __definitions__:
 restart-times: 0
 rerun-incomplete: true
 keep-going: false
-# Conda settings (required for rules that use conda environments)
-use-conda: True
-conda-frontend: mamba
-# Environmen modules
+# Software deployment: every non-cellranger rule now runs in a container
+# (use-singularity is set in the global profile); cellranger stays an environment
+# module (cluster mode submits its own stages via qsub, which a container can't).
 use-envmodules: True
 
 # Resource settings per rule

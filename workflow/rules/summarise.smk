@@ -38,8 +38,10 @@ rule cr_summarise:
     params:
         groups=get_summary_groups(),
         join_col=get_summary_join_col()
-    conda:
-        "../envs/csvkit.yaml"
+    container:
+        config["containers"]["csvkit"]
+    # conda:  # conda fallback for platforms without singularity
+    #     "../envs/csvkit.yaml"
     shell:
         """
             # Stack the individual summaries with group names

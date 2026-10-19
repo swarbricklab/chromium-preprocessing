@@ -26,8 +26,10 @@ rule predemux_convert_to_seurat:
         log_dir/"predemux/pdmx_convert_seurat/{capture}.log"
     params:
         mito_pattern = config['params']['predemux']["mito-pattern"]
-    conda:
-        "../envs/predemux.yaml"
+    container:
+        config["containers"]["predemux"]
+    # conda:  # conda fallback for platforms without singularity
+    #     "../envs/predemux.yaml"
     script:
         "../scripts/pdmx_convert_seurat.R"
 
@@ -54,8 +56,10 @@ rule predemux_filter_seurat:
         min_genes = config['params']['predemux']["min-gene-count"],
         max_mito = config['params']['predemux']["max-mito"],
         min_umi = config['params']['predemux']["min-umi-count"],
-    conda:
-        "../envs/predemux.yaml"
+    container:
+        config["containers"]["predemux"]
+    # conda:  # conda fallback for platforms without singularity
+    #     "../envs/predemux.yaml"
     script:
         "../scripts/pdmx_filter.R"
 
@@ -73,8 +77,10 @@ rule predemux_gather_qc_metrics:
         umi_csv = temp(out_dir/"predemux/qc/metrics/{capture}_umi.csv")
     log:
         log_dir/"predemux/pdmx_metrics/{capture}.log"
-    conda:
-        "../envs/predemux.yaml"
+    container:
+        config["containers"]["predemux"]
+    # conda:  # conda fallback for platforms without singularity
+    #     "../envs/predemux.yaml"
     script:
         "../scripts/pdmx_metrics.R"
 
@@ -101,8 +107,10 @@ rule predemux_generate_report:
         min_genes = config['params']['predemux']["min-gene-count"],
         max_mito = config['params']['predemux']["max-mito"],
         min_umi = config['params']['predemux']["min-umi-count"]
-    conda:
-        "../envs/predemux.yaml"
+    container:
+        config["containers"]["predemux"]
+    # conda:  # conda fallback for platforms without singularity
+    #     "../envs/predemux.yaml"
     script:
         "../scripts/pdmx_report.py"
 
@@ -156,7 +164,9 @@ rule predemux_sex_calls:
         xist_min_cp10k = config['params']['predemux'].get('sex', {}).get('xist-min-cp10k', 1.0),
         chry_markers = config['params']['predemux'].get('sex', {}).get('chrY-markers', "RPS4Y1,DDX3Y,UTY,USP9Y,EIF1AY,KDM5D"),
         xist_gene = config['params']['predemux'].get('sex', {}).get('xist-gene', "XIST"),
-    conda:
-        "../envs/predemux_sex.yaml"
+    container:
+        config["containers"]["predemux"]
+    # conda:  # conda fallback for platforms without singularity
+    #     "../envs/predemux_sex.yaml"
     script:
         "../scripts/pdmx_sex.R"

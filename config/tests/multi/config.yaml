@@ -32,6 +32,16 @@ outs:
 modules:
   cellranger: "9.0.1"
 
+# -- Containers --#
+# Per-tool images for the non-cellranger rules (everything that used to be a conda
+# env). cellranger is NOT here (stays an environment module -- qsub cluster mode).
+containers:
+  samtools_legacy: "docker://quay.io/biocontainers/samtools:0.1.19--h270b39a_9"
+  samtools: "docker://quay.io/biocontainers/samtools:1.22--h96c455f_0"
+  csvkit: "docker://ghcr.io/swarbricklab/chromium-preprocessing-csvkit:20261020"
+  predemux: "docker://ghcr.io/swarbricklab/chromium-preprocessing-predemux:20261020"
+  reports: "docker://ghcr.io/swarbricklab/chromium-preprocessing-reports:20261020"
+
 # -- Parameters --#
 # Non-path parameters for tuning the behaviour of the workflow
 params:

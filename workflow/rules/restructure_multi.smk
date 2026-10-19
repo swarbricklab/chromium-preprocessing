@@ -170,7 +170,7 @@ rule restructure_vdj_bams:
         filtered_bam=out_dir/"bam/vdj/{vdj_assay}/captures/{capture}/consensus.bam",
         filtered_bai=out_dir/"bam/vdj/{vdj_assay}/captures/{capture}/consensus.bam.bai"
     container:
-        "docker://quay.io/biocontainers/samtools:1.22--h96c455f_0"
+        config["containers"]["samtools"]
     shell:
         # Cell Ranger's VDJ contig BAMs assemble the same contigs/reads each run but are
         # emitted in a run-varying record order, and their @PG carries a run-unique martian

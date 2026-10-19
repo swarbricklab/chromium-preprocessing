@@ -17,8 +17,10 @@ rule generate_web_indexes:
 		summary_index=report_dir/"cellranger/web_summaries/summary_index.html"
 	log:
 		log_dir/"cellranger_reports/generate_web_indexes.log"
-	conda:
-		"../envs/html_reports.yaml"
+	container:
+	    config["containers"]["reports"]
+	# conda:  # conda fallback for platforms without singularity
+	#     "../envs/html_reports.yaml"
 	script:
 		"../scripts/build_web_indexes.py"
 
@@ -33,8 +35,10 @@ rule generate_summary_report:
 		mode=mode
 	log:
 		log_dir/"cellranger_reports/generate_summary_report.log"
-	conda:
-		"../envs/html_reports.yaml"
+	container:
+	    config["containers"]["reports"]
+	# conda:  # conda fallback for platforms without singularity
+	#     "../envs/html_reports.yaml"
 	script:
 		"../scripts/build_cellranger_summary_report.py"
 
@@ -51,7 +55,9 @@ rule generate_master_index:
 		master_index=report_dir/"cellranger/master_index.html"
 	log:
 		log_dir/"cellranger_reports/generate_master_indexes.log"
-	conda:
-		"../envs/html_reports.yaml"
+	container:
+	    config["containers"]["reports"]
+	# conda:  # conda fallback for platforms without singularity
+	#     "../envs/html_reports.yaml"
 	script:
 		"../scripts/build_master_index.py"

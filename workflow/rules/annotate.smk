@@ -8,7 +8,7 @@ rule cloud_auth:
     output:
         check=out_dir/"checks/auth.check"
     envmodules:
-        "cellranger/9.0.1"
+        f"cellranger/{config['modules']['cellranger']}"
     shell:
         """
         cellranger cloud auth verify > {output.check} 2>&1
@@ -31,7 +31,7 @@ if config['params']['extras'].get('hto', False) or config['params']['extras'].ge
         log:
             log_dir/"annotate/{capture}/{sample}.log"
         envmodules:
-            "cellranger/9.0.1"
+            f"cellranger/{config['modules']['cellranger']}"
         shell:
             """
             wd=$PWD
@@ -80,7 +80,7 @@ else:
         log:
             log_dir/"annotate/{capture}.log"
         envmodules:
-            "cellranger/9.0.1"
+            f"cellranger/{config['modules']['cellranger']}"
         shell:
             """
             log_file=$PWD/{log}

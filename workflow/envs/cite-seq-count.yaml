@@ -1,7 +1,0 @@
-name: cite-seq-count
-
-channels: 
-  - conda-forge
-
-dependencies:
-  - cite-seq-count=1.4.4

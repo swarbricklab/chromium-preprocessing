@@ -226,7 +226,7 @@ rule restructure_raw_vdj_bams:
         bam=out_dir/"bam/vdj/{vdj_assay}/captures/{capture}/all_contig.bam",
         bai=out_dir/"bam/vdj/{vdj_assay}/captures/{capture}/all_contig.bam.bai",
     container:
-        "docker://quay.io/biocontainers/samtools:1.22--h96c455f_0"
+        config["containers"]["samtools"]
     shell:
         # Normalise to a deterministic BAM (see restructure_multi.smk:restructure_vdj_bams
         # and issue #137): canonical single-thread sort (--no-PG), strip @PG, re-index.
@@ -247,7 +247,7 @@ rule restructure_sample_vdj_bams:
         bam=out_dir/"bam/vdj/{vdj_assay}/captures/{capture}/{sample}/consensus.bam",
         bai=out_dir/"bam/vdj/{vdj_assay}/captures/{capture}/{sample}/consensus.bam.bai"
     container:
-        "docker://quay.io/biocontainers/samtools:1.22--h96c455f_0"
+        config["containers"]["samtools"]
     shell:
         # Normalise to a deterministic BAM (see restructure_multi.smk:restructure_vdj_bams
         # and issue #137): canonical single-thread sort (--no-PG), strip @PG, re-index.
