@@ -10,8 +10,8 @@ mkdir -p resources/report
 touch resources/report/base_template.html resources/report/chromium_styles.css \
       resources/report/summary_template.html resources/report/swarbricklablogo.png
 # fastq dirs from the test libraries.csv (count: tiny_pbmc; multi: tiny_pbmc2)
-mkdir -p test/data/tiny_pbmc/GE/PBMC_001 test/data/tiny_pbmc/GE/PBMC_002 test/data/tiny_pbmc/GE/PBMC_003
+mkdir -p .tests/integration/data/tiny_pbmc/GE/PBMC_001 .tests/integration/data/tiny_pbmc/GE/PBMC_002 .tests/integration/data/tiny_pbmc/GE/PBMC_003
 for cap in PBMC2_a PBMC2_b; do
-  mkdir -p "test/data/tiny_pbmc2/$cap/FB-AB" "test/data/tiny_pbmc2/$cap/GE5" "test/data/tiny_pbmc2/$cap/VDJ-T"
+  mkdir -p ".tests/integration/data/tiny_pbmc2/$cap/FB-AB" ".tests/integration/data/tiny_pbmc2/$cap/GE5" ".tests/integration/data/tiny_pbmc2/$cap/VDJ-T"
 done
 echo "placeholders touched"

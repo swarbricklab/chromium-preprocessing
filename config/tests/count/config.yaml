@@ -7,7 +7,7 @@
 deps:
   captures: "config/tests/count/captures.csv"
   libraries: "config/tests/count/libraries.csv"
-  fastqs: "test/data/tiny_pbmc"
+  fastqs: ".tests/integration/data/tiny_pbmc"
 
 # Reference dependencies
 ref:
@@ -19,8 +19,8 @@ ref:
 # -- Outputs -- #
 # Files and directories produced by the workflow
 outs:
-  results: "test/results/cellranger/count_test"
-  reports: "test/results/cellranger/count_test/reports"
+  results: ".tests/integration/results/cellranger/count_test"
+  reports: ".tests/integration/results/cellranger/count_test/reports"
   logs: "logs/chromium-preprocessing"
 
 # -- Module versions --#

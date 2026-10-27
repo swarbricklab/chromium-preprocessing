@@ -1,4 +1,4 @@
 fastq_id,fastqs,feature_types
-PBMC_001,test/data/tiny_pbmc/GE/PBMC_001,Gene Expression
-PBMC_002,test/data/tiny_pbmc/GE/PBMC_002,Gene Expression
-PBMC_003,test/data/tiny_pbmc/GE/PBMC_003,Gene Expression
+PBMC_001,.tests/integration/data/tiny_pbmc/GE/PBMC_001,Gene Expression
+PBMC_002,.tests/integration/data/tiny_pbmc/GE/PBMC_002,Gene Expression
+PBMC_003,.tests/integration/data/tiny_pbmc/GE/PBMC_003,Gene Expression

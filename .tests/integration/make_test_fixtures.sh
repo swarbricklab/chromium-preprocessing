@@ -2,7 +2,7 @@
 #
 # Regenerate the bundled tiny test fixtures from public 10x Genomics data.
 #
-# The fixtures under test/data/ are DERIVED (deterministically downsampled) from public,
+# The fixtures under .tests/integration/data/ are DERIVED (deterministically downsampled) from public,
 # de-identified 10x Genomics healthy-donor PBMC datasets. They are DVC-tracked for
 # convenience, but this script is the authoritative provenance: it reproduces them
 # byte-for-byte from the public source tarballs. No private/patient data is involved.
@@ -26,7 +26,7 @@
 # count GEX; ~3.0M / ~1.5M / ~1.5M reads/capture for multi GEX / Antibody / VDJ-T). They are
 # "downsampled a lot but not so far that Cell Ranger or the downstream QC steps break".
 #
-# Usage:  test/make_test_fixtures.sh <workdir_with_extracted_fastqs>
+# Usage:  .tests/integration/make_test_fixtures.sh <workdir_with_extracted_fastqs>
 # where <workdir> contains the extracted source dirs:
 #   pbmc_1k_v3_fastqs/
 #   vdj_v1_hs_pbmc2_5gex_protein_fastqs/{vdj_v1_hs_pbmc2_5gex_fastqs,vdj_v1_hs_pbmc2_antibody_fastqs}/
