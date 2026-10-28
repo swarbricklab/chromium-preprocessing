@@ -92,7 +92,7 @@ This workflow can be run in either [standalone mode](#standalone-mode) or [modul
 
 In "standalone" mode, the data to be processed by the workflow is included in the same repo as the workflow itself.
 This mode is used mainly for [testing](#tests).
-This repo includes test data, tracked via DVC under [test/data](test/data).
+This repo includes test data, tracked via DVC under [.tests/integration/data](.tests/integration/data).
 The [test config files](config/tests) tracked in this repo have been configured to run the workflow on this test data.
 
 ### Module mode
@@ -371,14 +371,14 @@ This module includes test data and a test script that verifies that the module c
 
 ### Test data
 
-The [test](test) folder contains both the raw test data (under [test/data](test/data)) and the expected results (under [test/results](test/results)).
+The [.tests/integration](.tests/integration) folder contains both the raw test data (under [.tests/integration/data](.tests/integration/data)) and the expected results (under [.tests/integration/results](.tests/integration/results)).
 
 The input data is **public, de-identified 10x Genomics healthy-donor PBMC data**, deterministically downsampled so that `cellranger` runs on tiny fixtures:
 
 - the **count** test (`tiny_pbmc`, 3 gene-expression captures) is downsampled from [`pbmc_1k_v3`](https://www.10xgenomics.com/datasets/1-k-pbmcs-from-a-healthy-donor-v-3-chemistry-3-standard-3-0-0) (1k PBMCs, 3' v3);
 - the **multi** test (`tiny_pbmc2`, 2 captures × gene expression + antibody capture + VDJ-T) is downsampled from [`vdj_v1_hs_pbmc2`](https://www.10xgenomics.com/datasets/pbmcs-of-a-healthy-donor-5-gex-and-cell-surface-protein-1-standard-3-0-0) (healthy-donor PBMCs, 5' GEX + TotalSeq-C + V(D)J). The antibody panel in [`config/feature_barcode_reference.csv`](config/feature_barcode_reference.csv) is that dataset's published 17-plex TotalSeq-C feature reference.
 
-The fixtures are DVC-tracked (`dvc pull -R test/data/`). They are *derived* artifacts: [`test/make_test_fixtures.sh`](test/make_test_fixtures.sh) reproduces them byte-for-byte from the public source tarballs and documents the exact downsampling, so no private data is required.
+The fixtures are DVC-tracked (`dvc pull -R .tests/integration/data/`). They are *derived* artifacts: [`.tests/integration/make_test_fixtures.sh`](.tests/integration/make_test_fixtures.sh) reproduces them byte-for-byte from the public source tarballs and documents the exact downsampling, so no private data is required.
 
 ## Test config
 
@@ -388,8 +388,8 @@ As well as [template config](config/templates/), this repo includes [test config
 
 The [run_test.sh](run_test.sh) script runs both tests and verifies the output against the
 golden. It assumes:
-1. the test data is available (`dvc pull -R test/data/`)
-2. the golden is materialised (`dvc checkout test/results.dvc`)
+1. the test data is available (`dvc pull -R .tests/integration/data/`)
+2. the golden is materialised (`dvc checkout .tests/integration/results.dvc`)
 3. a conda environment called `snakemake_7.32.4` is available
 
 ```bash
@@ -439,8 +439,8 @@ There are (at least) two scenarios when it can be helpful to run the [test scrip
 2. testing whether improvements to the workflow have broken existing functionality
 
 In the latter case, improvements may legitimately change the results. When that is intended,
-re-run with `--update-golden`, then `dvc add test/results && dvc push` and commit the updated
-`test/results.dvc` to record the new expected output.
+re-run with `--update-golden`, then `dvc add .tests/integration/results && dvc push` and commit the updated
+`.tests/integration/results.dvc` to record the new expected output.
 
 ## Logs
 

@@ -1,7 +1,7 @@
 fastq_id,fastqs,feature_types
-PBMC2_a,test/data/tiny_pbmc2/PBMC2_a/FB-AB,Antibody Capture
-PBMC2_a,test/data/tiny_pbmc2/PBMC2_a/GE5,Gene Expression
-PBMC2_a,test/data/tiny_pbmc2/PBMC2_a/VDJ-T,VDJ-T
-PBMC2_b,test/data/tiny_pbmc2/PBMC2_b/FB-AB,Antibody Capture
-PBMC2_b,test/data/tiny_pbmc2/PBMC2_b/GE5,Gene Expression
-PBMC2_b,test/data/tiny_pbmc2/PBMC2_b/VDJ-T,VDJ-T
+PBMC2_a,.tests/integration/data/tiny_pbmc2/PBMC2_a/FB-AB,Antibody Capture
+PBMC2_a,.tests/integration/data/tiny_pbmc2/PBMC2_a/GE5,Gene Expression
+PBMC2_a,.tests/integration/data/tiny_pbmc2/PBMC2_a/VDJ-T,VDJ-T
+PBMC2_b,.tests/integration/data/tiny_pbmc2/PBMC2_b/FB-AB,Antibody Capture
+PBMC2_b,.tests/integration/data/tiny_pbmc2/PBMC2_b/GE5,Gene Expression
+PBMC2_b,.tests/integration/data/tiny_pbmc2/PBMC2_b/VDJ-T,VDJ-T
