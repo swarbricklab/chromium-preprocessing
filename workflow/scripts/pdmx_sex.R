@@ -171,8 +171,8 @@ read_10x_dir <- function(dir) {
   # Multi-mode predemux writes a GEX-only matrix but a features.tsv.gz that
   # still lists Antibody Capture rows (column 3 == "Gene Expression" vs others).
   # cellranger lists Gene Expression first and in matrix order, so restricting
-  # to those rows realigns features with the matrix. (This rule is gated to
-  # count mode, where the counts already match; kept for standalone robustness.)
+  # to those rows realigns features with the matrix. (In the workflow,
+  # copy_original_features already keeps only those rows; kept for standalone robustness.)
   if (nrow(features) != nrow(m) && ncol(features) >= 3) {
     ge <- features[[3]] == "Gene Expression"
     if (sum(ge) == nrow(m)) {

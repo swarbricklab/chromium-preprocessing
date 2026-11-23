@@ -316,7 +316,7 @@ recording in the dataset repo when you make it.
 
 ## Per-barcode sex typing
 
-When `params.extras.predemux` is on, `predemux_sex_calls` writes
+When `params.extras.predemux` is on, in count or multi mode, `predemux_sex_calls` writes
 `predemux/<capture>/sex_calls.csv` — one row per filtered barcode — from the
 chrY-unique panel (`RPS4Y1, DDX3Y, UTY, USP9Y, EIF1AY, KDM5D`) and `XIST`. Sex is an
 axis orthogonal to genotype clustering, so the call helps diagnose a male PBMC
