@@ -14,7 +14,11 @@ import itertools
 # Defined as a shell.prefix so every rule's shell has them; they have no side effects where
 # unused. NEVER hardlink a file that is subsequently modified in place (sed -i, samtools) —
 # that would corrupt the still-linked temp inode; those rules keep using cp + their transform.
+# shell.prefix replaces Snakemake's default prefix, 'set -euo pipefail; ', so it is restated
+# first: without it a rule fails only if its last command fails, and a failed cellranger run
+# followed by a successful cleanup command is reported as a success.
 shell.prefix(
+    'set -euo pipefail; '
     'lc(){{ ln -f "$1" "$2" 2>/dev/null || cp -f "$1" "$2"; }}; '
     'lcr(){{ rm -rf "$2"; cp -al "$1" "$2" 2>/dev/null || cp -r "$1" "$2"; }}; '
 )
