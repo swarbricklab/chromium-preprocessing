@@ -42,6 +42,10 @@ rule restructure_summary:
 # - the multi config Cell Ranger ran with, paths made relative as for the web summary;
 # - the barcodes Cell Ranger flagged as antibody or antigen aggregates and left out of the
 #   filtered matrix. The file is empty when Cell Ranger wrote no such list.
+# Cell Ranger writes the list only when it finds aggregates. Without sample multiplexing it
+# writes it per sample (outs/per_sample_outs/<capture>/count/), and leaves the library-level
+# copy out (GET_AGGREGATE_BARCODES_OUT in Cell Ranger 9.0.1), so the per-sample copy is read
+# first and the library-level one is the fallback.
 rule restructure_multi_extras:
     input:
         tmp=rules.cellranger_multi.output.cr_dir
@@ -52,8 +56,11 @@ rule restructure_multi_extras:
         """
         cp -v {input.tmp}/outs/config.csv {output.config}
         sed -i "s|$(pwd)/||g" {output.config}
-        src={input.tmp}/outs/multi/count/aggregate_barcodes.csv
-        if [ -f "$src" ]; then lc "$src" {output.aggregates}; else : > {output.aggregates}; fi
+        for src in {input.tmp}/outs/per_sample_outs/{wildcards.capture}/count/aggregate_barcodes.csv \\
+                   {input.tmp}/outs/multi/count/aggregate_barcodes.csv; do
+            if [ -f "$src" ]; then lc "$src" {output.aggregates}; break; fi
+        done
+        [ -f {output.aggregates} ] || : > {output.aggregates}
         """
 
 # Restructure bam files
