@@ -230,40 +230,31 @@ Refer to the [configuration guide](config/README.md) for a detailed explanation 
 
 ## Re-running with additional captures
 
-Adding captures to `captures.csv` / `libraries.csv` and re-running is *mostly*
-incremental, but not entirely, and the exceptions are worth knowing before you start.
+Adding captures to `captures.csv` / `libraries.csv` and re-running is incremental:
+per-capture rules run only for the new captures, and only the cohort aggregates re-run.
 
 **Cell Ranger is correctly scoped.** `cellranger_count` runs only for captures whose
 outputs are missing, so adding two captures to a 148-capture dataset costs two
 Cell Ranger runs, not 150. The same holds for `annotate_capture` and the
 `restructure_*` rules.
 
-**The predemux chain is not.** `predemux_convert_to_seurat`, `predemux_filter_seurat`
-and `predemux_gather_qc_metrics` write `temp()` outputs, and `predemux_generate_report`
-aggregates them across every capture in the sheet. Once a run completes those
-intermediates are deleted, so rebuilding that one report requires re-running all three
-rules for *every* capture — plus `copy_original_features`, which cascades off the
-regenerated filter outputs.
+**So is the predemux chain.** The per-capture predemux QC tables
+(`predemux/qc/discarded_metrics/{capture}.csv` and
+`predemux/qc/metrics/{capture}_{genes,mito,umi}.csv`) and the cohort Cell Ranger
+summary (`summary/metrics/cr_summary.csv`) are kept, not `temp()`. Adding captures runs
+`predemux_convert_to_seurat`, `predemux_filter_seurat` and `predemux_gather_qc_metrics`
+for the new captures only. Only the aggregates re-run across the sheet:
+`predemux_generate_report` and `cr_summarise`, both quick.
 
-A worked example, adding 2 captures to a 148-capture dataset:
+Only `predemux/rds/{capture}.rds` (a full Seurat object per capture) is still `temp()`.
+Nothing downstream of the kept tables needs it, so its absence doesn't trigger a rebuild.
 
-```
-cellranger_count                2      <- the expensive rule, correctly scoped
-annotate_capture                2
-restructure_* (8 rules)         2 each
-predemux_convert_to_seurat    150      <- temp() outputs, all rebuilt
-predemux_filter_seurat        150
-predemux_gather_qc_metrics    150
-copy_original_features        150
-                              ---
-total                         626
-```
-
-This is usually acceptable. Measured from PBS accounting, the 148 redundant runs are
-~44 s, ~60 s, ~18 s and ~7 s each respectively — about **49 SU in total** — and they sit
-off the critical path, because they depend on `restructure_h5` outputs that already
-exist. They run alongside Cell Ranger rather than delaying it. The critical path is
-`cellranger_count` (~112 min) then `annotate_capture` (~23 min).
+**Upgrading an existing output tree.** Output written before these files were kept
+won't have them. The first run after upgrading rebuilds the predemux chain once for
+every capture; that's ~49 SU for 150 captures, off the critical path. That rebuild
+rewrites each capture's predemux matrix (same content). If you'd rather not touch the
+matrices, regenerate the tables into a scratch `outs.results` and copy back only
+`predemux/qc/` and `summary/metrics/cr_summary.csv`.
 
 Check the plan before starting:
 
@@ -271,14 +262,11 @@ Check the plan before starting:
 ./modules/chromium-preprocessing/run_mod.sh -n --reason
 ```
 
-### Do not reach for `--touch`
-
-The reasons snakemake gives are `Missing output files`, not stale timestamps — the
-`temp()` intermediates are genuinely gone. `--touch` cannot help with that: it only
-marks existing files as current, and produces an identical 626-job plan. It is a no-op
-here, not a shortcut.
-
 ### Under DVC
+
+The kept predemux QC tables live under `<outs.results>/predemux/qc/`, a sibling of the
+per-mode trees, not inside `<outs.results>/<mode>/predemux/`. If your stage declares outs
+subdirectory by subdirectory, add `<outs.results>/predemux` to them.
 
 Datasets embedding this module usually wrap it in a DVC stage. DVC removes a stage's
 outputs *before* re-running it, which deletes the Cell Ranger results for every capture

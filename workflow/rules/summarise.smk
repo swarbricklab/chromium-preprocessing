@@ -34,7 +34,7 @@ rule cr_summarise:
         individual_summaries=get_summary_inputs,
         captures_config=config["deps"]["captures"]
     output:
-        group_summary=temp(out_dir/"summary/metrics/cr_summary.csv")
+        group_summary=out_dir/"summary/metrics/cr_summary.csv"
     params:
         groups=get_summary_groups(),
         join_col=get_summary_join_col()

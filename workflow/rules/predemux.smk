@@ -47,7 +47,7 @@ rule predemux_filter_seurat:
         # and remove the features.tsv.gz file from the output
         barcodes = out_dir/mode/"predemux/{capture}/barcodes.tsv.gz",
         matrix = out_dir/mode/"predemux/{capture}/matrix.mtx.gz",
-        filter_metrics = temp(out_dir/"predemux/qc/discarded_metrics/{capture}.csv")
+        filter_metrics = out_dir/"predemux/qc/discarded_metrics/{capture}.csv"
     log:
         log_dir/"predemux/pdmx_filter/{capture}.log"
     params:
@@ -68,9 +68,9 @@ rule predemux_gather_qc_metrics:
     input:
         rds = rules.predemux_convert_to_seurat.output.rds
     output:
-        genes_csv = temp(out_dir/"predemux/qc/metrics/{capture}_genes.csv"),
-        mito_csv = temp(out_dir/"predemux/qc/metrics/{capture}_mito.csv"),
-        umi_csv = temp(out_dir/"predemux/qc/metrics/{capture}_umi.csv")
+        genes_csv = out_dir/"predemux/qc/metrics/{capture}_genes.csv",
+        mito_csv = out_dir/"predemux/qc/metrics/{capture}_mito.csv",
+        umi_csv = out_dir/"predemux/qc/metrics/{capture}_umi.csv"
     log:
         log_dir/"predemux/pdmx_metrics/{capture}.log"
     conda:
