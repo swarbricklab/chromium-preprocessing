@@ -47,7 +47,7 @@ rule predemux_filter_seurat:
         # and remove the features.tsv.gz file from the output
         barcodes = out_dir/mode/"predemux/{capture}/barcodes.tsv.gz",
         matrix = out_dir/mode/"predemux/{capture}/matrix.mtx.gz",
-        filter_metrics = out_dir/"predemux/qc/discarded_metrics/{capture}.csv"
+        filter_metrics = temp(out_dir/"predemux/qc/discarded_metrics/{capture}.csv")
     log:
         log_dir/"predemux/pdmx_filter/{capture}.log"
     params:
@@ -68,9 +68,9 @@ rule predemux_gather_qc_metrics:
     input:
         rds = rules.predemux_convert_to_seurat.output.rds
     output:
-        genes_csv = out_dir/"predemux/qc/metrics/{capture}_genes.csv",
-        mito_csv = out_dir/"predemux/qc/metrics/{capture}_mito.csv",
-        umi_csv = out_dir/"predemux/qc/metrics/{capture}_umi.csv"
+        genes_csv = temp(out_dir/"predemux/qc/metrics/{capture}_genes.csv"),
+        mito_csv = temp(out_dir/"predemux/qc/metrics/{capture}_mito.csv"),
+        umi_csv = temp(out_dir/"predemux/qc/metrics/{capture}_umi.csv")
     log:
         log_dir/"predemux/pdmx_metrics/{capture}.log"
     conda:
@@ -105,6 +105,28 @@ rule predemux_generate_report:
         "../envs/predemux.yaml"
     script:
         "../scripts/pdmx_report.py"
+
+rule predemux_summarise:
+    """
+    Roll the per-capture predemux QC tables (filter outcome + the genes/mito/UMI
+    threshold sweeps) up into one cohort table, one row per capture. The per-capture
+    tables are temp(); this is the copy that persists, for cohort-level capture QC.
+    """
+    input:
+        filter_stats_csvs = expand(rules.predemux_filter_seurat.output.filter_metrics, capture=captures.index),
+        gene_csvs = expand(rules.predemux_gather_qc_metrics.output.genes_csv, capture=captures.index),
+        mito_csvs = expand(rules.predemux_gather_qc_metrics.output.mito_csv, capture=captures.index),
+        umi_csvs = expand(rules.predemux_gather_qc_metrics.output.umi_csv, capture=captures.index)
+    output:
+        summary = out_dir/"summary/predemux_summary.csv"
+    log:
+        log_dir/"predemux/predemux_summarise.log"
+    params:
+        captures = list(captures.index)
+    conda:
+        "../envs/predemux.yaml"
+    script:
+        "../scripts/pdmx_summarise.py"
 
 rule copy_original_features:
     """
