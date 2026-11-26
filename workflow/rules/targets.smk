@@ -46,6 +46,9 @@ def multi_targets():
     in 'libraries.csv' (eg 'Gene Expression' + 'VDJ-T')
     """
     multi_targets=count_targets()
+    multi_targets.extend(
+        expand(list(rules.restructure_multi_extras.output), capture=captures.index)
+    )
     if 'vdj' in assays:
         vdj_targets=expand(
             list(itertools.chain(

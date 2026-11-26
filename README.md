@@ -30,7 +30,9 @@ Depending on the assays present it runs in one of two modes (see [Modes](#modes)
 
 Per capture, a tidied Cell Ranger result tree under the configured results dir:
 count matrices (`count/{filtered,raw}`), `h5`, `bam`, `loupe`, `cr_analysis`,
-per-capture `summary/metrics`, optional `annotation` (cell types) and `predemux` outputs,
+per-capture `summary/metrics` (and in multi mode `summary/multi_config` and
+`summary/aggregates`, Cell Ranger's antibody and antigen aggregate barcodes),
+optional `annotation` (cell types) and `predemux` outputs,
 and a set of HTML QC reports indexed by a `master_index.html`.
 
 ### Contents
