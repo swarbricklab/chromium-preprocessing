@@ -106,6 +106,28 @@ rule predemux_generate_report:
     script:
         "../scripts/pdmx_report.py"
 
+rule predemux_summarise:
+    """
+    Roll the per-capture predemux QC tables (filter outcome + the genes/mito/UMI
+    threshold sweeps) up into one cohort table, one row per capture. The per-capture
+    tables are temp(); this is the copy that persists, for cohort-level capture QC.
+    """
+    input:
+        filter_stats_csvs = expand(rules.predemux_filter_seurat.output.filter_metrics, capture=captures.index),
+        gene_csvs = expand(rules.predemux_gather_qc_metrics.output.genes_csv, capture=captures.index),
+        mito_csvs = expand(rules.predemux_gather_qc_metrics.output.mito_csv, capture=captures.index),
+        umi_csvs = expand(rules.predemux_gather_qc_metrics.output.umi_csv, capture=captures.index)
+    output:
+        summary = out_dir/"summary/predemux_summary.csv"
+    log:
+        log_dir/"predemux/predemux_summarise.log"
+    params:
+        captures = list(captures.index)
+    conda:
+        "../envs/predemux.yaml"
+    script:
+        "../scripts/pdmx_summarise.py"
+
 rule copy_original_features:
     """
     Restore the original features.tsv.gz over the one written by predemux_filter_seurat,

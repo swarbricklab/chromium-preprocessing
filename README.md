@@ -245,6 +245,12 @@ intermediates are deleted, so rebuilding that one report requires re-running all
 rules for *every* capture — plus `copy_original_features`, which cascades off the
 regenerated filter outputs.
 
+The per-capture QC tables those rules produce are rolled up by `predemux_summarise` into
+one cohort table, `summary/predemux_summary.csv`. It has one row per capture: the filter
+outcome (cells in and out, discards per filter) and the genes, mito and UMI threshold
+sweeps, pivoted wide. That table and `summary/metrics/cr_summary.csv` are kept. The
+per-capture tables stay `temp()`.
+
 A worked example, adding 2 captures to a 148-capture dataset:
 
 ```

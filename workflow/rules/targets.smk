@@ -186,7 +186,7 @@ def predemux_targets():
     """
     The following targets are enabled if 'params.extras.predemux' is 'true'
     """
-    predemux_targets = [rules.predemux_generate_report.output]
+    predemux_targets = [rules.predemux_generate_report.output, rules.predemux_summarise.output]
 
     predemux_targets.extend(
         expand(list(rules.copy_original_features.output), capture=captures.index)

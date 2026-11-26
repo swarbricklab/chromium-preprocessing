@@ -112,6 +112,10 @@ set-resources:
         threads: "1"
         mem: "4GB"
         runtime: "1h"
+    predemux_summarise:
+        threads: "1"
+        mem: "4GB"
+        runtime: "30m"
     copy_original_features:
         threads: "1"
         mem: "500MB"
