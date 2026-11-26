@@ -25,8 +25,12 @@ jobs:
       - uses: mamba-org/setup-micromamba@v2
         with:
           environment-name: ci
+          # `conda` is listed explicitly: Snakemake 7's conda integration shells out to
+          # `conda info --json` even with the mamba frontend, and since ubuntu-latest
+          # moved to 26.04 the runner image no longer puts Miniconda on PATH.
           create-args: >-
             snakemake=7.32.4
+            conda
             mamba
             yte
             pandas
