@@ -110,7 +110,7 @@
             },
             "no-secondary": {
               "type": "boolean",
-              "description": "Disable secondary alignments if true."
+              "description": "If true, Cell Ranger skips its secondary analysis (dimensionality reduction, clustering and differential expression) and the Loupe file built from it."
             },
             "include-introns": {
               "type": "boolean",

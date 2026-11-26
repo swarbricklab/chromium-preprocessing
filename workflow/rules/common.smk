@@ -80,8 +80,8 @@ def get_options(section):
         rename_map={ 'no-secondary': 'nosecondary'}
         for parameter,value in config["params"][section].items():
             if parameter in flags:
-                # Only add to option string if true
-                if value == "true":
+                # Only add to option string if true, whether YAML gives a boolean or a string
+                if str(value).lower() == "true":
                     # Rename if necessary
                     if parameter in rename_map.keys():
                         parameter = rename_map[parameter]
