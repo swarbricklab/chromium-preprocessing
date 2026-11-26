@@ -24,8 +24,7 @@ def count_targets():
             list(rules.restructure_counts.output),
             list(rules.restructure_summary.output),
             list(rules.restructure_raw_h5.output),
-            list(rules.restructure_h5.output),
-            list(rules.restructure_loupe.output)
+            list(rules.restructure_h5.output)
         )),
         capture=captures.index
     )
@@ -33,9 +32,13 @@ def count_targets():
         count_targets.extend(
             expand(list(rules.restructure_bams.output),capture=captures.index)
         )
+    # Cell Ranger builds the Loupe file from its secondary analysis, so without one it writes neither
     if not config['params']['gene-expression']['no-secondary']:
         count_targets.extend(
             expand(rules.restructure_analysis.output.dir,capture=captures.index)
+        )
+        count_targets.extend(
+            expand(list(rules.restructure_loupe.output),capture=captures.index)
         )
     return count_targets
 
